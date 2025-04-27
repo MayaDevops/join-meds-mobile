@@ -92,6 +92,7 @@ class _SignUpState extends State<SignUp> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Navigator.pushNamed(context, '/sign_up_loading');
+
       } else {
         showDialog(
           context: context,

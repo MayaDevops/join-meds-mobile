@@ -43,3 +43,5 @@ const subHeadForms = TextStyle(
 
 const appBarText = TextStyle(
     color: Colors.white, fontSize: 25, fontWeight: FontWeight.w500);
+
+const radioTextStyle = TextStyle(fontSize: 18);

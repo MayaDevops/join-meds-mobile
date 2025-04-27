@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/screens/Doctor/doctor_degree_completed/doctor_pg-holder/dr_pg_holder_speciality.dart';
+import 'package:untitled/screens/Doctor/doctor_degree_ongoing/dr_degree_ongoing_1.dart';
+import 'package:untitled/screens/Doctor/doctor_work_experience/work_experience.dart';
 import 'package:untitled/screens/Doctor/dr_academic_status.dart';
 import 'package:untitled/screens/landing_page.dart';
 import 'package:untitled/screens/login_page/login_page.dart';
@@ -31,6 +34,9 @@ void main() {
       '/profile_picture': (context)=> const ProfilePicture(),
       '/resume_upload': (context)=> const ResumeUpload(),
       '/dr_acd_status': (context)=> const DrAcademicStatus(),
+      '/dr_degree_ongoing_1': (context)=> const DrDegreeOngoing1(),
+      '/dr_pg_holder_speciality': (context)=> const SelectingDrSpeciality(),
+      '/work_experience': (context)=> const WorkExperience(),
 
 
     },
