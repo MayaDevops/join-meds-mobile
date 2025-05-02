@@ -4,31 +4,17 @@ import '../../../constants/constant.dart';
 import '../../../widgets/repeated_headings.dart';
 import '../../../widgets/text_form_fields.dart';
 
-class WorkExperience extends StatefulWidget {
-  const WorkExperience({super.key});
+class PharmacistWorkExperience extends StatefulWidget {
+  const PharmacistWorkExperience({super.key});
 
   @override
-  State<WorkExperience> createState() => _WorkExperienceState();
+  State<PharmacistWorkExperience> createState() => _PharmacistWorkExperienceState();
 }
 
-class _WorkExperienceState extends State<WorkExperience> {
+class _PharmacistWorkExperienceState extends State<PharmacistWorkExperience> {
   final _workExpKey = GlobalKey<FormState>();
 
   List<Map<String, dynamic>> workExperienceList = [];
-
-  final List<String> specialisationOptions = [
-    'Obstetrics and Gyneacology',
-    'Pediatrics',
-    'Radiology',
-    'Cardiology',
-    'Neurology',
-    'Oncology',
-    'Psychiatry',
-    'Emergency Medicine',
-    'Cosmetology',
-    'Ent',
-    'Others'
-  ];
 
   @override
   void initState() {
@@ -41,8 +27,6 @@ class _WorkExperienceState extends State<WorkExperience> {
       workExperienceList.add({
         'clinicalStatus': null,
         'organisationController': TextEditingController(),
-        'specialisation': null,
-        'customSpecialisationController': TextEditingController(),
         'fromDateController': TextEditingController(),
         'toDateController': TextEditingController(),
       });
@@ -53,7 +37,6 @@ class _WorkExperienceState extends State<WorkExperience> {
   void dispose() {
     for (var exp in workExperienceList) {
       exp['organisationController'].dispose();
-      exp['customSpecialisationController'].dispose();
       exp['fromDateController'].dispose();
       exp['toDateController'].dispose();
     }
@@ -159,47 +142,6 @@ class _WorkExperienceState extends State<WorkExperience> {
                           obscureText: false,
                         ),
                         const SizedBox(height: 15),
-                        DropdownButtonFormField<String>(
-                          value: exp['specialisation'],
-                          decoration: InputDecoration(
-                            hintText: 'Select Work Specialisation',
-                            hintStyle: hintStyle,
-                            enabledBorder: enabledBorder,
-                            focusedBorder: focusedBorder,
-                            errorStyle: errorStyle,
-                            errorBorder: errorBorder,
-                            focusedErrorBorder: focusedErrorBorder,
-                          ),
-                          items: specialisationOptions.map((item) {
-                            return DropdownMenuItem<String>(
-                              value: item,
-                              child: Text(item),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              exp['specialisation'] = value;
-                              if (value != 'Others') {
-                                exp['customSpecialisationController'].clear();
-                              }
-                            });
-                          },
-                        ),
-                        if (exp['specialisation'] == 'Others') ...[
-                          const SizedBox(height: 10),
-                          TextFormWidget(
-                            controller: exp['customSpecialisationController'],
-                            validator: (value) {
-                              if (exp['specialisation'] == 'Others' && (value == null || value.isEmpty)) {
-                                return 'Please specify specialisation';
-                              }
-                              return null;
-                            },
-                            hintText: 'Enter your Specialisation',
-                            obscureText: false,
-                          ),
-                        ],
-                        const SizedBox(height: 15),
                         LabelText(labelText: 'From'),
                         TextFormField(
                           controller: exp['fromDateController'],
@@ -269,17 +211,14 @@ class _WorkExperienceState extends State<WorkExperience> {
               return {
                 'typeOfExperience': exp['clinicalStatus'],
                 'organisation': exp['organisationController'].text,
-                'specialisation': exp['specialisation'] == 'Others'
-                    ? exp['customSpecialisationController'].text
-                    : exp['specialisation'],
                 'from': exp['fromDateController'].text,
                 'to': exp['toDateController'].text,
               };
             }).toList();
 
-           print(finalData);
+            print(finalData);
 
-            Navigator.pushNamed(context, '/dr_certification_of_spl');
+            Navigator.pushNamed(context,  '/County_that_you_preferred_page');
           }
         },
         style: ButtonStyle(

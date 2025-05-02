@@ -3,28 +3,24 @@ import '../../../../constants/constant.dart';
 import '../../../../widgets/repeated_headings.dart';
 import '../../../../widgets/text_form_fields.dart';
 
-class SelectingDrSpeciality extends StatefulWidget {
-  const SelectingDrSpeciality({super.key});
+class SelectingNurseSpeciality extends StatefulWidget {
+  const SelectingNurseSpeciality({super.key});
 
   @override
-  State<SelectingDrSpeciality> createState() => _SelectingDrSpecialityState();
+  State<SelectingNurseSpeciality> createState() => _SelectingNurseSpecialityState();
 }
 
-class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
+class _SelectingNurseSpecialityState extends State<SelectingNurseSpeciality> {
   final TextEditingController _othersController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String? speciality;
+  String? _selectedSpeciality;
 
-  final List<String> doctorSpeciality = [
-    'Obstetrics And Gyneacology',
-    'Pediatrics',
-    'Radiology',
-    'Cardiology',
-    'Neurology',
-    'Oncology',
+  final List<String> _nurseSpecialities = [
+    'Medical Surgical',
     'Psychiatry',
-    'Audiologist',
-    'Emergency Medicine',
+    'Community Nursing',
+    'Child Health / Pediatrics',
+    'Obstetric and Gynaecological Nursing',
     'Others',
   ];
 
@@ -34,7 +30,7 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
     super.dispose();
   }
 
-  void _showSnackBar(String message, Color color) {
+  void _showSnackBar(String message, {Color color = Colors.red}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message, textAlign: TextAlign.center),
@@ -45,19 +41,19 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
   }
 
   Future<void> _onSavePressed() async {
-    if (speciality == null) {
-      _showSnackBar('Please select a speciality', Colors.red);
+    if (_selectedSpeciality == null) {
+      _showSnackBar('Please select a speciality');
       return;
     }
 
-    if (speciality == 'Others') {
-      final result = await _openOthersBottomSheet();
-      if (result == null) return;
-      speciality = result;
-      _showSnackBar('Speciality saved: $speciality', Colors.green);
+    if (_selectedSpeciality == 'Others') {
+      final customSpeciality = await _openOthersBottomSheet();
+      if (customSpeciality == null) return;
+      _selectedSpeciality = customSpeciality;
+      _showSnackBar('Speciality saved: $_selectedSpeciality', color: Colors.green);
     }
 
-    await _startNextSteps();
+    await _handleNextSteps();
   }
 
   Future<String?> _openOthersBottomSheet() {
@@ -67,15 +63,11 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => OthersTextField(
-        formKey: _formKey,
-        controller: _othersController,
-      ),
+      builder: (_) => OthersTextField(formKey: _formKey, controller: _othersController),
     );
   }
 
-  Future<void> _startNextSteps() async {
-    // Show PhD Status and Work Experience Status in sequence
+  Future<void> _handleNextSteps() async {
     final phDStatus = await _showOptionBottomSheet(
       title: 'Are you a PhD holder?',
       options: {
@@ -97,13 +89,12 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
 
     if (workExpStatus == null) return;
 
-    // Navigate based on work experience status
-    if (workExpStatus == 'No') {
-      Navigator.pushNamed(context, '/County_that_you_preferred_page');
-
-    } else {
-      Navigator.pushNamed(context, '/work_experience'); // Navigate to work experience page
-    }
+    Navigator.pushNamed(
+      context,
+      workExpStatus == 'Work Experience-No'
+          ?  '/County_that_you_preferred_page' //navigate to country preferred page
+          : '/nurse_work_experience',
+    );
   }
 
   Future<String?> _showOptionBottomSheet({
@@ -116,7 +107,7 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => _OptionBottomSheet(title: title, options: options),
+      builder: (_) => OptionBottomSheet(title: title, options: options),
     );
   }
 
@@ -130,19 +121,19 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(20),
-        itemCount: doctorSpeciality.length,
+        itemCount: _nurseSpecialities.length,
         separatorBuilder: (_, __) => const Divider(),
-        itemBuilder: (context, index) {
-          final profession = doctorSpeciality[index];
+        itemBuilder: (_, index) {
+          final speciality = _nurseSpecialities[index];
           return ListTile(
             leading: Radio<String>(
               activeColor: mainBlue,
-              value: profession,
-              groupValue: speciality,
-              onChanged: (value) => setState(() => speciality = value),
+              value: speciality,
+              groupValue: _selectedSpeciality,
+              onChanged: (value) => setState(() => _selectedSpeciality = value),
             ),
-            title: Text(profession, style: radioTextStyle),
-            onTap: () => setState(() => speciality = profession),
+            title: Text(speciality, style: radioTextStyle),
+            onTap: () => setState(() => _selectedSpeciality = speciality),
           );
         },
       ),
@@ -166,11 +157,7 @@ class OthersTextField extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController controller;
 
-  const OthersTextField({
-    super.key,
-    required this.formKey,
-    required this.controller,
-  });
+  const OthersTextField({super.key, required this.formKey, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +180,7 @@ class OthersTextField extends StatelessWidget {
               hintText: 'Enter your speciality',
               obscureText: false,
               validator: (value) {
-                if (value == null || value.isEmpty) {
+                if (value == null || value.trim().isEmpty) {
                   return 'Speciality is required';
                 } else if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
                   return 'Use letters and spaces only';
@@ -224,18 +211,18 @@ class OthersTextField extends StatelessWidget {
   }
 }
 
-class _OptionBottomSheet extends StatefulWidget {
+class OptionBottomSheet extends StatefulWidget {
   final String title;
   final Map<String, String> options;
 
-  const _OptionBottomSheet({super.key, required this.title, required this.options});
+  const OptionBottomSheet({super.key, required this.title, required this.options});
 
   @override
-  State<_OptionBottomSheet> createState() => _OptionBottomSheetState();
+  State<OptionBottomSheet> createState() => _OptionBottomSheetState();
 }
 
-class _OptionBottomSheetState extends State<_OptionBottomSheet> {
-  String? selectedValue;
+class _OptionBottomSheetState extends State<OptionBottomSheet> {
+  String? _selectedOption;
 
   @override
   Widget build(BuildContext context) {
@@ -264,8 +251,8 @@ class _OptionBottomSheetState extends State<_OptionBottomSheet> {
                   Text(entry.value, style: radioTextStyle),
                   Radio<String>(
                     value: entry.key,
-                    groupValue: selectedValue,
-                    onChanged: (value) => setState(() => selectedValue = value),
+                    groupValue: _selectedOption,
+                    onChanged: (value) => setState(() => _selectedOption = value),
                   ),
                 ],
               );
@@ -274,8 +261,8 @@ class _OptionBottomSheetState extends State<_OptionBottomSheet> {
         ),
         ElevatedButton(
           onPressed: () {
-            if (selectedValue != null) {
-              Navigator.pop(context, selectedValue);
+            if (_selectedOption != null) {
+              Navigator.pop(context, _selectedOption);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

@@ -4,6 +4,8 @@ import 'dart:io';
 import '../../constants/constant.dart';
 import '../../constants/images.dart';
 import '../../widgets/main_button.dart';
+import '../../widgets/nurse_course_type_selection.dart';
+import '../../widgets/selection_of_professions.dart';
 import '../Doctor/dr_academic_status.dart';
 
 class ResumeUpload extends StatefulWidget {
@@ -16,7 +18,7 @@ class ResumeUpload extends StatefulWidget {
 class _ResumeUploadState extends State<ResumeUpload> {
   String? _fileName;
   File? _pickedFile;
-  int num = 1;
+  String resumeHeader = 'Please upload your Resume';
 
   Future<void> pickFile() async {
     try {
@@ -29,13 +31,12 @@ class _ResumeUploadState extends State<ResumeUpload> {
         setState(() {
           _fileName = result.files.first.name;
           _pickedFile = File(result.files.first.path!);
-          num = 2;
+          resumeHeader = 'Resume uploaded successfully';
         });
-
         _showSnackBar("Resume uploaded successfully!", Colors.green);
       }
     } catch (e) {
-      _showSnackBar("Error picking file: $e", Colors.red);
+      _showSnackBar("Error picking file: ${e.toString()}", Colors.red);
     }
   }
 
@@ -71,34 +72,21 @@ class _ResumeUploadState extends State<ResumeUpload> {
             child: Column(
               children: [
                 const SizedBox(height: 40),
-                const Text(
-                  'Please upload your Resume',
+                Text(
+                  resumeHeader,
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: inputBorderClr),
+                  style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: inputBorderClr),
                 ),
                 const SizedBox(height: 40),
-                Image.asset('images/resume_img-$num.png'),
+                Image.asset(
+                    'images/resume_img-${_fileName == null ? 1 : 2}.png'),
                 const SizedBox(height: 25),
-
-                if (_fileName != null)
-                  _buildFileCard(),
+                if (_fileName != null) _buildFileCard(),
                 const SizedBox(height: 15),
-
-                TextButton(
-                  onPressed: pickFile,
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                      side: const BorderSide(width: 2, color: mainBlue),
-                    ),
-                  ),
-                  child: Text(
-                    _fileName == null ? 'Upload Resume' : 'Change Resume',
-                    style: const TextStyle(fontSize: 17, color: mainBlue),
-                  ),
-                ),
-
+                UploadButton(fileName: _fileName, onPickFile: pickFile),
                 const Spacer(),
                 _buildNavigationButtons(),
               ],
@@ -124,7 +112,10 @@ class _ResumeUploadState extends State<ResumeUpload> {
             child: Text(
               _fileName!,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.green),
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.green),
             ),
           ),
           IconButton(
@@ -132,7 +123,7 @@ class _ResumeUploadState extends State<ResumeUpload> {
             onPressed: () => setState(() {
               _fileName = null;
               _pickedFile = null;
-              num = 1;
+              resumeHeader = 'Please upload your Resume';
             }),
           ),
         ],
@@ -159,10 +150,12 @@ class _ResumeUploadState extends State<ResumeUpload> {
           style: OutlinedButton.styleFrom(
             padding: const EdgeInsets.all(15),
             side: const BorderSide(color: mainBlue, width: 3),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
           onPressed: _navigateToProfessionSelection,
-          child: const Text('Skip for now', style: TextStyle(fontSize: 20.0, color: mainBlue)),
+          child: const Text('Skip for now',
+              style: TextStyle(fontSize: 20.0, color: mainBlue)),
         ),
         const SizedBox(height: 20),
       ],
@@ -170,72 +163,30 @@ class _ResumeUploadState extends State<ResumeUpload> {
   }
 }
 
-class SelectionProfession extends StatefulWidget {
-  const SelectionProfession({super.key});
+class UploadButton extends StatelessWidget {
+  final String? fileName;
+  final Function onPickFile;
 
-  @override
-  State<SelectionProfession> createState() => _SelectionProfessionState();
-}
-
-class _SelectionProfessionState extends State<SelectionProfession> {
-  String? profession;
-
-  final List<String> professions = [
-    'Doctor', 'Nurse', 'Pharmacist', 'Lab Technician', 'Anesthesia Technician',
-    'Dentist', 'Physiotherapy', 'Audiologist', 'Dietitian', 'Clinical Psychologist',
-    'Social Worker', 'Hospital Administrator',
-  ];
-
-  void _saveProfession() {
-    if (profession == null) {
-      _showSnackBar("Please select a profession", Colors.red);
-    } else if (profession == 'Doctor') {
-      Navigator.pushNamed(context, '/dr_acd_status');
-    } else {
-      _showSnackBar("Feature for $profession coming soon!", Colors.blueAccent);
-    }
-  }
-
-  void _showSnackBar(String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
-    );
-  }
+  const UploadButton({super.key, required this.fileName, required this.onPickFile});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select Profession'),
-        centerTitle: true,
-        backgroundColor: mainBlue,
-      ),
-      body: ListView.separated(
-
-        padding: const EdgeInsets.all(20),
-        itemBuilder: (context, index) => Row(
-          children: [
-            Radio<String>(
-              activeColor: mainBlue,
-              value: professions[index],
-              groupValue: profession,
-              onChanged: (value) => setState(() => profession = value),
-            ),
-            Text(professions[index], style: radioTextStyle)
-          ],
+    return ElevatedButton(
+      onPressed: () => onPickFile(),
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5),
+          side: const BorderSide(width: 2, color: mainBlue),
         ),
-        separatorBuilder: (context, index) => const Divider(),
-        itemCount: professions.length,
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: _saveProfession,
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(15),
-          backgroundColor: mainBlue,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-        ),
-        child: const Text('Save', style: TextStyle(fontSize: 20.0, color: Colors.white)),
+      child: Text(
+        fileName == null ? 'Upload Resume' : 'Change Resume',
+        style: const TextStyle(fontSize: 17, color: mainBlue),
       ),
     );
   }
 }
+
+
+

@@ -4,29 +4,24 @@ import '../../../constants/constant.dart';
 import '../../../widgets/repeated_headings.dart';
 import '../../../widgets/text_form_fields.dart';
 
-class WorkExperience extends StatefulWidget {
-  const WorkExperience({super.key});
+class NurseWorkExperience extends StatefulWidget {
+  const NurseWorkExperience({super.key});
 
   @override
-  State<WorkExperience> createState() => _WorkExperienceState();
+  State<NurseWorkExperience> createState() => _NurseWorkExperienceState();
 }
 
-class _WorkExperienceState extends State<WorkExperience> {
+class _NurseWorkExperienceState extends State<NurseWorkExperience> {
   final _workExpKey = GlobalKey<FormState>();
 
   List<Map<String, dynamic>> workExperienceList = [];
 
   final List<String> specialisationOptions = [
-    'Obstetrics and Gyneacology',
-    'Pediatrics',
-    'Radiology',
-    'Cardiology',
-    'Neurology',
-    'Oncology',
-    'Psychiatry',
-    'Emergency Medicine',
-    'Cosmetology',
-    'Ent',
+    'Casualty / Emergency Medicine',
+    'OT',
+    'ICU',
+    'WARD',
+    'Industrial Nurse',
     'Others'
   ];
 
@@ -277,9 +272,9 @@ class _WorkExperienceState extends State<WorkExperience> {
               };
             }).toList();
 
-           print(finalData);
+            print(finalData);
 
-            Navigator.pushNamed(context, '/dr_certification_of_spl');
+            Navigator.pushNamed(context,  '/County_that_you_preferred_page');
           }
         },
         style: ButtonStyle(
