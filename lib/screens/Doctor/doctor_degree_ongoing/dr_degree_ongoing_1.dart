@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:untitled/widgets/main_button.dart';
 import '../../../constants/constant.dart';
 
 class DrDegreeOngoing1 extends StatefulWidget {
@@ -10,7 +10,20 @@ class DrDegreeOngoing1 extends StatefulWidget {
 }
 
 class _DrDegreeOngoing1State extends State<DrDegreeOngoing1> {
-  List<String> universities = [
+  final TextEditingController _universityController = TextEditingController();
+  String? _university;
+  String? academicYear;
+
+  final List<String> academicYears = [
+    '1st Year',
+    '2nd Year',
+    '3rd Year',
+    '4th Year',
+    '5th Year',
+    'House Surgency'
+  ];
+
+  final List<String> universities = [
     'Andaman and Nicobar Islands Institute of Medical Sciences, Port Blair',
     'ASSAM MEDICAL COLLEGE, DIBRUGARH',
     'Fakhruddin Ali Ahmed Medical College, Barpeta',
@@ -691,9 +704,28 @@ class _DrDegreeOngoing1State extends State<DrDegreeOngoing1> {
     "Yenepoya Medical College, Mangalore",
     "ZORAM MEDICAL COLLEGE Falkawn",
     "Zydus Medical College & Hospital, Dahod"
-  ].toSet().toList();
+  ];
 
-  String? academicYear;
+  @override
+  void dispose() {
+    _universityController.dispose();
+    super.dispose();
+  }
+
+  Widget buildRadioOption(String value) {
+    return Row(
+      children: [
+        Radio<String>(
+          activeColor: mainBlue,
+          value: value,
+          groupValue: academicYear,
+          onChanged: (val) => setState(() => academicYear = val),
+        ),
+        Text(value, style: radioTextStyle),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -703,171 +735,78 @@ class _DrDegreeOngoing1State extends State<DrDegreeOngoing1> {
         backgroundColor: mainBlue,
       ),
       body: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20),
-        child: Column(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: ListView(
           children: [
-            SizedBox(
-              height: 50.0,
-            ),
-            Container(
-              alignment: Alignment.bottomLeft,
+            const SizedBox(height: 50),
+            const Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Choose Your Current Year',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w500),
               ),
             ),
-            SizedBox(
-              height: 15,
+            const SizedBox(height: 15),
+            Wrap(
+              spacing: 50,
+              runSpacing: 10,
+              children: academicYears.map(buildRadioOption).toList(),
             ),
-            Row(
-              children: [
-                Row(
-                  children: [
-                    Radio(
-                        activeColor: mainBlue,
-                        value: '1st Year',
-                        groupValue: academicYear,
-                        onChanged: (value) {
-                          setState(() {
-                            academicYear = value;
-                          });
-                        }),
-                    Text(
-                      '1st Year',
-                      style: radioTextStyle,
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 50,
-                ),
-                Row(
-                  children: [
-                    Radio(
-                        activeColor: mainBlue,
-                        value: '2nd Year',
-                        groupValue: academicYear,
-                        onChanged: (value) {
-                          setState(() {
-                            academicYear = value;
-                          });
-                        }),
-                    Text(
-                      '2nd Year',
-                      style: radioTextStyle,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Row(
-                  children: [
-                    Radio(
-                        activeColor: mainBlue,
-                        value: '3rd Year',
-                        groupValue: academicYear,
-                        onChanged: (value) {
-                          setState(() {
-                            academicYear = value;
-                          });
-                        }),
-                    Text(
-                      '3rd Year',
-                      style: radioTextStyle,
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 50,
-                ),
-                Row(
-                  children: [
-                    Radio(
-                        activeColor: mainBlue,
-                        value: '4th Year',
-                        groupValue: academicYear,
-                        onChanged: (value) {
-                          setState(() {
-                            academicYear = value;
-                          });
-                        }),
-                    Text(
-                      '4th Year',
-                      style: radioTextStyle,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Row(
-                  children: [
-                    Radio(
-                        activeColor: mainBlue,
-                        value: '5th Year',
-                        groupValue: academicYear,
-                        onChanged: (value) {
-                          setState(() {
-                            academicYear = value;
-                          });
-                        }),
-                    Text(
-                      '5th Year',
-                      style: radioTextStyle,
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  width: 50,
-                ),
-                Row(
-                  children: [
-                    Radio(
-                        activeColor: mainBlue,
-                        value: 'House Surgency',
-                        groupValue: academicYear,
-                        onChanged: (value) {
-                          setState(() {
-                            academicYear = value;
-                          });
-                        }),
-                    Text(
-                      'House Surgency',
-                      style: radioTextStyle,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 30.0,
-            ),
-            Container(
-              alignment: Alignment.bottomLeft,
+            const SizedBox(height: 30),
+            const Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'University of Education',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w500),
               ),
             ),
-            SizedBox(
-              height: 15,
+            const SizedBox(height: 15),
+            DropdownMenu<String>(
+              controller: _universityController,
+              requestFocusOnTap: true,
+              enableSearch: true,
+              enableFilter: true,
+              keyboardType: TextInputType.text,
+              menuStyle: const MenuStyle(
+                padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 20)),
+                fixedSize: WidgetStatePropertyAll(Size.fromHeight(360)),
+              ),
+              hintText: 'Select University of Education',
+              textStyle: hintStyle,
+              onSelected: (value) => setState(() => _university = value),
+              dropdownMenuEntries: universities
+                  .toSet()
+                  .toList()
+                  .map((university) => DropdownMenuEntry(value: university, label: university))
+                  .toList(),
             ),
-            DropdownMenu(
-
-                dropdownMenuEntries: universities
-                    .map((university) =>
-                        DropdownMenuEntry(value: university, label: university))
-                    .toList())
           ],
+        ),
+      ),
+      bottomNavigationBar: ElevatedButton(
+        onPressed: () {
+          FocusScope.of(context).unfocus(); // Hide keyboard
+          if (_university != null && academicYear != null) {
+            Navigator.pushNamed(context, '/County_that_you_preferred_page');
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Please select both your current year and university.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        style: ButtonStyle(
+          padding: const WidgetStatePropertyAll(EdgeInsets.all(15)),
+          backgroundColor: const WidgetStatePropertyAll(mainBlue),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+          ),
+        ),
+        child: const Text(
+          'Continue',
+          style: TextStyle(fontSize: 20.0, color: Colors.white),
         ),
       ),
     );

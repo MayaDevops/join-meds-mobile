@@ -38,6 +38,16 @@ class _PersonalDataState extends State<PersonalData> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         centerTitle: true,
+        actions: [
+          IconButton(
+              onPressed: () {
+
+              },
+              icon: Icon(
+                Icons.home,
+                color: inputBorderClr,size: 35,
+              ))
+        ],
         title: Text(
           "Personal data",
           style: TextStyle(
@@ -67,7 +77,6 @@ class _PersonalDataState extends State<PersonalData> {
                   key: _personalDataKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-
                     children: [
                       SizedBox(
                         height: 30,
@@ -85,50 +94,50 @@ class _PersonalDataState extends State<PersonalData> {
                         height: 5,
                       ),
                       TextFormWidget(
-                        controller: _nameController,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return 'Name is required';
-                          } else if (!RegExp(r"^[a-zA-Z\s]+$")
-                              .hasMatch(value)) {
-                            return 'Enter a valid name use letters and spaces only';
-                          } else if (value.length < 3) {
-                            return 'Name must be at least 3 characters long';
-                          }
-                          return null;
-                        },
-                        hintText: 'Enter name', obscureText: false
-                      ),
+                          controller: _nameController,
+                          validator: (value) {
+                            if (value!.isEmpty) {
+                              return 'Name is required';
+                            } else if (!RegExp(r"^[a-zA-Z\s]+$")
+                                .hasMatch(value)) {
+                              return 'Enter a valid name use letters and spaces only';
+                            } else if (value.length < 3) {
+                              return 'Name must be at least 3 characters long';
+                            }
+                            return null;
+                          },
+                          hintText: 'Enter name',
+                          obscureText: false),
                       SizedBox(
                         height: 15,
                       ),
                       LabelText(labelText: 'Date Of Birth'),
                       TextFormField(
                         validator: (value) {
-                          if(value!.isEmpty){
+                          if (value!.isEmpty) {
                             return "Date of birth is required";
                           }
                           return null;
-
-
                         },
                         controller: _dobController,
                         readOnly: true,
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
-                           onPressed: () async{
-                            final DateTime ?date =  await showDatePicker(
-                                 context: context,
-                               initialDate: DateTime.now(),
-                               firstDate: DateTime(1965), // Fixed: First date must be older
-                               lastDate: DateTime.now(),
-                             );
-                            final formatedDate = DateFormat("dd-MM-yyy").format(date!);
+                            onPressed: () async {
+                              final DateTime? date = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(
+                                    1965), // Fixed: First date must be older
+                                lastDate: DateTime.now(),
+                              );
+                              final formatedDate =
+                                  DateFormat("dd-MM-yyy").format(date!);
 
-                            setState(() {
-                              _dobController.text = formatedDate.toString();
-                            });
-                           },
+                              setState(() {
+                                _dobController.text = formatedDate.toString();
+                              });
+                            },
                             icon: Icon(
                               Icons.calendar_month,
                               color: mainBlue,
@@ -154,20 +163,17 @@ class _PersonalDataState extends State<PersonalData> {
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Email is required';
-                          }
-
-                          else if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+                          } else if (!RegExp(
+                                  r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
                               .hasMatch(value)) {
                             return 'Enter a valid email address';
                           }
                           return null;
-
-
                         },
                         keyboardType: TextInputType.emailAddress,
-                          controller: _emailController,
-                          hintText: 'Enter Email',
-                          obscureText: false,
+                        controller: _emailController,
+                        hintText: 'Enter Email',
+                        obscureText: false,
                       ),
                       SizedBox(
                         height: 15,
@@ -180,7 +186,8 @@ class _PersonalDataState extends State<PersonalData> {
                             return 'Address is required';
                           } else if (value.length < 5) {
                             return 'Address must be at least 5 characters long';
-                          } else if (!RegExp(r"^[a-zA-Z0-9\s,.-]+$").hasMatch(value)) {
+                          } else if (!RegExp(r"^[a-zA-Z0-9\s,.-]+$")
+                              .hasMatch(value)) {
                             return 'Enter a valid address (letters, numbers, spaces, , . - only)';
                           }
                           return null;
@@ -194,13 +201,14 @@ class _PersonalDataState extends State<PersonalData> {
                       ),
                       LabelText(labelText: 'Aadhaar Number (Optional)'),
                       TextFormWidget(
-
                         keyboardType: TextInputType.emailAddress,
                         controller: _aadhaarNumController,
                         hintText: 'Enter Aadhaar Number',
                         obscureText: false,
                       ),
-                      SizedBox(height: 50,),
+                      SizedBox(
+                        height: 50,
+                      ),
                       MainButton(
                           text: 'Continue',
                           onPressed: () {
