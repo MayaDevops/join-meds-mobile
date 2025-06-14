@@ -2,37 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:untitled/constants/constant.dart';
 import 'package:untitled/widgets/main_button.dart';
 import 'package:untitled/widgets/repeated_headings.dart';
-import 'package:untitled/widgets/text_form_fields.dart';
 
 class AboutOrganisation extends StatefulWidget {
   const AboutOrganisation({super.key});
 
   @override
-  _AboutOrganisationState createState() => _AboutOrganisationState();
+  State<AboutOrganisation> createState() => _AboutOrganisationState();
 }
 
 class _AboutOrganisationState extends State<AboutOrganisation> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers
-  final _aboutOrgController = TextEditingController();
-  final _hiringForController = TextEditingController();
-  final _yearExpController = TextEditingController();
-  final _skillsReqController = TextEditingController();
-  final _salaryFromController = TextEditingController();
-  final _salaryToController = TextEditingController();
-  final _jobDescController = TextEditingController();
+  final _controllers = {
+    'aboutOrg': TextEditingController(),
+    'location': TextEditingController(),
+    'hiringFor': TextEditingController(),
+    'experience': TextEditingController(),
+    'skills': TextEditingController(),
+    'salaryFrom': TextEditingController(),
+    'salaryTo': TextEditingController(),
+    'jobDesc': TextEditingController(),
+  };
 
   final _wordCount = ValueNotifier<int>(0);
   final _wordCount2 = ValueNotifier<int>(0);
 
-  static const int _maxWords = 250;
-  static const int _maxWords2 = 450;
-
   String _selectedSymbol = '₹';
-  final List<String> _moneySymbols = ['\$', '€', '£', '₹', 'SAR', 'AED', 'QAR', 'KWD', 'BHD'];
+  String _selectedUnit = '/hour';
 
-  // Helper Methods
+  final _moneySymbols = ['\$', '€', '£', '₹', 'SAR', 'AED', 'QAR', 'KWD', 'BHD'];
+  final _units = ['/hour', '/month', '/year'];
+
   int _countWords(String text) => text.trim().isEmpty ? 0 : text.trim().split(RegExp(r'\s+')).length;
 
   void _onTextChanged(String text, ValueNotifier<int> counter) {
@@ -41,9 +41,9 @@ class _AboutOrganisationState extends State<AboutOrganisation> {
 
   Widget _buildTextField({
     required String label,
-    required TextEditingController controller,
+    required String controllerKey,
     required String hintText,
-    required String? Function(String?) validator,
+    String? Function(String?)? validator,
     bool isMultiline = false,
     ValueNotifier<int>? wordCounter,
   }) {
@@ -52,7 +52,7 @@ class _AboutOrganisationState extends State<AboutOrganisation> {
       children: [
         LabelText(labelText: label),
         TextFormField(
-          controller: controller,
+          controller: _controllers[controllerKey],
           maxLines: isMultiline ? null : 1,
           keyboardType: isMultiline ? TextInputType.multiline : TextInputType.text,
           validator: validator,
@@ -71,9 +71,12 @@ class _AboutOrganisationState extends State<AboutOrganisation> {
         if (wordCounter != null)
           ValueListenableBuilder<int>(
             valueListenable: wordCounter,
-            builder: (context, count, _) => Text(
-              "Word count: $count / ${wordCounter == _wordCount ? _maxWords : _maxWords2}",
-              style: TextStyle(color: count > (wordCounter == _wordCount ? _maxWords : _maxWords2) ? Colors.red : Colors.black, fontWeight: FontWeight.bold),
+            builder: (_, count, __) => Text(
+              "Word count: $count / ${wordCounter == _wordCount ? 250 : 450}",
+              style: TextStyle(
+                color: count > (wordCounter == _wordCount ? 250 : 450) ? Colors.red : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         const SizedBox(height: 15),
@@ -81,15 +84,32 @@ class _AboutOrganisationState extends State<AboutOrganisation> {
     );
   }
 
+  Widget _buildDropdown({
+    required String label,
+    required String value,
+    required List<String> items,
+    required void Function(String?) onChanged,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        LabelText(labelText: label),
+        DropdownButton<String>(
+          value: value,
+          items: items
+              .map((item) => DropdownMenuItem(value: item, child: Text(item, style: const TextStyle(fontSize: 18))))
+              .toList(),
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
   @override
   void dispose() {
-    _aboutOrgController.dispose();
-    _hiringForController.dispose();
-    _yearExpController.dispose();
-    _skillsReqController.dispose();
-    _salaryFromController.dispose();
-    _salaryToController.dispose();
-    _jobDescController.dispose();
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
     _wordCount.dispose();
     _wordCount2.dispose();
     super.dispose();
@@ -99,93 +119,92 @@ class _AboutOrganisationState extends State<AboutOrganisation> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: const Text(
-          "About Organisation",
-          style: TextStyle(color: Colors.white, fontSize: 25, fontWeight: FontWeight.w500),
-        ),
-        backgroundColor: mainBlue,
-      ),
       body: RawScrollbar(
         thumbColor: Colors.black38,
-        thumbVisibility: true,
         thickness: 8,
         radius: const Radius.circular(10),
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.all(16.0),
+          physics: const BouncingScrollPhysics(),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                
+                const SizedBox(height: 10),
+                Text(''),
+                const SizedBox(height: 20),
                 _buildTextField(
                   label: 'About your company/organisation',
-                  controller: _aboutOrgController,
+                  controllerKey: 'aboutOrg',
                   hintText: 'Specify less than (250 words)',
-                  validator: (value) => (value == null || _countWords(value) < 50) ? 'At least 50 words required' : null,
+                  validator: (val) => (_countWords(val ?? '') < 50) ? 'At least 50 words required' : null,
                   isMultiline: true,
                   wordCounter: _wordCount,
                 ),
                 _buildTextField(
+                  label: 'Job Location',
+                  controllerKey: 'location',
+                  hintText: 'Eg: Thiruvananthapuram, Kerala',
+                  validator: (val) => (val == null || val.isEmpty) ? 'Required field' : null,
+                ),
+                _buildTextField(
                   label: 'Job Hiring For',
-                  controller: _hiringForController,
+                  controllerKey: 'hiringFor',
                   hintText: 'Eg: Nurse',
-                  validator: (value) => (value == null || value.isEmpty) ? 'This field is required' : null,
+                  validator: (val) => (val == null || val.isEmpty) ? 'Required field' : null,
                 ),
                 _buildTextField(
                   label: 'Year Of Experience',
-                  controller: _yearExpController,
-                  hintText: 'Eg: Fresher, 1 year, etc...',
-                  validator: (value) => (value == null || value.isEmpty) ? 'This field is required' : null,
+                  controllerKey: 'experience',
+                  hintText: 'Eg: Fresher, 1 year...',
+                  validator: (val) => (val == null || val.isEmpty) ? 'Required field' : null,
                 ),
                 _buildTextField(
                   label: 'Skills Required',
-                  controller: _skillsReqController,
+                  controllerKey: 'skills',
                   hintText: 'Eg: OT, NICU, Surgeon...',
-                  validator: (value) => (value == null || value.isEmpty) ? 'This field is required' : null,
+                  validator: (val) => (val == null || val.isEmpty) ? 'Required field' : null,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    LabelText(labelText: 'Pay'),
-                    DropdownButton<String>(
-                      value: _selectedSymbol,
-                      items: _moneySymbols.map((symbol) {
-                        return DropdownMenuItem(value: symbol, child: Text(symbol, style: const TextStyle(fontSize: 20)));
-                      }).toList(),
-                      onChanged: (value) => setState(() => _selectedSymbol = value!),
-                    ),
-                  ],
+                _buildDropdown(
+                  label: 'Pay Currency',
+                  value: _selectedSymbol,
+                  items: _moneySymbols,
+                  onChanged: (val) => setState(() => _selectedSymbol = val!),
                 ),
                 _buildTextField(
                   label: 'From',
-                  controller: _salaryFromController,
+                  controllerKey: 'salaryFrom',
                   hintText: 'Eg: 15,000',
-                  validator: (value) => (value == null || value.isEmpty) ? 'This field is required' : null,
+                  validator: (val) => (val == null || val.isEmpty) ? 'Required field' : null,
                 ),
                 _buildTextField(
                   label: 'To',
-                  controller: _salaryToController,
+                  controllerKey: 'salaryTo',
                   hintText: 'Eg: 30,000',
-                  validator: (value) => (value == null || value.isEmpty) ? 'This field is required' : null,
+                  validator: (val) => (val == null || val.isEmpty) ? 'Required field' : null,
+                ),
+                _buildDropdown(
+                  label: 'Pay Unit',
+                  value: _selectedUnit,
+                  items: _units,
+                  onChanged: (val) => setState(() => _selectedUnit = val!),
                 ),
                 _buildTextField(
                   label: 'Job Description',
-                  controller: _jobDescController,
+                  controllerKey: 'jobDesc',
                   hintText: 'Specify less than (450 words)',
-                  validator: (value) => (value == null || _countWords(value) < 50) ? 'At least 50 words required' : null,
+                  validator: (val) => (_countWords(val ?? '') < 50) ? 'At least 50 words required' : null,
                   isMultiline: true,
                   wordCounter: _wordCount2,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
                 MainButton(
                   text: 'Submit',
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // Handle form submission
+                      Navigator.pushNamed(context, '/organisation_home');
                     }
                   },
                 ),

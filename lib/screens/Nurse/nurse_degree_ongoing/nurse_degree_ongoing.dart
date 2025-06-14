@@ -1,6 +1,3 @@
-
-
-
 import 'package:flutter/material.dart';
 import '../../../constants/constant.dart';
 
@@ -768,7 +765,8 @@ class _NurseDegreeOngoingState extends State<NurseDegreeOngoing> {
               enableFilter: true,
               keyboardType: TextInputType.text,
               menuStyle: const MenuStyle(
-                padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 20)),
+                padding: WidgetStatePropertyAll(
+                    EdgeInsets.symmetric(horizontal: 20)),
                 fixedSize: WidgetStatePropertyAll(Size.fromHeight(360)),
               ),
               hintText: 'Select University of Education',
@@ -777,7 +775,8 @@ class _NurseDegreeOngoingState extends State<NurseDegreeOngoing> {
               dropdownMenuEntries: universities
                   .toSet()
                   .toList()
-                  .map((university) => DropdownMenuEntry(value: university, label: university))
+                  .map((university) =>
+                      DropdownMenuEntry(value: university, label: university))
                   .toList(),
             ),
           ],
@@ -791,7 +790,8 @@ class _NurseDegreeOngoingState extends State<NurseDegreeOngoing> {
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Please select both your current year and university.'),
+                content: Text(
+                    'Please select both your current year and university.'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -812,4 +812,3 @@ class _NurseDegreeOngoingState extends State<NurseDegreeOngoing> {
     );
   }
 }
-

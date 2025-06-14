@@ -54,14 +54,35 @@ import 'package:untitled/screens/Social%20Worker/bsw_academic_status.dart';
 import 'package:untitled/screens/Social%20Worker/bsw_degree_ongoing.dart';
 import 'package:untitled/screens/Social%20Worker/diploma_social_work_academic_status.dart';
 import 'package:untitled/screens/Social%20Worker/diploma_social_work_ongoing.dart';
+import 'package:untitled/screens/country_preferred_pages/after_country_preferred_page.dart';
 import 'package:untitled/screens/country_preferred_pages/country_that_you_preferred.dart';
 import 'package:untitled/screens/landing_page.dart';
+import 'package:untitled/screens/login_page/delete_account.dart';
+import 'package:untitled/screens/login_page/home_screen.dart';
 import 'package:untitled/screens/login_page/login_page.dart';
+import 'package:untitled/screens/login_page/login_page_loading.dart';
+import 'package:untitled/screens/login_page/user_notification.dart';
+import 'package:untitled/screens/login_page/user_privacy_policy.dart';
+import 'package:untitled/screens/login_page/user_terms_and_condition.dart';
+import 'package:untitled/screens/login_page/user_view_job_details.dart';
 import 'package:untitled/screens/onboarding.dart';
 import 'package:untitled/screens/organisation/about_organisation.dart';
+import 'package:untitled/screens/organisation/edit_job_organisation.dart';
 import 'package:untitled/screens/organisation/org_phone_number.dart';
+import 'package:untitled/screens/organisation/organisation_delete_account.dart';
+import 'package:untitled/screens/organisation/organisation_delete_otp_page.dart';
+import 'package:untitled/screens/organisation/organisation_home.dart';
 import 'package:untitled/screens/organisation/organisation_landing.dart';
+import 'package:untitled/screens/organisation/organisation_login.dart';
+import 'package:untitled/screens/organisation/organisation_notifications.dart';
+import 'package:untitled/screens/organisation/organisation_profile_edit.dart';
+import 'package:untitled/screens/organisation/organisation_profile_settings.dart';
+import 'package:untitled/screens/organisation/organisation_sign_up.dart';
 import 'package:untitled/screens/organisation/organisation_otp_page.dart';
+import 'package:untitled/screens/organisation/organisation_sign_up_loading.dart';
+import 'package:untitled/screens/organisation/organisation_terms_and_conditions.dart';
+import 'package:untitled/screens/organisation/organisation_view_job_details.dart';
+import 'package:untitled/screens/organisation/organisation_view_profile.dart';
 import 'package:untitled/screens/signupPages/profile_picture.dart';
 import 'package:untitled/screens/signupPages/resume_upload.dart';
 import 'package:untitled/screens/signupPages/sign_up.dart';
@@ -77,19 +98,64 @@ void main() {
         '/landing_page': (context) =>
             const LandingPage(), // Landing Page of the App
 
+        //User Pages starts here
+        '/home': (context) =>
+        const HomeScreen(), //User Home screen
+        '/delete_account': (context) =>
+        const DeleteAccount(), //User delete account
+        'user_privacy_policy': (context) =>
+        const UserPrivacyPolicy(), //User privacy policy
+        'user_terms_and_conditions': (context) =>
+        const UserTermsAndCondition(), //User terms and conditions
+        'user_view_job_details': (context) =>
+        const UserViewJobDetails(), //User view job details
+        'user_notifications': (context) =>
+        const UserNotification(), //User notifications
+
+
         //Organisation Pages starts here
-        '/organisation_home': (context) =>
-            const OrganisationLanding(), // Organisation Landing Page of the App
+        '/organisation_login': (context) =>
+        const OrganisationLogin(), // Organisation Login Page of the App
+        '/organisation_landing': (context) =>
+        const OrganisationLandingPage(), // Organisation Landing Page of the App for login and sign up
+        '/organisation_sing_up': (context) =>
+            const OrganisationSingUp(), // Organisation sign up Page of the App
         '/organisation_otp': (context) =>
             const OrganisationOtpPage(), // Organisation OTP Page of the App
         '/org_phone_number': (context) =>
             const OrgPhoneNumber(), // Organisation Phone Number Typing Page of the App
         '/about_organisation': (context) =>
             const AboutOrganisation(), // Organisation About mentioning Page of the App
+        '/organisation_signUpLoading': (context) =>
+        const OrganisationSignUpLoading(), // Organisation sign Up loading
+        '/organisation_home': (context) =>
+        const OrganisationHome(), // Organisation sign Up loading
+        '/organisation_view_job_details': (context) =>
+        const OrganisationViewJobDetails(), // Organisation view job details
+        '/organisation_view_profile': (context) =>
+        const OrganisationViewProfile(), // Organisation view profile
+        '/organisation_edit_job': (context) =>
+        const EditJobOrganisation(), // Organisation edit job
+        '/organisation_edit_profile': (context) =>
+        const OrganisationProfileEdit(), // Organisation edit profile
+        '/organisation_profile_settings': (context) =>
+        const OrganisationProfileSettings(), // Organisation profile settings
+        '/organisation_delete_account': (context) =>
+        const OrganisationDeleteAccount(), // Organisation delete account
+        'organisation_terms_and_conditions': (context) =>
+        const OrganisationTermsAndCondition(), // Organisation terms and conditions
+        'organisation_privacy_policy': (context) =>
+        const OrganisationTermsAndCondition(), // Organisation privacy policy
+        '/organisation_delete_otp': (context) =>
+        const OrganisationDeleteOtpPage(), // Organisation delete account otp section
+        'organisation_notifications': (context) =>
+        const OrganisationNotificationPage(), //User notifications
+
         //Organisation Pages ends here
 
         // Login and Sing Up pages of App starts here
         '/login_page': (context) => const LoginPage(), // Login Page of the App
+        '/login_page_loading': (context) => const LoginLoading(), // Login Page loading
         '/sign_up': (context) => const SignUp(), // Sing Up Page of the App
         '/sign_up_loading': (context) =>
             const SignUpLoading(), // After Singing Up loading Page of the App
@@ -252,8 +318,56 @@ void main() {
         // Country that you preferred page starts here
         '/County_that_you_preferred_page': (context) =>
         const CountryThatYouPreferred(),
+        '/after_County_preferred_page': (context) =>
+        const AfterCountryPreferredPage(),
       },
       initialRoute: '/',
     ),
   );
 }
+//
+// import 'package:flutter/material.dart';
+// import 'package:untitled/screens/Doctor/dr_academic_status.dart';
+// import 'package:untitled/screens/landing_page.dart';
+// import 'package:untitled/screens/login_page/login_page.dart';
+// import 'package:untitled/screens/onboarding.dart';
+// import 'package:untitled/screens/organisation/about_organisation.dart';
+// import 'package:untitled/screens/organisation/org_phone_number.dart';
+// import 'package:untitled/screens/organisation/organisation_sign_up.dart';
+// import 'package:untitled/screens/organisation/organisation_otp_page.dart';
+// import 'package:untitled/screens/signupPages/profile_picture.dart';
+// import 'package:untitled/screens/signupPages/resume_upload.dart';
+// import 'package:untitled/screens/signupPages/sign_up.dart';
+// import 'screens/signupPages/personal_data.dart';
+// import 'screens/signupPages/sing_up_loading.dart';
+// import 'screens/login_page/home_screen.dart';
+// import 'screens/login_page/my_jobs_screen.dart';
+//
+// void main() {
+//   runApp(MaterialApp(
+//
+//     debugShowCheckedModeBanner: false,
+//     routes: {
+//       '/': (context)=> const Onboarding(),
+//       '/landing_page': (context)=> const LandingPage(),
+//       '/organisation_home': (context)=> const OrganisationLanding(),
+//       '/organisation_otp': (context)=> const OrganisationOtpPage(),
+//       '/org_phone_number': (context)=> const OrgPhoneNumber(),
+//       '/about_organisation': (context)=> const AboutOrganisation(),
+//       '/login_page': (context)=> const LoginPage(),
+//       '/sign_up': (context)=> const SignUp(),
+//       '/sign_up_loading': (context)=> const SignUpLoading(),
+//       '/personal_data': (context)=> const PersonalData(),
+//       '/profile_picture': (context)=> const ProfilePicture(),
+//       '/resume_upload': (context)=> const ResumeUpload(),
+//       '/dr_acd_status': (context)=> const DrAcademicStatus(),
+//       '/home': (context) => const HomeScreen(),
+//       '/work': (context) => const MyJobsScreen(),
+//
+//
+//
+//     },
+//     initialRoute: '/',
+//   ),
+//   );
+// }

@@ -1,6 +1,5 @@
 
 import 'package:flutter/material.dart';
-import 'package:untitled/widgets/main_button.dart';
 import '../../../constants/constant.dart';
 
 class BPharmDegreeOngoing extends StatefulWidget {
@@ -730,7 +729,7 @@ class _BPharmDegreeOngoingState extends State<BPharmDegreeOngoing> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text("Profession - Doctor", style: appBarText),
+        title: const Text("B-Pharm", style: appBarText),
         backgroundColor: mainBlue,
       ),
       body: Padding(

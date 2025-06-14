@@ -40,12 +40,12 @@ class _ProfilePictureState extends State<ProfilePicture> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildOptionButton(Icons.camera_alt, "Open Camera", mainBlue,
-                  () => takePhoto(ImageSource.camera)),
+                      () => takePhoto(ImageSource.camera)),
               _buildOptionButton(
                   Icons.image,
                   "Open Gallery",
                   const Color(0xffFF6F61),
-                  () => takePhoto(ImageSource.gallery)),
+                      () => takePhoto(ImageSource.gallery)),
             ],
           ),
         ],
@@ -113,9 +113,9 @@ class _ProfilePictureState extends State<ProfilePicture> {
                       child: ClipOval(
                         child: _imageFile == null
                             ? Image.asset(profileDefaultImg,
-                                width: 200, height: 200, fit: BoxFit.cover)
+                            width: 200, height: 200, fit: BoxFit.cover)
                             : Image.file(File(_imageFile!.path),
-                                width: 200, height: 200, fit: BoxFit.cover),
+                            width: 200, height: 200, fit: BoxFit.cover),
                       ),
                     ),
                     Positioned(

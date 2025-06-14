@@ -105,7 +105,7 @@ class _DMLTAcademicStatusState extends State<DMLTAcademicStatus> {
               _AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Diploma Ongoing',
-                onTap: () => Navigator.pushNamed(context, '/d_pharm_degree_ongoing'),
+                onTap: () => Navigator.pushNamed(context, '/dmlt_diploma_ongoing'),
               ),
               _AcademicOption(
                 icon: Icons.school,

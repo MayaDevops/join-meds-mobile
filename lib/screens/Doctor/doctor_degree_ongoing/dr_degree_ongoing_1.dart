@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/widgets/main_button.dart';
 import '../../../constants/constant.dart';
 
 class DrDegreeOngoing1 extends StatefulWidget {
@@ -626,7 +625,7 @@ class _DrDegreeOngoing1State extends State<DrDegreeOngoing1> {
     "Sikkim Manipal Institute of Medical Sciences, Gangtok",
     "SILCHAR MEDICAL COLLEGE, SILCHER",
     "Sindhudurg Shikshan Prasarak Mandal (SSPM) Medical College & Lifetime Hospital, Padave, Sindhudurg",
-    "SI-PGIMSR, Chennai, TN",
+    "SI-PGIMSR, Chennai, Tamil Nadu",
     "SKIMS MEDICAL COLLEGE, BEMINA, SRINAGAR",
     "SLBS Govt. Medical College, Mandi",
     "SMBT Institute of Medical Sciences & Research Centre, Nandihills, Nashik",

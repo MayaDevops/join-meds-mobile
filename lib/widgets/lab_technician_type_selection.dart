@@ -11,7 +11,7 @@ class LabTechnicianCourseTypeSelection extends StatefulWidget {
 }
 
 class _LabTechnicianCourseTypeSelectionState extends State<LabTechnicianCourseTypeSelection> {
-  String? nurseCourseType;
+  String? labTechCourseType;
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -20,7 +20,7 @@ class _LabTechnicianCourseTypeSelectionState extends State<LabTechnicianCourseTy
   }
 
   void _navigateBasedOnCourse() {
-    switch (nurseCourseType) {
+    switch (labTechCourseType) {
       case 'BSc MLT':
         Navigator.pushNamed(context, '/bsc_mlt_academic_status');
         break;
@@ -58,8 +58,8 @@ class _LabTechnicianCourseTypeSelectionState extends State<LabTechnicianCourseTy
         ...['BSc MLT', 'DMLT']
             .map((course) => RadioListTile<String>(
           value: course,
-          groupValue: nurseCourseType,
-          onChanged: (value) => setState(() => nurseCourseType = value),
+          groupValue: labTechCourseType,
+          onChanged: (value) => setState(() => labTechCourseType = value),
           title: Text(course, style: radioTextStyle),
         ))
             .toList(),

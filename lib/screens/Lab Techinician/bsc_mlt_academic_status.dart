@@ -183,7 +183,7 @@ class _BScMLTAcademicStatusState extends State<BScMLTAcademicStatus> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 50),
-          FormsMainHead(text: 'B-Pharm'),
+          FormsMainHead(text: 'Bsc MLT'),
           const Text(
             'Please select your academic status 🎓',
             textAlign: TextAlign.center,
@@ -200,7 +200,7 @@ class _BScMLTAcademicStatusState extends State<BScMLTAcademicStatus> {
               _AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Degree Ongoing',
-                onTap: () => Navigator.pushNamed(context, '/b-pharm_degree_ongoing'),
+                onTap: () => Navigator.pushNamed(context, '/bsc_mlt_degree_ongoing'),
               ),
               _AcademicOption(
                 icon: Icons.school,

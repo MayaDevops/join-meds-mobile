@@ -14,6 +14,7 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  bool isChecked = false;
   bool _showPassword = true;
   bool _showConfirmPassword = true;
 
@@ -31,10 +32,14 @@ class _SignUpState extends State<SignUp> {
   }
 
   String? _validateEmailOrPhone(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Required Email/Phone Number';
+    if (value == null || value.trim().isEmpty) {
+      return 'Required Email/Phone Number';
+    }
     final regex = RegExp(
         r"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)|(^\+?\d{10,15}$)");
-    return regex.hasMatch(value.trim()) ? null : 'Enter valid Email/Phone Number';
+    return regex.hasMatch(value.trim())
+        ? null
+        : 'Enter valid Email/Phone Number';
   }
 
   String? _validatePassword(String? value) {
@@ -63,7 +68,9 @@ class _SignUpState extends State<SignUp> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+          Text(label,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
           const SizedBox(height: 5),
           TextFormWidget2(
             controller: controller,
@@ -91,8 +98,17 @@ class _SignUpState extends State<SignUp> {
       final response = await UserApiService().signup(request);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Navigator.pushNamed(context, '/sign_up_loading');
-
+        if (isChecked == false) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('You must accept the terms and conditions.'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        } else {
+          // Proceed to the next step
+          Navigator.pushNamed(context, '/sign_up_loading');
+        }
       } else {
         showDialog(
           context: context,
@@ -148,7 +164,9 @@ class _SignUpState extends State<SignUp> {
                             obscureText: _showPassword,
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _showPassword ? Icons.visibility_off : Icons.visibility,
+                                _showPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: mainBlue,
                               ),
                               onPressed: () {
@@ -166,7 +184,9 @@ class _SignUpState extends State<SignUp> {
                             obscureText: _showConfirmPassword,
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _showConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                                _showConfirmPassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                                 color: mainBlue,
                               ),
                               onPressed: () {
@@ -176,6 +196,70 @@ class _SignUpState extends State<SignUp> {
                               },
                             ),
                             validator: _validateConfirmPassword,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Checkbox(
+                                      value: isChecked,
+                                      onChanged: (bool? newValue) {
+                                        setState(() {
+                                          isChecked = newValue ?? false;
+                                        });
+                                      },
+                                    ),
+                                    const Text(
+                                      'I Agree ',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                          color: inputBorderClr),
+                                    ),
+                                    InkWell(
+                                      onTap: () {
+                                        Navigator.pushNamed(context,
+                                            'user_terms_and_conditions');
+                                      },
+                                      child: Text(
+                                        'Terms and Conditions',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.blueAccent),
+                                      ),
+                                    ),
+                                    const Text(
+                                      ' &',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                          color: inputBorderClr),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    SizedBox(width: 45),
+                                    InkWell(
+                                      onTap: () {
+                                        Navigator.pushNamed(context,
+                                            'user_terms_and_conditions');
+                                      },
+                                      child: Text(
+                                        'Privacy Policy',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.blueAccent),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 30),
                         ],
@@ -203,12 +287,16 @@ class _SignUpState extends State<SignUp> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('If you have an account ', style: TextStyle(fontSize: 16)),
+                  const Text('If you have an account ',
+                      style: TextStyle(fontSize: 16)),
                   GestureDetector(
                     onTap: () => Navigator.pushNamed(context, '/login_page'),
                     child: Text(
                       'Login',
-                      style: TextStyle(fontSize: 16, color: mainBlue, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: mainBlue,
+                          fontWeight: FontWeight.w500),
                     ),
                   ),
                 ],

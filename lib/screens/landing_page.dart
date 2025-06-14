@@ -56,7 +56,7 @@ class _LandingPageState extends State<LandingPage> {
               style: TextStyle(fontSize: 18),
             ),
             GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/organisation_home'),
+              onTap: () => Navigator.pushNamed(context, '/organisation_landing'),
               child: const Text(
                 ' click here',
                 style: TextStyle(fontSize: 18, color: mainBlue),

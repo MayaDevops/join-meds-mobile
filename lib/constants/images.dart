@@ -6,6 +6,8 @@ const banner1 = 'images/banner-1.jpg';
 
 //Organisation images
 const orgBanner1 = 'images/organisation-bg1.png';
+const orgLoginBanner = 'images/organisation-bg-login.jpg';
+const orgLandingPageBanner1 = 'images/organisation-bg11110.jpg';
 const otpBanner = 'images/OTP-img.png';
 
 

@@ -152,7 +152,9 @@ class _CertificateOfSpecialisationState extends State<CertificateOfSpecialisatio
             side: const BorderSide(color: mainBlue, width: 3),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-          onPressed: (){},
+          onPressed: (){
+            Navigator.pushNamed(context, '/County_that_you_preferred_page');
+          },
           child: const Text('Skip for now', style: TextStyle(fontSize: 20.0, color: mainBlue)),
         ),
         const SizedBox(height: 20),
