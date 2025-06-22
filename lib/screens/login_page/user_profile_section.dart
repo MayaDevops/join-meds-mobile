@@ -5,6 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:untitled/screens/login_page/user_profile_settings.dart';
 import '../../constants/constant.dart';
 import '../../constants/images.dart';
+import 'package:untitled/api/user_api.dart';
+import 'package:untitled/models/user_model.dart';
+
 
 class UserProfileSection extends StatefulWidget {
   const UserProfileSection({super.key});
@@ -12,6 +15,9 @@ class UserProfileSection extends StatefulWidget {
   @override
   State<UserProfileSection> createState() => _UserProfileSectionState();
 }
+UserModel? _userModel;
+final String _userId = "ec8e6e15-0dfa-4022-bfb9-6ac6f7a36d17"; // Ideally passed from login
+
 
 class _UserProfileSectionState extends State<UserProfileSection> {
   XFile? _imageFile;
@@ -77,6 +83,22 @@ class _UserProfileSectionState extends State<UserProfileSection> {
       ),
     );
   }
+  //Profile API CALL
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  void _loadUserData() async {
+    final user = await UserApi.fetchUser(_userId);
+    if (user != null) {
+      setState(() {
+        _userModel = user;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,19 +156,10 @@ class _UserProfileSectionState extends State<UserProfileSection> {
             SizedBox(
               height: 30,
             ),
+
             Text(
-              "Name",
-              style: TextStyle(
-                  fontSize: 21,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black),
-            ),
-            Text(
-              'John',
+              _userModel?.email ?? 'Loading...',
               style: TextStyle(fontSize: 18, color: inputBorderClr),
-            ),
-            SizedBox(
-              height: 15,
             ),
             Text(
               "Profession",
@@ -177,15 +190,19 @@ class _UserProfileSectionState extends State<UserProfileSection> {
             SizedBox(
               height: 15,
             ),
+            // Text(
+            //   'Email',
+            //   style: TextStyle(
+            //       fontSize: 21,
+            //       fontWeight: FontWeight.w500,
+            //       color: Colors.black),
+            // ),
+            // Text(
+            //   'User@gmail.com',
+            //   style: TextStyle(fontSize: 18, color: inputBorderClr),
+            // ),
             Text(
-              'Email',
-              style: TextStyle(
-                  fontSize: 21,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black),
-            ),
-            Text(
-              'User@gmail.com',
+              _userModel?.email ?? 'Loading...',
               style: TextStyle(fontSize: 18, color: inputBorderClr),
             ),
 
@@ -223,7 +240,7 @@ class _UserProfileSectionState extends State<UserProfileSection> {
           ),
 
           _buildDrawerItem(Icons.edit, 'Edit Profile', () {
-            Navigator.pushNamed(context, '/organisation_edit_profile');
+            Navigator.pushNamed(context, '/personal_data');
           }),
           _buildDrawerItem(Icons.settings, 'Settings', () {
             Navigator.push(
@@ -233,8 +250,8 @@ class _UserProfileSectionState extends State<UserProfileSection> {
           }),
           const Divider(),
 
-          _buildDrawerItem(Icons.logout, 'Logout', () {
-            // Add logout logic here
+          _buildDrawerItem(Icons.logout, 'Logout', ( ) {
+            Navigator.pushNamed(context,'/landing_page');
           }),
         ],
       ),

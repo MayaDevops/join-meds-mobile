@@ -280,7 +280,7 @@ class _SignUpState extends State<SignUp> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               MainButton(
-                text: 'Sign In',
+                text: 'Sign Up',
                 onPressed: _submitSignup,
               ),
               const SizedBox(height: 15),

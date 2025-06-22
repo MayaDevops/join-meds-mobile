@@ -46,25 +46,25 @@ class _LandingPageState extends State<LandingPage> {
 
         ],
       ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.all(20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'If you are an organisation ',
-              style: TextStyle(fontSize: 18),
-            ),
-            GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/organisation_landing'),
-              child: const Text(
-                ' click here',
-                style: TextStyle(fontSize: 18, color: mainBlue),
-              ),
-            ),
-          ],
-        ),
-      ),
+      // bottomNavigationBar: Padding(
+      //   padding: EdgeInsets.all(20),
+      //   child: Row(
+      //     mainAxisAlignment: MainAxisAlignment.center,
+      //     children: [
+      //       const Text(
+      //         'If you are an organisation ',
+      //         style: TextStyle(fontSize: 18),
+      //       ),
+      //       GestureDetector(
+      //         onTap: () => Navigator.pushNamed(context, '/organisation_landing'),
+      //         child: const Text(
+      //           ' click here',
+      //           style: TextStyle(fontSize: 18, color: mainBlue),
+      //         ),
+      //       ),
+      //     ],
+      //   ),
+      // ),
     );
   }
 

@@ -15,7 +15,7 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xffD9D9D9),
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true,
         titleSpacing: 16,
         title: const Text.rich(
           TextSpan(

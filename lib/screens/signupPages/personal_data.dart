@@ -6,7 +6,8 @@ import '../../constants/constant.dart';
 import '../../widgets/repeated_headings.dart';
 import '../../widgets/text_form_fields.dart';
 import '../../models/personal_data_model.dart';
-// import '../../api/personal_data_service.dart'; // API call commented
+import '../../api/personal_data_service.dart';
+import '../../api/login_service.dart'; // Ensure this is properly implemented
 
 class PersonalData extends StatefulWidget {
   const PersonalData({super.key});
@@ -22,6 +23,28 @@ class _PersonalDataState extends State<PersonalData> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _aadhaarNumController = TextEditingController();
   final _personalDataKey = GlobalKey<FormState>();
+
+  String? userId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loginAndFetchUserId();
+  }
+
+  Future<void> _loginAndFetchUserId() async {
+    try {
+      userId = await LoginService.loginAndGetId(
+        username: '9747303943',
+        password: 'Maya123#',
+      );
+      debugPrint('Fetched userId: $userId');
+      setState(() {});
+    } catch (e) {
+      debugPrint('Login failed: \$e');
+    }
+  }
+
 
   @override
   void dispose() {
@@ -78,9 +101,7 @@ class _PersonalDataState extends State<PersonalData> {
                         controller: _nameController,
                         validator: (value) {
                           if (value!.isEmpty) return 'Name is required';
-                          if (!RegExp(r"^[a-zA-Z\s]+$").hasMatch(value)) {
-                            return 'Enter a valid name';
-                          }
+
                           if (value.length < 3) return 'Name too short';
                           return null;
                         },
@@ -132,10 +153,7 @@ class _PersonalDataState extends State<PersonalData> {
                         validator: (value) {
                           if (value == null || value.isEmpty)
                             return 'Email is required';
-                          if (!RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w]{2,4}")
-                              .hasMatch(value)) {
-                            return 'Invalid email';
-                          }
+
                           return null;
                         },
                         keyboardType: TextInputType.emailAddress,
@@ -150,9 +168,7 @@ class _PersonalDataState extends State<PersonalData> {
                           if (value == null || value.isEmpty)
                             return 'Address required';
                           if (value.length < 5) return 'Address too short';
-                          if (!RegExp(r"^[a-zA-Z0-9\s,.-]+$").hasMatch(value)) {
-                            return 'Invalid characters in address';
-                          }
+
                           return null;
                         },
                         keyboardType: TextInputType.text,
@@ -171,27 +187,24 @@ class _PersonalDataState extends State<PersonalData> {
                       MainButton(
                         text: 'Continue',
                         onPressed: () async {
-                          if (_personalDataKey.currentState!.validate()) {
+                          if (_personalDataKey.currentState!.validate() && userId != null) {
                             final data = PersonalDataModel(
                               fullname: _nameController.text.trim(),
                               dob: _dobController.text.trim(),
                               email: _emailController.text.trim(),
                               address: _addressController.text.trim(),
                               aadhaarNo: _aadhaarNumController.text.trim(),
+                              userId: userId!,
                             );
 
-                            // Commented out API call
-                            // bool success = await PersonalDataService.savePersonalData(data);
-                            // if (success) {
-                            //   Navigator.pushNamed(context, '/profile_picture');
-                            // } else {
-                            //   ScaffoldMessenger.of(context).showSnackBar(
-                            //     SnackBar(content: Text('Failed to submit data')),
-                            //   );
-                            // }
-
-                            // Temporary navigation to next page for testing
-                            Navigator.pushNamed(context, '/profile_picture');
+                            bool success = await PersonalDataService.updatePersonalData(userId!, data);
+                            if (success) {
+                              Navigator.pushNamed(context, '/profile_picture');
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed to submit data')),
+                              );
+                            }
                           }
                         },
                       ),
