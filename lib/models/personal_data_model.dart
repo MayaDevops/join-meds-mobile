@@ -79,6 +79,7 @@ class PersonalDataModel {
 
   Map<String, dynamic> toJson() {
     return {
+      "fullname": fullname,
       "dob": dob,
       "email": email,
       "address": address,

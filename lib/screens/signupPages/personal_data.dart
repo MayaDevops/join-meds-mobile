@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:untitled/constants/images.dart';
@@ -35,8 +37,8 @@ class _PersonalDataState extends State<PersonalData> {
   Future<void> _loginAndFetchUserId() async {
     try {
       userId = await LoginService.loginAndGetId(
-        username: '9747303943',
-        password: 'Maya123#',
+        username: 'wq@gmail.com',
+        password: 'Qq12345678#',
       );
       debugPrint('Fetched userId: $userId');
       setState(() {});
@@ -146,20 +148,20 @@ class _PersonalDataState extends State<PersonalData> {
                           focusedErrorBorder: focusedErrorBorder,
                         ),
                       ),
-                      SizedBox(height: 15),
-                      LabelText(labelText: 'Email'),
-                      TextFormWidget(
-                        controller: _emailController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty)
-                            return 'Email is required';
-
-                          return null;
-                        },
-                        keyboardType: TextInputType.emailAddress,
-                        hintText: 'Enter Email',
-                        obscureText: false,
-                      ),
+                      // SizedBox(height: 15),
+                      // LabelText(labelText: 'Email'),
+                      // TextFormWidget(
+                      //   controller: _emailController,
+                      //   validator: (value) {
+                      //     if (value == null || value.isEmpty)
+                      //       return 'Email is required';
+                      //
+                      //     return null;
+                      //   },
+                      //   keyboardType: TextInputType.emailAddress,
+                      //   hintText: 'Enter Email',
+                      //   obscureText: false,
+                      // ),
                       SizedBox(height: 15),
                       LabelText(labelText: 'Address'),
                       TextFormWidget(
@@ -196,7 +198,7 @@ class _PersonalDataState extends State<PersonalData> {
                               aadhaarNo: _aadhaarNumController.text.trim(),
                               userId: userId!,
                             );
-
+                            debugPrint("Signup Request JSON: ${jsonEncode(data.toJson())}");
                             bool success = await PersonalDataService.updatePersonalData(userId!, data);
                             if (success) {
                               Navigator.pushNamed(context, '/profile_picture');

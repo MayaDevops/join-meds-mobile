@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class LoginService {
-  static const String _loginUrl = 'http://joinmeds.in:8082/api/user/login';
+  static const String _loginUrl = 'https://api.joinmeds.in/api/user/login';
 
   // Function to log in user and get userId
   static Future<String?> loginAndGetId({

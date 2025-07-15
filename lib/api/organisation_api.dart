@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/organisation_signup_model.dart';
 
 class OrganisationApi {
-  static const String baseUrl = 'http://joinmeds.in:8082/api';
+  static const String baseUrl = 'https://api.joinmeds.in/api';
 
   static Future<http.Response> signupOrganisation(OrganisationSignup data) async {
     final url = Uri.parse('$baseUrl/user/signup');

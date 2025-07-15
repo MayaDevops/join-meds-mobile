@@ -7,7 +7,7 @@ class ApiService {
   Future<Response> login(LoginRequest loginRequest) async {
     try {
       Response response = await _dio.post(
-        'http://joinmeds.in:8082/api/user/login',
+        'https://api.joinmeds.in/api/user/login',
         data: loginRequest.toJson(),
         options: Options(
           headers: {

@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:untitled/api/organisation_api.dart'; // API temporarily not in use
-// import 'package:untitled/models/organisation_signup_model.dart'; // Model for API call
-
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/widgets/main_button.dart';
 import 'package:untitled/widgets/repeated_headings.dart';
@@ -9,26 +6,27 @@ import 'package:untitled/widgets/text_form_fields.dart';
 
 import '../../constants/constant.dart';
 import '../../constants/organisation_datas.dart';
-import 'organisation_home.dart';
+import '../../api/organisation_api.dart';
+import '../../models/organisation_signup_model.dart';
 
-class OrganisationSingUp extends StatefulWidget {
-  const OrganisationSingUp({super.key});
+class OrganisationSignUp extends StatefulWidget {
+  const OrganisationSignUp({super.key});
 
   @override
-  State<OrganisationSingUp> createState() => _OrganisationSingUpState();
+  State<OrganisationSignUp> createState() => _OrganisationSignUpState();
 }
 
-class _OrganisationSingUpState extends State<OrganisationSingUp> {
+class _OrganisationSignUpState extends State<OrganisationSignUp> {
   bool isChecked = false;
+  bool isLoading = false;
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _orgNameController = TextEditingController();
-  final TextEditingController _registeredLocationController =
-      TextEditingController();
+  final TextEditingController _registeredLocationController = TextEditingController();
   final TextEditingController _orgEmailController = TextEditingController();
   final TextEditingController _orgLLPNumController = TextEditingController();
-  // final TextEditingController _orgPasswordController = TextEditingController();
-  // final TextEditingController _orgConfpasswordController = TextEditingController();
+  final TextEditingController _orgPasswordController = TextEditingController();
+  final TextEditingController _orgConfpasswordController = TextEditingController();
 
   @override
   void dispose() {
@@ -36,8 +34,8 @@ class _OrganisationSingUpState extends State<OrganisationSingUp> {
     _registeredLocationController.dispose();
     _orgEmailController.dispose();
     _orgLLPNumController.dispose();
-    // _orgPasswordController.dispose();
-    // _orgConfpasswordController.dispose();
+    _orgPasswordController.dispose();
+    _orgConfpasswordController.dispose();
     super.dispose();
   }
 
@@ -56,57 +54,54 @@ class _OrganisationSingUpState extends State<OrganisationSingUp> {
   }
 
   void _validateAndProceed() async {
-    if (_formKey.currentState!.validate()) {
-      // Save organisation name globally
-      OrganisationNameData().organisationName = _orgNameController.text.trim();
-      OrganisationRegisteredLocation().organisationLocation =
-          _registeredLocationController.text.trim();
-      OrganisationOfficialEmail().organisationEmail =
-          _orgEmailController.text.trim();
-      OrganisationIncorporationNumber().organisationIncorporationNo =
-          _orgLLPNumController.text.trim();
-      // Prepare organisation data (for future API use)
-      /*
-      final data = OrganisationSignup(
-        orgName: _orgNameController.text.trim(),
-        officialEmail: _orgEmailController.text.trim(),
-        officialPhone: "9999999999", // placeholder
-        incorporationNo: _orgLLPNumController.text.trim(),
-        emailMobile: _orgEmailController.text.trim(), // assume same
-        // password: _orgPasswordController.trim(),
-        // confPassword: _orgConfpasswordController.trim(),
-        createdAt: DateTime.now().toIso8601String(),
-        userType: "organisation",
+    if (!_formKey.currentState!.validate()) return;
+
+    if (!isChecked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You must accept the terms and conditions.'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
-      */
+      return;
+    }
 
-      try {
-        // Call signup API (currently disabled)
-        /*
-        final response = await OrganisationApi.signupOrganisation(data);
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          Navigator.pushNamed(context, '/org_phone_number');
-        } else {
-          _showErrorDialog(
-              'Signup failed: ${response.statusCode}\n${response.body}');
-        }
-        */
+    if (_orgPasswordController.text.trim() != _orgConfpasswordController.text.trim()) {
+      _showErrorDialog('Passwords do not match.');
+      return;
+    }
 
-        // Temporary navigation until API is implemented
-        if (isChecked == false) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('You must accept the terms and conditions.'),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
-        } else {
-          // Proceed to the next step
-          Navigator.pushNamed(context, '/org_phone_number');
-        }
-      } catch (e) {
-        _showErrorDialog('An error occurred: $e');
+    setState(() => isLoading = true);
+
+    // Save data globally
+    OrganisationNameData().organisationName = _orgNameController.text.trim();
+    OrganisationRegisteredLocation().organisationLocation = _registeredLocationController.text.trim();
+    OrganisationOfficialEmail().organisationEmail = _orgEmailController.text.trim();
+    OrganisationIncorporationNumber().organisationIncorporationNo = _orgLLPNumController.text.trim();
+
+    final data = OrganisationSignup(
+      orgName: _orgNameController.text.trim(),
+      officialEmail: _orgEmailController.text.trim(),
+      officialPhone: "9999999999", // placeholder
+      incorporationNo: _orgLLPNumController.text.trim(),
+      emailMobile: _orgEmailController.text.trim(),
+      password: _orgPasswordController.text.trim(),
+      confPassword: _orgConfpasswordController.text.trim(),
+      createdAt: DateTime.now().toIso8601String(),
+      userType: "organisation",
+    );
+
+    try {
+      final response = await OrganisationApi.signupOrganisation(data);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Navigator.pushNamed(context, '/org_phone_number');
+      } else {
+        _showErrorDialog('Signup failed: ${response.statusCode}\n${response.body}');
       }
+    } catch (e) {
+      _showErrorDialog('An error occurred: $e');
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
@@ -138,8 +133,7 @@ class _OrganisationSingUpState extends State<OrganisationSingUp> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Image.asset(orgBanner1,
-                      fit: BoxFit.cover, width: double.infinity),
+                  Image.asset(orgBanner1, fit: BoxFit.cover, width: double.infinity),
                   Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Form(
@@ -159,22 +153,19 @@ class _OrganisationSingUpState extends State<OrganisationSingUp> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            MainButton(text: 'Continue', onPressed: _validateAndProceed),
+            isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : MainButton(text: 'Continue', onPressed: _validateAndProceed),
             const SizedBox(height: 15),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('If you have an account ',
-                    style: TextStyle(fontSize: 16)),
+                const Text('If you have an account ', style: TextStyle(fontSize: 16)),
                 GestureDetector(
-                  onTap: () =>
-                      Navigator.pushNamed(context, '/organisation_login'),
+                  onTap: () => Navigator.pushNamed(context, '/organisation_login'),
                   child: Text(
                     ' Login',
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: mainBlue,
-                        fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 16, color: mainBlue, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
@@ -190,73 +181,72 @@ class _OrganisationSingUpState extends State<OrganisationSingUp> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         LabelText(labelText: 'Name of Business/Organisation'),
-        _buildTextField(_orgNameController, 'Name',
-            minLength: 3, hintText: 'Enter Business/Organisation Name'),
+        _buildTextField(_orgNameController, 'Name', minLength: 3, hintText: 'Enter Business/Organisation Name'),
         const SizedBox(height: 15),
+
         LabelText(labelText: "Company's Registered Location"),
-        _buildTextField(_registeredLocationController, 'Location',
-            minLength: 3, hintText: 'Eg: Thiruvananthapuram,Kerala'),
+        _buildTextField(_registeredLocationController, 'Location', minLength: 3, hintText: 'Eg: Thiruvananthapuram, Kerala'),
         const SizedBox(height: 15),
+
         LabelText(labelText: 'Official Email Id'),
-        _buildTextField(_orgEmailController, 'Email',
-            pattern: r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-            errorMessage: 'Enter a valid email address',
-            keyboardType: TextInputType.emailAddress,
-            hintText: 'Enter Official Email Id'),
+        _buildTextField(
+          _orgEmailController,
+          'Email',
+          pattern: r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+          errorMessage: 'Enter a valid email address',
+          keyboardType: TextInputType.emailAddress,
+          hintText: 'Enter Official Email Id',
+        ),
         const SizedBox(height: 15),
+
         LabelText(labelText: 'Company / LLP Incorporation No.'),
-        _buildTextField(_orgLLPNumController, 'Incorporation No.',
-            minLength: 5, hintText: 'Enter Incorporation No.'),
+        _buildTextField(_orgLLPNumController, 'Incorporation No.', minLength: 5, hintText: 'Enter Incorporation No.'),
         const SizedBox(height: 15),
+
+        LabelText(labelText: 'Password'),
+        _buildTextField(_orgPasswordController, 'Password', minLength: 6, hintText: 'Enter password', obscureText: true),
+        const SizedBox(height: 15),
+
+        LabelText(labelText: 'Confirm Password'),
+        _buildTextField(_orgConfpasswordController, 'Confirm Password', minLength: 6, hintText: 'Re-enter password', obscureText: true),
+        const SizedBox(height: 15),
+
         Row(
           children: [
             Checkbox(
               value: isChecked,
               onChanged: (bool? newValue) {
-                setState(() {
-                  isChecked = newValue ?? false;
-                });
+                setState(() => isChecked = newValue ?? false);
               },
             ),
-            const Text(
-              'I Agree ',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: inputBorderClr),
-            ),
+            const Text('I Agree ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: inputBorderClr)),
             InkWell(
-              onTap: (){
-                Navigator.pushNamed(context, 'organisation_terms_and_conditions');
-              },
-              child: Text(
+              onTap: () => Navigator.pushNamed(context, 'organisation_terms_and_conditions'),
+              child: const Text(
                 'Terms and Conditions',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.blueAccent),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.blueAccent),
               ),
             ),
           ],
         ),
-
       ],
     );
   }
 
   Widget _buildTextField(TextEditingController controller, String fieldName,
       {int minLength = 1,
-      String? pattern,
-      String? errorMessage,
-      TextInputType? keyboardType,
-      String? hintText}) {
+        String? pattern,
+        String? errorMessage,
+        TextInputType? keyboardType,
+        String? hintText,
+        bool obscureText = false}) {
     return TextFormWidget(
       controller: controller,
       validator: (value) => _validateField(value, fieldName,
           minLength: minLength, pattern: pattern, errorMessage: errorMessage),
       keyboardType: keyboardType ?? TextInputType.text,
       hintText: hintText ?? '',
-      obscureText: false,
+      obscureText: obscureText,
     );
   }
 }

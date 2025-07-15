@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/personal_data_model.dart';
 
 class PersonalDataService {
-  static const String _baseUrl = 'http://joinmeds.in:8082/api/user-details';
+  static const String _baseUrl = 'https://api.joinmeds.in/api/user-details';
 
   /// Save new personal data (POST)
   static Future<bool> savePersonalData(PersonalDataModel data) async {

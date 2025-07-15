@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:untitled/widgets/text_form_widget2.dart';
 import '../../constants/constant.dart';
@@ -54,6 +56,7 @@ class _SignUpState extends State<SignUp> {
     return null;
   }
 
+
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
@@ -86,29 +89,73 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
+  // Future<void> _submitSignup() async {
+  //   if (_signInKey.currentState!.validate()) {
+  //     final request = SignupRequest(
+  //       username: _emailPhoneController.text, // Modify this as needed
+  //       password: _passwordController.text,
+  //       confirmPassword: _confirmPasswordController.text,
+  //       emailMobile: _emailPhoneController.text,
+  //     );
+  //
+  //     final response = await UserApiService().signup(request);
+  //
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       if (isChecked == false) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(
+  //             content: Text('You must accept the terms and conditions.'),
+  //             backgroundColor: Colors.redAccent,
+  //           ),
+  //         );
+  //       } else {
+  //         // Proceed to the next step
+  //         Navigator.pushNamed(context, '/sign_up_loading');
+  //       }
+  //     } else {
+  //       showDialog(
+  //         context: context,
+  //         builder: (context) => AlertDialog(
+  //           title: const Text("Signup Failed"),
+  //           content: Text("Error: ${response.body}"),
+  //           actions: [
+  //             TextButton(
+  //               child: const Text("OK"),
+  //               onPressed: () => Navigator.pop(context),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     }
+  //   }
+  // }
   Future<void> _submitSignup() async {
     if (_signInKey.currentState!.validate()) {
       final request = SignupRequest(
-        username: _emailPhoneController.text, // Modify this as needed
+        orgName: "", // Replace or get from UI
+        officialEmail: "", // Replace or get from UI
+        officialPhone: "", // Replace or get from UI
+        incorporationNo: "", // Replace or get from UI
+        emailMobile: _emailPhoneController.text,
         password: _passwordController.text,
         confirmPassword: _confirmPasswordController.text,
-        emailMobile: _emailPhoneController.text,
-      );
+        createdAt: "",
+        userType: "CITIZEN",
 
+      );
+      debugPrint("Signup Request JSON: ${jsonEncode(request.toJson())}");
       final response = await UserApiService().signup(request);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (isChecked == false) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('You must accept the terms and conditions.'),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
-        } else {
-          // Proceed to the next step
-          Navigator.pushNamed(context, '/sign_up_loading');
-        }
+
+      if ((response.statusCode == 200 || response.statusCode == 201) && isChecked) {
+        Navigator.pushNamed(context, '/sign_up_loading');
+      } else if (!isChecked) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You must accept the terms and conditions.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       } else {
         showDialog(
           context: context,

@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/user_model.dart';
 
 class UserApi {
-  static const String _baseUrl = 'http://joinmeds.in:8082/api/user/user-fetch';
+  static const String _baseUrl = 'https://api.joinmeds.in/api/user/user-fetch';
 
   static Future<UserModel?> fetchUser(String userId) async {
     final url = Uri.parse('$_baseUrl/$userId');

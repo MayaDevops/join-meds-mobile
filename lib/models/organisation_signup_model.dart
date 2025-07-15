@@ -4,8 +4,8 @@ class OrganisationSignup {
   final String officialPhone;
   final String incorporationNo;
   final String emailMobile;
-  //final String password;
-  //final String confPassword;
+  final String password;
+  final String confPassword;
   final String createdAt;
   final String userType;
 
@@ -15,8 +15,8 @@ class OrganisationSignup {
     required this.officialPhone,
     required this.incorporationNo,
     required this.emailMobile,
-    //required this.password,
-   // required this.confPassword,
+    required this.password,
+   required this.confPassword,
     required this.createdAt,
     required this.userType,
   });
@@ -28,8 +28,8 @@ class OrganisationSignup {
     "incorporationNo": incorporationNo,
     "emailMobile": emailMobile,
     "createdAt": createdAt,
-    //"password": password,
- //   "confPassword": confPassword,
+    "password": password,
+    "confPassword": confPassword,
     "userType": userType,
   };
 }

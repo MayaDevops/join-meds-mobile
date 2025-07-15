@@ -111,15 +111,13 @@ void main() {
         const UserViewJobDetails(), //User view job details
         'user_notifications': (context) =>
         const UserNotification(), //User notifications
-
-
         //Organisation Pages starts here
         '/organisation_login': (context) =>
         const OrganisationLogin(), // Organisation Login Page of the App
         '/organisation_landing': (context) =>
         const OrganisationLandingPage(), // Organisation Landing Page of the App for login and sign up
         '/organisation_sing_up': (context) =>
-            const OrganisationSingUp(), // Organisation sign up Page of the App
+            const OrganisationSignUp(), // Organisation sign up Page of the App
         '/organisation_otp': (context) =>
             const OrganisationOtpPage(), // Organisation OTP Page of the App
         '/org_phone_number': (context) =>
