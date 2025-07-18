@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:untitled/widgets/repeated_headings.dart';
 import '../../constants/constant.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NurseAcademicStatus extends StatefulWidget {
   const NurseAcademicStatus({super.key});
@@ -11,11 +14,50 @@ class NurseAcademicStatus extends StatefulWidget {
 
 class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
   String? postGraduation;
+  String? userId;
+  String? profession;
+  String academicStatus = 'Degree Completed';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserId();
+  }
+
+  Future<void> _loadUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userId = prefs.getString('userId');
+      profession = prefs.getString('profession') ?? 'Nurse';
+    });
+  }
 
   void _handleSubmit() async {
     if (postGraduation == null) {
       _showSnackBar('Please select a profession', Colors.red);
       return;
+    }
+
+    if (userId != null) {
+      final Map<String, dynamic> requestData = {
+        "academicStatus": academicStatus,
+        "pgStatus": postGraduation,
+      };
+
+      final response = await http.put(
+        Uri.parse("https://api.joinmeds.in/api/user-details/update/$userId"),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(requestData),
+
+      );
+
+      if (response.statusCode != 200) {
+        _showSnackBar('Failed to update details', Colors.red);
+        debugPrint("why failed: ${requestData}");
+        return;
+      }
     }
 
     if (postGraduation == 'PG-Holder') {
@@ -31,13 +73,10 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
 
       if (workExpStatus == null) return;
 
-      // Navigate based on work experience status
       if (workExpStatus == 'No') {
-        Navigator.pushNamed(context,
-            '/County_that_you_preferred_page'); // Navigate to preferred country page
+        Navigator.pushNamed(context, '/County_that_you_preferred_page');
       } else {
-        Navigator.pushNamed(
-            context, '/work_experience'); // Navigate to work experience page
+        Navigator.pushNamed(context, '/work_experience');
       }
     }
   }
@@ -109,8 +148,7 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
               _AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Degree Ongoing',
-                onTap: () =>
-                    Navigator.pushNamed(context, '/nurse_degree_ongoing'),
+                onTap: () => Navigator.pushNamed(context, '/nurse_degree_ongoing'),
               ),
               _AcademicOption(
                 icon: Icons.school,
@@ -300,7 +338,7 @@ class _OptionBottomSheet extends StatelessWidget {
             padding: const EdgeInsets.only(top: 30, bottom: 20),
             decoration: const BoxDecoration(
               border:
-                  Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
+              Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(25),
                 topRight: Radius.circular(25),
@@ -348,7 +386,7 @@ class _OptionBottomSheet extends StatelessWidget {
               backgroundColor: mainBlue,
               padding: const EdgeInsets.all(15),
               shape:
-                  const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
             ),
             child: const Text('Save',
                 style: TextStyle(fontSize: 20, color: Colors.white)),

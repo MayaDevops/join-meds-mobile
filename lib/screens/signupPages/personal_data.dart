@@ -1,7 +1,7 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/widgets/main_button.dart';
 import '../../constants/constant.dart';
@@ -9,7 +9,6 @@ import '../../widgets/repeated_headings.dart';
 import '../../widgets/text_form_fields.dart';
 import '../../models/personal_data_model.dart';
 import '../../api/personal_data_service.dart';
-import '../../api/login_service.dart'; // Ensure this is properly implemented
 
 class PersonalData extends StatefulWidget {
   const PersonalData({super.key});
@@ -25,28 +24,41 @@ class _PersonalDataState extends State<PersonalData> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _aadhaarNumController = TextEditingController();
   final _personalDataKey = GlobalKey<FormState>();
-
   String? userId;
 
   @override
   void initState() {
     super.initState();
-    _loginAndFetchUserId();
+    _loadUserIdFromPrefs();
   }
 
-  Future<void> _loginAndFetchUserId() async {
-    try {
-      userId = await LoginService.loginAndGetId(
-        username: 'wq@gmail.com',
-        password: 'Qq12345678#',
-      );
-      debugPrint('Fetched userId: $userId');
-      setState(() {});
-    } catch (e) {
-      debugPrint('Login failed: \$e');
+  Future<void> _loadUserIdFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getString('userId');
+    if (id != null) {
+      setState(() {
+        userId = id;
+      });
+      _fetchAndFillPersonalData(id);
     }
   }
 
+  Future<void> _fetchAndFillPersonalData(String userId) async {
+    try {
+      final response = await PersonalDataService.getPersonalData(userId);
+      if (response != null) {
+        setState(() {
+          _nameController.text = response.fullname ?? '';
+          _dobController.text = response.dob ?? '';
+          _emailController.text = response.email ?? '';
+          _addressController.text = response.address ?? '';
+          _aadhaarNumController.text = response.aadhaarNo ?? '';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching personal data: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -103,7 +115,6 @@ class _PersonalDataState extends State<PersonalData> {
                         controller: _nameController,
                         validator: (value) {
                           if (value!.isEmpty) return 'Name is required';
-
                           if (value.length < 3) return 'Name too short';
                           return null;
                         },
@@ -148,20 +159,21 @@ class _PersonalDataState extends State<PersonalData> {
                           focusedErrorBorder: focusedErrorBorder,
                         ),
                       ),
-                      // SizedBox(height: 15),
-                      // LabelText(labelText: 'Email'),
-                      // TextFormWidget(
-                      //   controller: _emailController,
-                      //   validator: (value) {
-                      //     if (value == null || value.isEmpty)
-                      //       return 'Email is required';
-                      //
-                      //     return null;
-                      //   },
-                      //   keyboardType: TextInputType.emailAddress,
-                      //   hintText: 'Enter Email',
-                      //   obscureText: false,
-                      // ),
+                      SizedBox(height: 15),
+                      LabelText(labelText: 'Email'),
+                      TextFormWidget(
+                        controller: _emailController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty)
+                            return 'Email required';
+                          if (!RegExp(r'\S+@\S+\.\S+').hasMatch(value))
+                            return 'Enter valid email';
+                          return null;
+                        },
+                        hintText: 'Enter Email',
+                        keyboardType: TextInputType.emailAddress,
+                        obscureText: false,
+                      ),
                       SizedBox(height: 15),
                       LabelText(labelText: 'Address'),
                       TextFormWidget(
@@ -170,7 +182,6 @@ class _PersonalDataState extends State<PersonalData> {
                           if (value == null || value.isEmpty)
                             return 'Address required';
                           if (value.length < 5) return 'Address too short';
-
                           return null;
                         },
                         keyboardType: TextInputType.text,
@@ -189,16 +200,17 @@ class _PersonalDataState extends State<PersonalData> {
                       MainButton(
                         text: 'Continue',
                         onPressed: () async {
-                          if (_personalDataKey.currentState!.validate() && userId != null) {
+                          if (_personalDataKey.currentState!.validate() &&
+                              userId != null) {
                             final data = PersonalDataModel(
                               fullname: _nameController.text.trim(),
                               dob: _dobController.text.trim(),
                               email: _emailController.text.trim(),
                               address: _addressController.text.trim(),
                               aadhaarNo: _aadhaarNumController.text.trim(),
-                              userId: userId!,
+                              userId: userId!
                             );
-                            debugPrint("Signup Request JSON: ${jsonEncode(data.toJson())}");
+                            debugPrint("Submitting JSON: ${jsonEncode(data.toJson())}");
                             bool success = await PersonalDataService.updatePersonalData(userId!, data);
                             if (success) {
                               Navigator.pushNamed(context, '/profile_picture');

@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/widgets/text_form_widget2.dart';
 import '../../constants/constant.dart';
 import '../../constants/images.dart';
@@ -87,10 +90,17 @@ class _LoginPageState extends State<LoginPage> {
         final response = await ApiService().login(loginRequest);
 
         if (response.statusCode == 200) {
+          // ✅ Use response.data directly, no jsonDecode
+          final responseBody = response.data;
+          final userId = responseBody['id']; // Adjust this key as needed
+
+          if (userId != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('userId', userId.toString());
+            debugPrint('✅ userId stored: $userId');
+          }
 
           Navigator.pushReplacementNamed(context, '/login_page_loading');
-
-          // TODO: Navigate or store token here
         } else {
           print('❌ Login failed: ${response.statusCode} - ${response.data}');
           ScaffoldMessenger.of(context).showSnackBar(
@@ -98,12 +108,6 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
       } on DioException catch (dioError) {
-        print('❗ DioException caught:');
-        print('Message: ${dioError.message}');
-        print('Response: ${dioError.response}');
-        print('Type: ${dioError.type}');
-        print('StackTrace: ${dioError.stackTrace}');
-
         String message = 'Unknown error';
         if (dioError.response != null) {
           message =
@@ -124,6 +128,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
   }
+
 
 
   @override

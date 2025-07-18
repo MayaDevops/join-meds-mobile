@@ -1,58 +1,60 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/personal_data_model.dart';
 
 class PersonalDataService {
-  static const String _baseUrl = 'https://api.joinmeds.in/api/user-details';
+  static Future<PersonalDataModel?> getPersonalData(String userId) async {
+    final url = Uri.parse(
+        'http://api.joinmeds.in/api/user-details/$userId?userId=$userId');
 
-  /// Save new personal data (POST)
-  static Future<bool> savePersonalData(PersonalDataModel data) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$_baseUrl/save'),
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': '*/*',
-        },
-        body: jsonEncode(data.toJson()),
-      );
+    final response = await http.get(url, headers: {
+      'accept': '*/*',
+    });
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return true;
-      } else {
-        print('Failed to save data: ${response.statusCode}');
-        return false;
-      }
-    } catch (e) {
-      print('Error saving personal data: $e');
-      return false;
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+
+      // ✅ Parse the full object directly, not jsonData['data']
+      return PersonalDataModel.fromJson(jsonData);
+    } else {
+      debugPrint('Failed to load user data: ${response.statusCode}');
+      return null;
     }
   }
 
-  /// Update existing personal data (PUT)
-  static Future<bool> updatePersonalData(String userId, PersonalDataModel data) async {
-    try {
-      final uri = Uri.parse('$_baseUrl/update/$userId?userId=$userId');
 
-      final response = await http.put(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': '*/*',
-        },
-        body: jsonEncode(data.toJson()),
-      );
+  static Future<bool> updatePersonalData(String userId,
+      PersonalDataModel data) async {
+    final url = Uri.parse(
+        'https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId');
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(data.toJson()),
+    );
 
-      if (response.statusCode == 200) {
-        print('Data updated successfully');
-        return true;
-      } else {
-        print('Failed to update data: ${response.statusCode}');
-        return false;
+    debugPrint('PUT status: ${response.statusCode}');
+    debugPrint('PUT response body: ${response.body}');
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final json = jsonDecode(response.body);
+
+      // ✅ Save photoId & resumeId to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      if (json['photoId'] != null) {
+        prefs.setString('photoId', json['photoId']);
+        debugPrint("Saved photoId: ${json['photoId']}");
       }
-    } catch (e) {
-      print('Error updating personal data: $e');
-      return false;
+      if (json['resumeId'] != null) {
+        prefs.setString('resumeId', json['resumeId']);
+        debugPrint("Saved resumeId: ${json['resumeId']}");
+      }
+
+      return true;
     }
+
+    return false;
   }
 }
