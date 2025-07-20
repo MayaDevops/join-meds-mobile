@@ -87,7 +87,7 @@ class _ProfilePictureState extends State<ProfilePicture> {
     request.files.add(await http.MultipartFile.fromPath('file', _imageFile!.path));
 
     final response = await request.send();
-    debugPrint('Upload status code: ${response.statusCode}');
+    debugPrint('Image size should below 1 MB: ${response.statusCode}');
     return response.statusCode == 200 || response.statusCode == 201;
   }
 
@@ -212,7 +212,7 @@ class _ProfilePictureState extends State<ProfilePicture> {
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Failed to upload profile picture'),
+                                content: Text('Image size should below 1 MB'),
                                 backgroundColor: Colors.redAccent,
                               ),
                             );

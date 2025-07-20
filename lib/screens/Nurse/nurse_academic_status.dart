@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/widgets/repeated_headings.dart';
 import '../../constants/constant.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class NurseAcademicStatus extends StatefulWidget {
   const NurseAcademicStatus({super.key});
@@ -17,47 +17,88 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
   String? userId;
   String? profession;
   String academicStatus = 'Degree Completed';
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadUserId();
+    _loadUserIdAndFetch();
   }
 
-  Future<void> _loadUserId() async {
+  Future<void> _loadUserIdAndFetch() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      userId = prefs.getString('userId');
-      profession = prefs.getString('profession') ?? 'Nurse';
-    });
+    userId = prefs.getString('userId');
+    profession = prefs.getString('profession') ?? 'Nurse';
+
+    if (userId != null) {
+      final url = Uri.parse("https://api.joinmeds.in/api/user-details/$userId?userId=$userId");
+      try {
+        final response = await http.get(url);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          setState(() {
+            academicStatus = data['academicStatus'] ?? 'Degree Completed';
+            postGraduation = data['pgStatus'];
+            isLoading = false;
+          });
+        } else {
+          _showSnackBar('Failed to fetch user data', Colors.red);
+          setState(() => isLoading = false);
+        }
+      } catch (e) {
+        _showSnackBar('Error: $e', Colors.red);
+        setState(() => isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _updateStatusAndNavigate(String status) async {
+    academicStatus = status;
+
+    final Map<String, dynamic> requestData = {
+      "academicStatus": academicStatus,
+      "pgStatus": postGraduation,
+      "userId": userId
+    };
+
+    final response = await http.put(
+      Uri.parse("https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId"),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(requestData),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      if (status == 'Degree Ongoing') {
+        Navigator.pushNamed(context, '/nurse_degree_ongoing');
+      } else if (status == 'Degree Completed') {
+        _openPostGraduationSheet();
+      }
+    } else {
+      _showSnackBar('Failed to update academic status', Colors.red);
+    }
   }
 
   void _handleSubmit() async {
     if (postGraduation == null) {
-      _showSnackBar('Please select a profession', Colors.red);
+      _showSnackBar('Please select post-graduation status', Colors.red);
       return;
     }
 
-    if (userId != null) {
-      final Map<String, dynamic> requestData = {
-        "academicStatus": academicStatus,
-        "pgStatus": postGraduation,
-      };
+    final Map<String, dynamic> requestData = {
+      "academicStatus": academicStatus,
+      "pgStatus": postGraduation,
+      "userId": userId
+    };
 
-      final response = await http.put(
-        Uri.parse("https://api.joinmeds.in/api/user-details/update/$userId"),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(requestData),
+    final response = await http.put(
+      Uri.parse("https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId"),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(requestData),
+    );
 
-      );
-
-      if (response.statusCode != 200) {
-        _showSnackBar('Failed to update details', Colors.red);
-        debugPrint("why failed: ${requestData}");
-        return;
-      }
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      _showSnackBar('Failed to update details', Colors.red);
+      return;
     }
 
     if (postGraduation == 'PG-Holder') {
@@ -113,6 +154,7 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       builder: (_) => _PostGraduationSheet(
+        initialValue: postGraduation,
         onChanged: (value) => setState(() => postGraduation = value),
         onSave: _handleSubmit,
       ),
@@ -121,7 +163,9 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: const Text("Academic Status", style: appBarText),
@@ -131,7 +175,7 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 50),
-          FormsMainHead(text: 'Bsc Nursing'),
+          FormsMainHead(text: 'BSc Nursing'),
           const Text(
             'Please select your academic status 🎓',
             textAlign: TextAlign.center,
@@ -148,12 +192,12 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
               _AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Degree Ongoing',
-                onTap: () => Navigator.pushNamed(context, '/nurse_degree_ongoing'),
+                onTap: () => _updateStatusAndNavigate('Degree Ongoing'),
               ),
               _AcademicOption(
                 icon: Icons.school,
                 label: 'Degree Completed',
-                onTap: _openPostGraduationSheet,
+                onTap: () => _updateStatusAndNavigate('Degree Completed'),
               ),
             ],
           ),
@@ -207,17 +251,19 @@ class _AcademicOption extends StatelessWidget {
 }
 
 class _PostGraduationSheet extends StatelessWidget {
+  final String? initialValue;
   final ValueChanged<String?> onChanged;
   final VoidCallback onSave;
 
   const _PostGraduationSheet({
     required this.onChanged,
     required this.onSave,
+    required this.initialValue,
   });
 
   @override
   Widget build(BuildContext context) {
-    String? selectedValue;
+    String? selectedValue = initialValue;
 
     return StatefulBuilder(
       builder: (context, setState) => SafeArea(

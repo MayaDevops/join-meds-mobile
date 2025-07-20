@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../constants/constant.dart';
 import '../../../../widgets/repeated_headings.dart';
-import '../../../../widgets/text_form_fields.dart';
 
 class SelectingNurseSpeciality extends StatefulWidget {
   const SelectingNurseSpeciality({super.key});
@@ -11,9 +13,9 @@ class SelectingNurseSpeciality extends StatefulWidget {
 }
 
 class _SelectingNurseSpecialityState extends State<SelectingNurseSpeciality> {
-  final TextEditingController _othersController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _selectedSpeciality;
+  String? userId;
+  bool isLoading = true;
 
   final List<String> _nurseSpecialities = [
     'Medical Surgical',
@@ -25,9 +27,35 @@ class _SelectingNurseSpecialityState extends State<SelectingNurseSpeciality> {
   ];
 
   @override
-  void dispose() {
-    _othersController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadUserIdAndFetchSpeciality();
+  }
+
+  Future<void> _loadUserIdAndFetchSpeciality() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('userId');
+     print('userId=$userId');
+
+    if (userId != null) {
+      final url = Uri.parse("https://api.joinmeds.in/api/user-details/$userId?userId=$userId");
+      try {
+        final response = await http.get(url);
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          setState(() {
+            _selectedSpeciality = data['speciality'];
+            isLoading = false;
+          });
+        } else {
+          _showSnackBar('Failed to fetch user data');
+          setState(() => isLoading = false);
+        }
+      } catch (e) {
+        _showSnackBar('Error: $e');
+        setState(() => isLoading = false);
+      }
+    }
   }
 
   void _showSnackBar(String message, {Color color = Colors.red}) {
@@ -46,25 +74,23 @@ class _SelectingNurseSpecialityState extends State<SelectingNurseSpeciality> {
       return;
     }
 
-    if (_selectedSpeciality == 'Others') {
-      final customSpeciality = await _openOthersBottomSheet();
-      if (customSpeciality == null) return;
-      _selectedSpeciality = customSpeciality;
-      _showSnackBar('Speciality saved: $_selectedSpeciality', color: Colors.green);
-    }
+    final body = jsonEncode({
+      "userId": userId,
+      "speciality": _selectedSpeciality,
+    });
 
-    await _handleNextSteps();
-  }
-
-  Future<String?> _openOthersBottomSheet() {
-    return showModalBottomSheet<String>(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => OthersTextField(formKey: _formKey, controller: _othersController),
+    final response = await http.put(
+      Uri.parse("https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId"),
+      headers: {'Content-Type': 'application/json'},
+      body: body,
     );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      _showSnackBar('Speciality saved: $_selectedSpeciality', color: Colors.green);
+      await _handleNextSteps();
+    } else {
+      _showSnackBar('Failed to update speciality');
+    }
   }
 
   Future<void> _handleNextSteps() async {
@@ -92,7 +118,7 @@ class _SelectingNurseSpecialityState extends State<SelectingNurseSpeciality> {
     Navigator.pushNamed(
       context,
       workExpStatus == 'Work Experience-No'
-          ?  '/County_that_you_preferred_page' //navigate to country preferred page
+          ? '/County_that_you_preferred_page'
           : '/nurse_work_experience',
     );
   }
@@ -113,7 +139,9 @@ class _SelectingNurseSpecialityState extends State<SelectingNurseSpeciality> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : Scaffold(
       appBar: AppBar(
         title: const Text('Choose your Speciality', style: appBarText),
         centerTitle: true,
@@ -147,64 +175,6 @@ class _SelectingNurseSpecialityState extends State<SelectingNurseSpeciality> {
             shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           ),
           child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
-        ),
-      ),
-    );
-  }
-}
-
-class OthersTextField extends StatelessWidget {
-  final GlobalKey<FormState> formKey;
-  final TextEditingController controller;
-
-  const OthersTextField({super.key, required this.formKey, required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: MediaQuery.of(context).viewInsets.add(
-        const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-      ),
-      child: Form(
-        key: formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const FormsMainHead(text: 'Specify your Speciality Here'),
-            const SizedBox(height: 30),
-            const LabelText(labelText: 'Speciality Name'),
-            const SizedBox(height: 5),
-            TextFormWidget(
-              controller: controller,
-              hintText: 'Enter your speciality',
-              obscureText: false,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Speciality is required';
-                } else if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
-                  return 'Use letters and spaces only';
-                } else if (value.trim().length < 3) {
-                  return 'At least 3 characters required';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                if (formKey.currentState?.validate() ?? false) {
-                  Navigator.pop(context, controller.text.trim());
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: mainBlue,
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: const Text('Save', style: TextStyle(fontSize: 18)),
-            ),
-          ],
         ),
       ),
     );

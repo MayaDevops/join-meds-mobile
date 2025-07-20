@@ -5,16 +5,10 @@ class UserNotification extends StatelessWidget {
   const UserNotification({super.key});
 
   final List<Map<String, String>> notifications = const [
-    {
-      'title': 'Job Application Submitted',
-      'message': 'Your application for Doctor was received.',
-      'time': '2 min ago',
-      'icon': '📄',
-    },
 
     {
-      'title': 'Job Offer Received',
-      'message': 'Congrats! You received an offer from XYZ Hospital.',
+      'title': 'No Notifications Found',
+      'message': 'No Notifications Found',
       'time': 'Yesterday',
       'icon': '🎉',
     },
@@ -39,7 +33,14 @@ class UserNotification extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView.separated(
+      body: notifications.isEmpty
+          ? const Center(
+        child: Text(
+          'No Notifications Found',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+      )
+          : ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: notifications.length,
         separatorBuilder: (_, __) => const SizedBox(height: 12),

@@ -7,7 +7,7 @@ import '../models/personal_data_model.dart';
 class PersonalDataService {
   static Future<PersonalDataModel?> getPersonalData(String userId) async {
     final url = Uri.parse(
-        'http://api.joinmeds.in/api/user-details/$userId?userId=$userId');
+        'https://api.joinmeds.in/api/user-details/$userId?userId=$userId');
 
     final response = await http.get(url, headers: {
       'accept': '*/*',

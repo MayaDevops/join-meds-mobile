@@ -26,7 +26,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
   String? _workExperienceCountry;
   String? _workExperienceDuration;
 
-  static const List<String> countries = [/* country list trimmed for brevity */ "India", "United States", "United Kingdom"];
+  static const List<String> countries = [
+   "India", "United States", "United Kingdom","Canada","Ireland"];
   static const List<String> clearedTests = ['DHA', 'MOH', 'HAD'];
   static const List<String> years = ['1 Year', '2 Years', '3 Years', '4 Years', '5 Years', 'more'];
 
@@ -46,7 +47,7 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
 
   Future<void> _fetchUserDetails() async {
     try {
-      final response = await http.get(Uri.parse('http://api.joinmeds.in/api/user-details/$userId'));
+      final response = await http.get(Uri.parse('https://api.joinmeds.in/api/user-details/$userId?userId=$userId'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -54,8 +55,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
           _hasClearedTest = data['foreignTest'];
           _clearedTestName = data['foreignTestDetails'];
           _hasForeignWorkExperience = data['foreignCountryExp'];
-          _workExperienceCountry = data['workExperience']?.split(' - ')?.first;
-          _workExperienceDuration = data['workExperience']?.split(' - ')?.last;
+          _workExperienceCountry = data['foreignCountryWorked']?.split(' - ')?.first;
+          _workExperienceDuration = data['foreignCountryWorkExp']?.split(' - ')?.last;
           if (_workExperienceDuration == 'more') {
             _moreExperienceDetails.text = data['workExperience']?.split(':')?.last ?? '';
           }
@@ -72,8 +73,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
         "countryPreffered": _preferredCountry,
         "foreignTest": _hasClearedTest,
         "foreignTestDetails": _clearedTestName,
-        "foreignCountryExp": _hasForeignWorkExperience,
-        "workExperience": _hasForeignWorkExperience == 'Yes'
+        "foreignCountryWorkExp": _hasForeignWorkExperience,
+        "foreignCountryWorked": _hasForeignWorkExperience == 'Yes'
             ? "${_workExperienceCountry ?? ''} - ${_workExperienceDuration ?? ''}${_workExperienceDuration == 'more' ? ": ${_moreExperienceDetails.text}" : ''}"
             : null,
         "userId": userId

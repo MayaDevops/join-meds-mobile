@@ -206,11 +206,15 @@ class _UserProfileSectionState extends State<UserProfileSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 40,
                   backgroundColor: Colors.white,
-                  child: Text('U',
-                      style: TextStyle(fontSize: 30, color: mainBlue)),
+                  child: Text(
+                    (_personalData?.fullname?.isNotEmpty ?? false)
+                        ? _personalData!.fullname![0].toUpperCase()
+                        : 'U',
+                    style: const TextStyle(fontSize: 30, color: mainBlue),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(
@@ -218,6 +222,8 @@ class _UserProfileSectionState extends State<UserProfileSection> {
                   style: const TextStyle(color: Colors.white, fontSize: 20),
                 ),
               ],
+
+
             ),
           ),
           _buildDrawerItem(Icons.edit, 'Edit Profile', () {

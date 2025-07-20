@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../constants/constant.dart';
 import '../../../widgets/repeated_headings.dart';
 import '../../../widgets/text_form_fields.dart';
@@ -13,8 +16,8 @@ class NurseWorkExperience extends StatefulWidget {
 
 class _NurseWorkExperienceState extends State<NurseWorkExperience> {
   final _workExpKey = GlobalKey<FormState>();
-
   List<Map<String, dynamic>> workExperienceList = [];
+  String? userId;
 
   final List<String> specialisationOptions = [
     'Casualty / Emergency Medicine',
@@ -28,7 +31,47 @@ class _NurseWorkExperienceState extends State<NurseWorkExperience> {
   @override
   void initState() {
     super.initState();
-    _addWorkExperience(); // Start with one section
+    _loadUserIdAndFetchData();
+  }
+
+  Future<void> _loadUserIdAndFetchData() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('userId');
+    if (userId != null) {
+      await _fetchExistingWorkExperiences(userId!);
+    }
+  }
+
+  Future<void> _fetchExistingWorkExperiences(String userId) async {
+    final response = await http.get(
+      Uri.parse("https://api.joinmeds.in/api/work-experience/fetch/$userId"),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+
+      for (var item in data) {
+        workExperienceList.add({
+          'clinicalStatus': item['clinicalNonclinical'],
+          'organisationController': TextEditingController(text: item['workedHospName']),
+          'specialisation': specialisationOptions.contains(item['workSpecialisation'])
+              ? item['workSpecialisation']
+              : 'Others',
+          'customSpecialisationController': TextEditingController(
+              text: specialisationOptions.contains(item['workSpecialisation'])
+                  ? ''
+                  : item['workSpecialisation']),
+          'fromDateController': TextEditingController(text: item['fromDate']),
+          'toDateController': TextEditingController(text: item['toDate']),
+        });
+      }
+    }
+
+    if (workExperienceList.isEmpty) {
+      _addWorkExperience();
+    }
+
+    setState(() {});
   }
 
   void _addWorkExperience() {
@@ -67,222 +110,170 @@ class _NurseWorkExperienceState extends State<NurseWorkExperience> {
     }
   }
 
+  Future<void> _saveExperienceData() async {
+    for (var exp in workExperienceList) {
+      final Map<String, dynamic> payload = {
+        "userId": userId,
+        "clinicalNonclinical": exp['clinicalStatus'],
+        "workedHospName": exp['organisationController'].text.trim(),
+        "workSpecialisation": exp['specialisation'] == 'Others'
+            ? exp['customSpecialisationController'].text.trim()
+            : exp['specialisation'],
+        "fromDate": exp['fromDateController'].text.trim(),
+        "toDate": exp['toDateController'].text.trim()
+      };
+
+      final response = await http.post(
+        Uri.parse("https://api.joinmeds.in/api/work-experience/save"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        debugPrint("Failed to save: ${response.body}");
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: true,
-        title: const Text(
-          "Work Experience",
-          style: TextStyle(color: Colors.white, fontSize: 25, fontWeight: FontWeight.w500),
-        ),
+        title: const Text("Work Experience", style: TextStyle(color: Colors.white, fontSize: 25)),
         backgroundColor: mainBlue,
       ),
       body: Form(
         key: _workExpKey,
-        child: RawScrollbar(
-          thumbColor: Colors.black38,
-          thumbVisibility: true,
-          thickness: 8,
-          radius: const Radius.circular(10),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: workExperienceList.length,
-                  itemBuilder: (context, index) {
-                    final exp = workExperienceList[index];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        LabelText(labelText: 'Type of Experience'),
-                        const SizedBox(height: 5),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const Text('Clinical', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: inputBorderClr)),
-                                Radio(
-                                  value: 'Clinical',
-                                  groupValue: exp['clinicalStatus'],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      exp['clinicalStatus'] = value;
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                const Text('Non Clinical(Eg: lecturer)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: inputBorderClr)),
-                                Radio(
-                                  value: 'Non Clinical',
-                                  groupValue: exp['clinicalStatus'],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      exp['clinicalStatus'] = value;
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 15),
-                        LabelText(labelText: 'Organisation / Hospital'),
-                        const SizedBox(height: 5),
-                        TextFormWidget(
-                          controller: exp['organisationController'],
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return 'Name is required';
-                            } else if (!RegExp(r"^[a-zA-Z\s]+$").hasMatch(value)) {
-                              return 'Enter a valid name using letters and spaces only';
-                            } else if (value.length < 3) {
-                              return 'Name must be at least 3 characters long';
-                            }
-                            return null;
-                          },
-                          hintText: 'Specify organisation/hospital',
-                          obscureText: false,
-                        ),
-                        const SizedBox(height: 15),
-                        DropdownButtonFormField<String>(
-                          value: exp['specialisation'],
-                          decoration: InputDecoration(
-                            hintText: 'Select Work Specialisation',
-                            hintStyle: hintStyle,
-                            enabledBorder: enabledBorder,
-                            focusedBorder: focusedBorder,
-                            errorStyle: errorStyle,
-                            errorBorder: errorBorder,
-                            focusedErrorBorder: focusedErrorBorder,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: workExperienceList.length,
+                itemBuilder: (context, index) {
+                  final exp = workExperienceList[index];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const LabelText(labelText: 'Type of Experience'),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              const Text('Clinical', style: TextStyle(fontSize: 18, color: inputBorderClr)),
+                              Radio(
+                                value: 'Clinical',
+                                groupValue: exp['clinicalStatus'],
+                                onChanged: (value) => setState(() => exp['clinicalStatus'] = value),
+                              ),
+                            ],
                           ),
-                          items: specialisationOptions.map((item) {
-                            return DropdownMenuItem<String>(
-                              value: item,
-                              child: Text(item),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              exp['specialisation'] = value;
-                              if (value != 'Others') {
-                                exp['customSpecialisationController'].clear();
-                              }
-                            });
-                          },
-                        ),
-                        if (exp['specialisation'] == 'Others') ...[
-                          const SizedBox(height: 10),
-                          TextFormWidget(
-                            controller: exp['customSpecialisationController'],
-                            validator: (value) {
-                              if (exp['specialisation'] == 'Others' && (value == null || value.isEmpty)) {
-                                return 'Please specify specialisation';
-                              }
-                              return null;
-                            },
-                            hintText: 'Enter your Specialisation',
-                            obscureText: false,
+                          Row(
+                            children: [
+                              const Text('Non Clinical', style: TextStyle(fontSize: 18, color: inputBorderClr)),
+                              Radio(
+                                value: 'Non Clinical',
+                                groupValue: exp['clinicalStatus'],
+                                onChanged: (value) => setState(() => exp['clinicalStatus'] = value),
+                              ),
+                            ],
                           ),
                         ],
-                        const SizedBox(height: 15),
-                        LabelText(labelText: 'From'),
-                        TextFormField(
-                          controller: exp['fromDateController'],
-                          readOnly: true,
-                          validator: (value) => value!.isEmpty ? 'Date is required' : null,
-                          decoration: InputDecoration(
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.calendar_month, color: mainBlue, size: 30),
-                              onPressed: () => _pickDate(context, exp['fromDateController']),
-                            ),
-                            fillColor: Colors.white,
-                            filled: true,
-                            hintText: 'Select Date',
-                            hintStyle: hintStyle,
-                            enabledBorder: enabledBorder,
-                            focusedBorder: focusedBorder,
-                            errorStyle: errorStyle,
-                            errorBorder: errorBorder,
-                            focusedErrorBorder: focusedErrorBorder,
-                          ),
+                      ),
+                      const SizedBox(height: 10),
+                      const LabelText(labelText: 'Organisation / Hospital'),
+                      TextFormWidget(
+                        controller: exp['organisationController'],
+                        validator: (value) {
+                          if (value!.isEmpty) return 'Required';
+                          return null;
+                        },
+                        hintText: 'Enter name',
+                        obscureText: false,
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: exp['specialisation'],
+                        decoration: InputDecoration(
+                          hintText: 'Select Specialisation',
+                          enabledBorder: enabledBorder,
+                          focusedBorder: focusedBorder,
                         ),
-                        const SizedBox(height: 15),
-                        LabelText(labelText: 'To'),
-                        TextFormField(
-                          controller: exp['toDateController'],
-                          readOnly: true,
-                          validator: (value) => value!.isEmpty ? 'Date is required' : null,
-                          decoration: InputDecoration(
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.calendar_month, color: mainBlue, size: 30),
-                              onPressed: () => _pickDate(context, exp['toDateController']),
-                            ),
-                            fillColor: Colors.white,
-                            filled: true,
-                            hintText: 'Select Date',
-                            hintStyle: hintStyle,
-                            enabledBorder: enabledBorder,
-                            focusedBorder: focusedBorder,
-                            errorStyle: errorStyle,
-                            errorBorder: errorBorder,
-                            focusedErrorBorder: focusedErrorBorder,
-                          ),
+                        items: specialisationOptions.map((item) {
+                          return DropdownMenuItem(value: item, child: Text(item));
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            exp['specialisation'] = value;
+                            if (value != 'Others') exp['customSpecialisationController'].clear();
+                          });
+                        },
+                      ),
+                      if (exp['specialisation'] == 'Others')
+                        TextFormWidget(
+                          controller: exp['customSpecialisationController'],
+                          hintText: 'Specify',
+                          obscureText: false,
                         ),
-                        const SizedBox(height: 30),
-                      ],
-                    );
-                  },
-                ),
-                InkWell(
-                  onTap: _addWorkExperience,
-                  child: Row(
-                    children: const [
-                      LabelText(labelText: 'Add'),
-                      Icon(Icons.add),
+                      const SizedBox(height: 10),
+                      const LabelText(labelText: 'From'),
+                      TextFormField(
+                        controller: exp['fromDateController'],
+                        readOnly: true,
+                        onTap: () => _pickDate(context, exp['fromDateController']),
+                        decoration: InputDecoration(
+                          suffixIcon: Icon(Icons.calendar_month, color: mainBlue),
+                          hintText: 'Pick Date',
+                          enabledBorder: enabledBorder,
+                          focusedBorder: focusedBorder,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const LabelText(labelText: 'To'),
+                      TextFormField(
+                        controller: exp['toDateController'],
+                        readOnly: true,
+                        onTap: () => _pickDate(context, exp['toDateController']),
+                        decoration: InputDecoration(
+                          suffixIcon: Icon(Icons.calendar_month, color: mainBlue),
+                          hintText: 'Pick Date',
+                          enabledBorder: enabledBorder,
+                          focusedBorder: focusedBorder,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
                     ],
-                  ),
+                  );
+                },
+              ),
+              InkWell(
+                onTap: _addWorkExperience,
+                child: Row(
+                  children: const [
+                    LabelText(labelText: 'Add'),
+                    Icon(Icons.add),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
       bottomNavigationBar: ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
           if (_workExpKey.currentState!.validate()) {
-            List<Map<String, dynamic>> finalData = workExperienceList.map((exp) {
-              return {
-                'typeOfExperience': exp['clinicalStatus'],
-                'organisation': exp['organisationController'].text,
-                'specialisation': exp['specialisation'] == 'Others'
-                    ? exp['customSpecialisationController'].text
-                    : exp['specialisation'],
-                'from': exp['fromDateController'].text,
-                'to': exp['toDateController'].text,
-              };
-            }).toList();
-
-            print(finalData);
-
-            Navigator.pushNamed(context,  '/County_that_you_preferred_page');
+            await _saveExperienceData();
+            Navigator.pushNamed(context, '/County_that_you_preferred_page');
           }
         },
-        style: ButtonStyle(
-          padding: const WidgetStatePropertyAll(EdgeInsets.all(15)),
-          backgroundColor: const WidgetStatePropertyAll(mainBlue),
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
-          ),
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.all(15),
+          backgroundColor: mainBlue,
         ),
         child: const Text('Continue', style: TextStyle(fontSize: 20.0, color: Colors.white)),
       ),
