@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       drawer: _buildDrawer(context),
       appBar: _buildAppBar(context),
       body: _pages[_selectedIndex],
@@ -50,8 +51,10 @@ class _HomeScreenState extends State<HomeScreen> {
               text: 'Meds',
               style: TextStyle(color: mainBlue, fontWeight: FontWeight.bold),
             ),
+
           ],
         ),
+
       ),
 
     );
@@ -119,19 +122,26 @@ class HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Image.asset('images/banner-home.jpg', fit: BoxFit.cover),
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text("Enter job title", style: TextStyle(fontSize: 18)),
-        ),
-        const JobSearchInput(),
-      ],
+    return SingleChildScrollView( // Makes the page scrollable
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Image.asset('images/banner-home.jpg', fit: BoxFit.cover),
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text("Enter job title", style: TextStyle(fontSize: 18)),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            child: JobSearchInput(),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
     );
   }
 }
+
 
 class ContactPage extends StatelessWidget {
   const ContactPage({super.key});

@@ -61,6 +61,7 @@ import 'package:untitled/screens/login_page/delete_account.dart';
 import 'package:untitled/screens/login_page/home_screen.dart';
 import 'package:untitled/screens/login_page/login_page.dart';
 import 'package:untitled/screens/login_page/login_page_loading.dart';
+import 'package:untitled/screens/login_page/my_jobs_screen.dart';
 import 'package:untitled/screens/login_page/user_notification.dart';
 import 'package:untitled/screens/login_page/user_privacy_policy.dart';
 import 'package:untitled/screens/login_page/user_terms_and_condition.dart';
@@ -84,6 +85,7 @@ import 'package:untitled/screens/organisation/organisation_terms_and_conditions.
 import 'package:untitled/screens/organisation/organisation_view_job_details.dart';
 import 'package:untitled/screens/organisation/organisation_view_profile.dart';
 import 'package:untitled/screens/signupPages/profile_picture.dart';
+import 'package:untitled/screens/signupPages/profile_update_success_page.dart';
 import 'package:untitled/screens/signupPages/resume_upload.dart';
 import 'package:untitled/screens/signupPages/sign_up.dart';
 import 'screens/signupPages/personal_data.dart';
@@ -101,6 +103,10 @@ void main() {
         //User Pages starts here
         '/home': (context) =>
         const HomeScreen(), //User Home screen
+        '/job': (context) =>
+        const MyJobsScreen(),
+        '/success': (context) =>
+        const ProfileUpdateSuccessPage(), //User Home screen
         '/delete_account': (context) =>
         const DeleteAccount(), //User delete account
         'user_privacy_policy': (context) =>
@@ -108,7 +114,7 @@ void main() {
         'user_terms_and_conditions': (context) =>
         const UserTermsAndCondition(), //User terms and conditions
         'user_view_job_details': (context) =>
-        const UserViewJobDetails(), //User view job details
+         UserViewJobDetails(jobId: 'dummy-job-id'), //User view job details
         'user_notifications': (context) =>
         const UserNotification(), //User notifications
         //Organisation Pages starts here
@@ -360,7 +366,7 @@ void main() {
 //       '/resume_upload': (context)=> const ResumeUpload(),
 //       '/dr_acd_status': (context)=> const DrAcademicStatus(),
 //       '/home': (context) => const HomeScreen(),
-//       '/work': (context) => const MyJobsScreen(),
+    //   '/work': (context) => const MyJobsScreen(),
 //
 //
 //

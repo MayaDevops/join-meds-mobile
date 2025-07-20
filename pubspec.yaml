@@ -9,6 +9,8 @@ environment:
 
 dependencies:
   shared_preferences: ^2.2.2
+  fluttertoast: ^8.2.2
+  lottie: ^2.6.0
   flutter:
     sdk: flutter
   dio: ^5.4.0

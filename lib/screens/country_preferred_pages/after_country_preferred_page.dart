@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/constants/constant.dart';
 import '../../widgets/repeated_headings.dart';
 import '../../widgets/text_form_fields.dart';
@@ -13,41 +16,113 @@ class AfterCountryPreferredPage extends StatefulWidget {
 class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
   final _formKey = GlobalKey<FormState>();
 
-  // Data receiving variables (for backend integration)
-  final TextEditingController _testScoreController = TextEditingController(); // Language Test Score
-  final TextEditingController _certificateController = TextEditingController(); // Certification Names
+  final TextEditingController _testScoreController = TextEditingController();
+  final TextEditingController _certificateController = TextEditingController();
 
-  String? _selectedCountry; // Preferred Country (Future use)
-  String? _clearedTestOption; // Have you cleared any test? Yes/No
-  String? _selectedClearedTest; // Selected Cleared Test: IELTS/OET/German
-  String? _certificationOptionStatus; // Certification Status: Yes/No
-  String? _selectedWorkExpCountry; // Work Experience Country (not shown here)
-  String? _workExpYear; // Years of Work Experience (not shown here)
-  String? languageTestStatus; // Have you written any language test? Yes/No
+  String? userId;
+  String? _clearedTestOption;
+  String? _selectedClearedTest;
+  String? _certificationOptionStatus;
+  String? languageTestStatus;
 
   static const List<String> clearedTests = ['IELTS', 'OET', 'German'];
 
   @override
-  void dispose() {
-    _testScoreController.dispose();
-    _certificateController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadUserIdAndFetch();
   }
 
-  void _submit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      print('Preferred Country: $_selectedCountry');
-      print('Cleared Test Option: $_clearedTestOption');
-      print('Selected Test: $_selectedClearedTest');
-      print('Work Exp Option: $_certificationOptionStatus');
-      print('Work Exp Country: $_selectedWorkExpCountry');
-      print('Years of Experience: $_workExpYear');
-      if (_workExpYear == 'more') {
-        print('More Work Exp: ${_testScoreController.text}');
+  Future<void> _loadUserIdAndFetch() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedUserId = prefs.getString('userId');
+
+    if (storedUserId == null || storedUserId.isEmpty) {
+      debugPrint('Error: userId not found in SharedPreferences');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('User ID not found. Please log in again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      userId = storedUserId;
+    });
+
+    await _fetchUserDetails();
+  }
+
+
+  Future<void> _fetchUserDetails() async {
+    try {
+      final response = await http.get(Uri.parse('https://api.joinmeds.in/api/user-details/$userId'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          languageTestStatus = data['languageTest'];
+          _clearedTestOption = data['languageTestCleared'] != null ? 'Yes' : 'No';
+          _selectedClearedTest = data['languageTestCleared']?.split(' ')?.first;
+          _testScoreController.text = data['languageTestCleared']?.split(' ')?.sublist(1).join(' ') ?? '';
+          _certificationOptionStatus = data['certification']?.isNotEmpty == true ? 'Yes' : 'No';
+          _certificateController.text = data['certification'] ?? '';
+        });
       }
-      Navigator.pushNamed(context, '/home');
+    } catch (e) {
+      debugPrint("Error fetching user details: $e");
     }
   }
+
+  Future<void> _submit() async {
+
+    if (_formKey.currentState?.validate() ?? false) {
+      final languageTestFinal = languageTestStatus ?? '';
+      final clearedTestFinal = _clearedTestOption == 'Yes'
+          ? "${_selectedClearedTest ?? ''} ${_testScoreController.text.trim()}"
+          : '';
+      final certificationFinal =
+      _certificationOptionStatus == 'Yes' ? _certificateController.text.trim() : '';
+
+      final body = {
+        "userId": userId ?? '',
+        "languageTest": languageTestFinal,
+        "languageTestCleared": clearedTestFinal,
+        "certification": certificationFinal
+      };
+
+      print('Sending Body: ${jsonEncode(body)}'); // DEBUG PRINT
+
+      try {
+        final response = await http.put(
+          Uri.parse('https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(body),
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 204) {
+          Navigator.pushNamed(context, '/home');
+        } else {
+          debugPrint('Response: ${response.body}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update. Code: ${response.statusCode}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error occurred: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
 
   Widget _buildDropdown({
     required String hintText,
@@ -65,6 +140,7 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
         padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 20)),
       ),
       hintText: hintText,
+      initialSelection: value,
       textStyle: hintStyle,
       onSelected: onChanged,
       dropdownMenuEntries: items.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
@@ -110,6 +186,13 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
   }
 
   @override
+  void dispose() {
+    _testScoreController.dispose();
+    _certificateController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     const spacing = 20.0;
 
@@ -119,6 +202,7 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
         automaticallyImplyLeading: true,
         centerTitle: true,
         backgroundColor: mainBlue,
+        title: const Text('Language & Certification', style: TextStyle(color: Colors.white)),
       ),
       body: RawScrollbar(
         thumbColor: Colors.black38,
@@ -149,7 +233,10 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
                   onChanged: (val) {
                     setState(() {
                       _clearedTestOption = val;
-                      if (val == 'No') _selectedClearedTest = null;
+                      if (val == 'No') {
+                        _selectedClearedTest = null;
+                        _testScoreController.clear();
+                      }
                     });
                   },
                 ),
@@ -186,9 +273,7 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
                     setState(() {
                       _certificationOptionStatus = val;
                       if (val == 'No') {
-                        _selectedWorkExpCountry = null;
-                        _workExpYear = null;
-                        _testScoreController.clear();
+                        _certificateController.clear();
                       }
                     });
                   },
@@ -210,7 +295,7 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
                       return null;
                     },
                     keyboardType: TextInputType.text,
-                    hintText: 'Eg: ACLS',
+                    hintText: 'Eg: ACLS, BLS',
                     obscureText: false,
                   ),
                 ],

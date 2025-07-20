@@ -41,7 +41,7 @@ class _ResumeUploadState extends State<ResumeUpload> {
         _userId = id;
         _fileName = resumeId; // this will now show the correct resume name
         _resumeUrl = resumeId != null
-            ? 'https://api.joinmeds.in/uploads/resumes/$resumeId'
+            ? 'https://api.joinmeds.in/api/resume/$resumeId'
             : null;
       });
 

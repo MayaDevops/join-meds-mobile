@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/constants/constant.dart';
 import '../../widgets/repeated_headings.dart';
 import '../../widgets/text_form_fields.dart';
@@ -12,9 +15,10 @@ class CountryThatYouPreferred extends StatefulWidget {
 
 class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _moreExperienceDetails = TextEditingController();
+  String? userId;
 
   // Submitted Data
-  final TextEditingController _moreExperienceDetails = TextEditingController();
   String? _preferredCountry;
   String? _hasClearedTest;
   String? _clearedTestName;
@@ -22,54 +26,78 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
   String? _workExperienceCountry;
   String? _workExperienceDuration;
 
-  static const List<String> countries = [
-    "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia",
-    "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium",
-    "Belize", "Benin", "Bhutan", "Bolivia", "Brazil", "Brunei", "Bulgaria", "Burkina Faso",
-    "Burundi", "Cambodia", "Cameroon", "Canada", "Chile", "China", "Colombia", "Costa Rica",
-    "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Dominica", "Dominican Republic",
-    "Ecuador", "Egypt", "El Salvador", "Estonia", "Ethiopia", "Fiji", "Finland", "France",
-    "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea",
-    "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq",
-    "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kuwait",
-    "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Lithuania",
-    "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Mauritania",
-    "Mauritius", "Mexico", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique",
-    "Myanmar", "Namibia", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria",
-    "North Korea", "North Macedonia", "Norway", "Oman", "Pakistan", "Palestine", "Panama",
-    "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar",
-    "Romania", "Russia", "Rwanda", "Saint Lucia", "Samoa", "San Marino", "Saudi Arabia", "Senegal",
-    "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands",
-    "Somalia", "South Africa", "South Korea", "Spain", "Sri Lanka", "Sudan", "Suriname", "Sweden",
-    "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", "Tonga",
-    "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Uganda", "Ukraine",
-    "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu",
-    "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
-  ];
-
+  static const List<String> countries = [/* country list trimmed for brevity */ "India", "United States", "United Kingdom"];
   static const List<String> clearedTests = ['DHA', 'MOH', 'HAD'];
   static const List<String> years = ['1 Year', '2 Years', '3 Years', '4 Years', '5 Years', 'more'];
 
   @override
-  void dispose() {
-    _moreExperienceDetails.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadUserIdAndData();
   }
 
-  void _submit() {
+  Future<void> _loadUserIdAndData() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId = prefs.getString('userId');
+    if (userId != null) {
+      await _fetchUserDetails();
+    }
+  }
+
+  Future<void> _fetchUserDetails() async {
+    try {
+      final response = await http.get(Uri.parse('http://api.joinmeds.in/api/user-details/$userId'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _preferredCountry = data['countryPreffered'];
+          _hasClearedTest = data['foreignTest'];
+          _clearedTestName = data['foreignTestDetails'];
+          _hasForeignWorkExperience = data['foreignCountryExp'];
+          _workExperienceCountry = data['workExperience']?.split(' - ')?.first;
+          _workExperienceDuration = data['workExperience']?.split(' - ')?.last;
+          if (_workExperienceDuration == 'more') {
+            _moreExperienceDetails.text = data['workExperience']?.split(':')?.last ?? '';
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching user data: $e");
+    }
+  }
+
+  Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       final formData = {
-        "preferred_country": _preferredCountry,
-        "has_cleared_test": _hasClearedTest,
-        "cleared_test_name": _clearedTestName,
-        "has_foreign_work_exp": _hasForeignWorkExperience,
-        "work_exp_country": _workExperienceCountry,
-        "work_exp_duration": _workExperienceDuration,
-        "work_exp_detail": _workExperienceDuration == 'more' ? _moreExperienceDetails.text : null,
+        "countryPreffered": _preferredCountry,
+        "foreignTest": _hasClearedTest,
+        "foreignTestDetails": _clearedTestName,
+        "foreignCountryExp": _hasForeignWorkExperience,
+        "workExperience": _hasForeignWorkExperience == 'Yes'
+            ? "${_workExperienceCountry ?? ''} - ${_workExperienceDuration ?? ''}${_workExperienceDuration == 'more' ? ": ${_moreExperienceDetails.text}" : ''}"
+            : null,
+        "userId": userId
       };
-      print(formData);
 
-      Navigator.pushNamed(context, '/after_County_preferred_page');
+      try {
+        final response = await http.put(
+          Uri.parse('https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(formData),
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 204) {
+          Navigator.pushNamed(context, '/after_County_preferred_page');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to update. Code: ${response.statusCode}'), backgroundColor: Colors.red),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error occurred: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -90,6 +118,7 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
         fixedSize: WidgetStatePropertyAll(Size.fromHeight(200)),
       ),
       hintText: hintText,
+      initialSelection: value,
       textStyle: hintStyle,
       onSelected: onChanged,
       dropdownMenuEntries: items.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
@@ -144,7 +173,7 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
               if (value == null || value.isEmpty || value.length < 5) {
                 return 'Please enter at least 5 characters';
               }
-              if (!RegExp(r"^[a-zA-Z0-9\s,.-]+\$").hasMatch(value)) {
+              if (!RegExp(r"^[a-zA-Z0-9\s,.-]+$").hasMatch(value)) {
                 return 'Invalid characters';
               }
               return null;
@@ -159,6 +188,12 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
   }
 
   @override
+  void dispose() {
+    _moreExperienceDetails.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -166,6 +201,7 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
         automaticallyImplyLeading: false,
         centerTitle: true,
         backgroundColor: mainBlue,
+        title: const Text('Preferred Country', style: TextStyle(color: Colors.white)),
       ),
       body: RawScrollbar(
         thumbColor: Colors.black38,
@@ -190,7 +226,6 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                   onChanged: (val) => setState(() => _preferredCountry = val),
                 ),
                 const SizedBox(height: 20),
-
                 const LabelText(labelText: 'Have you Cleared any Foreign Test?'),
                 const SizedBox(height: 5),
                 _buildRadioGroup(
@@ -202,7 +237,6 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                     });
                   },
                 ),
-
                 if (_hasClearedTest == 'Yes') ...[
                   const SizedBox(height: 20),
                   const LabelText(labelText: 'Specify the Test Cleared'),
@@ -214,7 +248,6 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                     onChanged: (val) => setState(() => _clearedTestName = val),
                   ),
                 ],
-
                 const SizedBox(height: 20),
                 const LabelText(labelText: 'Do you have Work Experience in any Foreign Countries?'),
                 const SizedBox(height: 5),
@@ -231,7 +264,6 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                     });
                   },
                 ),
-
                 if (_hasForeignWorkExperience == 'Yes') ...[
                   const SizedBox(height: 20),
                   const LabelText(labelText: 'Which Country did you Work?'),

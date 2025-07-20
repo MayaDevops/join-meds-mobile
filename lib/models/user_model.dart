@@ -1,13 +1,18 @@
 class UserModel {
-  final String? name;
-  final String? email;
+  String? fullname;
+  String? emailMobile;
+  String? profession;
+  String? profileUrl;
 
-  UserModel({this.name, this.email});
+
+  UserModel({this.fullname, this.emailMobile,this.profession,this.profileUrl});
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      name: json['name'],
-      email: json['email'],
+      fullname: json['fullname'],
+      emailMobile: json['emailMobile'],
+      profession: json['profession'],
+      profileUrl: json['profileUrl'],
     );
   }
 }

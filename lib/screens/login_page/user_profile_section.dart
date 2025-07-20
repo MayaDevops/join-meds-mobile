@@ -1,13 +1,12 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:untitled/screens/login_page/user_profile_settings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/constant.dart';
 import '../../constants/images.dart';
-import 'package:untitled/api/user_api.dart';
-import 'package:untitled/models/user_model.dart';
-
+import '../../api/personal_data_service.dart';
+import '../../models/personal_data_model.dart';
+import '../login_page/user_profile_settings.dart';
 
 class UserProfileSection extends StatefulWidget {
   const UserProfileSection({super.key});
@@ -15,13 +14,36 @@ class UserProfileSection extends StatefulWidget {
   @override
   State<UserProfileSection> createState() => _UserProfileSectionState();
 }
-UserModel? _userModel;
-final String _userId = "ec8e6e15-0dfa-4022-bfb9-6ac6f7a36d17"; // Ideally passed from login
-
 
 class _UserProfileSectionState extends State<UserProfileSection> {
+  PersonalDataModel? _personalData;
+  String? _userId;
   XFile? _imageFile;
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserIdAndData();
+  }
+
+  String? _photoId;
+  String? _profession;
+
+  Future<void> _loadUserIdAndData() async {
+    final prefs = await SharedPreferences.getInstance();
+    _userId = prefs.getString('userId');
+    _photoId = prefs.getString('photoId');
+    _profession = prefs.getString('profession');
+
+    if (_userId != null && _userId!.isNotEmpty) {
+      final data = await PersonalDataService.getPersonalData(_userId!);
+      if (data != null) {
+        setState(() => _personalData = data);
+      }
+    }
+  }
+
 
   Future<void> takePhoto(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
@@ -48,10 +70,7 @@ class _UserProfileSectionState extends State<UserProfileSection> {
             children: [
               _buildOptionButton(Icons.camera_alt, "Open Camera", mainBlue,
                       () => takePhoto(ImageSource.camera)),
-              _buildOptionButton(
-                  Icons.image,
-                  "Open Gallery",
-                  const Color(0xffFF6F61),
+              _buildOptionButton(Icons.image, "Open Gallery", const Color(0xffFF6F61),
                       () => takePhoto(ImageSource.gallery)),
             ],
           ),
@@ -59,6 +78,7 @@ class _UserProfileSectionState extends State<UserProfileSection> {
       ),
     );
   }
+
   Widget _buildOptionButton(
       IconData icon, String text, Color color, VoidCallback onTap) {
     return InkWell(
@@ -83,43 +103,31 @@ class _UserProfileSectionState extends State<UserProfileSection> {
       ),
     );
   }
-  //Profile API CALL
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  void _loadUserData() async {
-    final user = await UserApi.fetchUser(_userId);
-    if (user != null) {
-      setState(() {
-        _userModel = user;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
+    final name = _personalData?.fullname ?? '';
+    final profession = _personalData?.profession ?? 'N/A';
+    final photoUrl = _photoId != null && _photoId!.isNotEmpty
+        ? "https://api.joinmeds.in/api/images/$_photoId"
+        : null;
+
     return Scaffold(
       backgroundColor: Colors.white,
       drawer: _buildDrawer(context),
       appBar: AppBar(
         backgroundColor: mainBlue,
-        title: const Text(
-          'User Profile',
-          style: TextStyle(color: Colors.white),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white), // Drawer icon color
+        title: const Text('User Profile', style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
+        child: _personalData == null
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(
-              height: 30,
-            ),
+            const SizedBox(height: 30),
             Center(
               child: Stack(
                 alignment: Alignment.bottomRight,
@@ -128,11 +136,24 @@ class _UserProfileSectionState extends State<UserProfileSection> {
                     radius: 100,
                     backgroundColor: Colors.white,
                     child: ClipOval(
-                      child: _imageFile == null
-                          ? Image.asset(profileDefaultImg,
+                      child: _imageFile != null
+                          ? Image.file(File(_imageFile!.path),
                           width: 200, height: 200, fit: BoxFit.cover)
-                          : Image.file(File(_imageFile!.path),
-                          width: 200, height: 200, fit: BoxFit.cover),
+                          : (photoUrl != null)
+                          ? Image.network(photoUrl,
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            Image.asset(profileDefaultImg,
+                                width: 200,
+                                height: 200,
+                                fit: BoxFit.cover),
+                      )
+                          : Image.asset(profileDefaultImg,
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover),
                     ),
                   ),
                   Positioned(
@@ -145,69 +166,32 @@ class _UserProfileSectionState extends State<UserProfileSection> {
                         icon: const Icon(Icons.camera_alt,
                             color: Colors.white, size: 22),
                         onPressed: () => showModalBottomSheet(
-                            context: context,
-                            builder: (context) => bottomSheet()),
+                            context: context, builder: (_) => bottomSheet()),
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(
-              height: 30,
-            ),
-
-            Text(
-              _userModel?.email ?? 'Loading...',
-              style: TextStyle(fontSize: 18, color: inputBorderClr),
-            ),
-            Text(
-              "Profession",
-              style: TextStyle(
-                  fontSize: 21,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black),
-            ),
-            Text(
-              'Doctor',
-              style: TextStyle(fontSize: 18, color: inputBorderClr),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            Text(
-              "Academic Status" ,
-              style: TextStyle(
-                  fontSize: 21,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black),
-            ),
-            Text(
-              'Degree Ongoing',
-              // if user is post-graduated add post graduated here. or user is phD holder add phD holder
-              style: TextStyle(fontSize: 18, color: inputBorderClr),
-            ),
-            SizedBox(
-              height: 15,
-            ),
-            // Text(
-            //   'Email',
-            //   style: TextStyle(
-            //       fontSize: 21,
-            //       fontWeight: FontWeight.w500,
-            //       color: Colors.black),
-            // ),
-            // Text(
-            //   'User@gmail.com',
-            //   style: TextStyle(fontSize: 18, color: inputBorderClr),
-            // ),
-            Text(
-              _userModel?.email ?? 'Loading...',
-              style: TextStyle(fontSize: 18, color: inputBorderClr),
-            ),
-
+            const SizedBox(height: 30),
+            _buildField("Name", name),
+            _buildField("Profession", profession),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w500)),
+          Text(value, style: TextStyle(fontSize: 18, color: inputBorderClr)),
+        ],
       ),
     );
   }
@@ -225,20 +209,17 @@ class _UserProfileSectionState extends State<UserProfileSection> {
                 const CircleAvatar(
                   radius: 40,
                   backgroundColor: Colors.white,
-                  child: Text(
-                    'U',
-                    style: TextStyle(fontSize: 30, color: mainBlue),
-                  ),
+                  child: Text('U',
+                      style: TextStyle(fontSize: 30, color: mainBlue)),
                 ),
                 const SizedBox(height: 10),
-                const Text(
-                  'User Name',
-                  style: TextStyle(color: Colors.white, fontSize: 20),
+                Text(
+                  _personalData?.fullname ?? 'User Name',
+                  style: const TextStyle(color: Colors.white, fontSize: 20),
                 ),
               ],
             ),
           ),
-
           _buildDrawerItem(Icons.edit, 'Edit Profile', () {
             Navigator.pushNamed(context, '/personal_data');
           }),
@@ -249,9 +230,8 @@ class _UserProfileSectionState extends State<UserProfileSection> {
             );
           }),
           const Divider(),
-
-          _buildDrawerItem(Icons.logout, 'Logout', ( ) {
-            Navigator.pushNamed(context,'/landing_page');
+          _buildDrawerItem(Icons.logout, 'Logout', () {
+            Navigator.pushNamed(context, '/landing_page');
           }),
         ],
       ),
