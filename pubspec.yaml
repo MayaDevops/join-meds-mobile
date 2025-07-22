@@ -2,41 +2,34 @@ name: untitled
 description: "A new Flutter project."
 
 publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
   sdk: ^3.6.0
 
 dependencies:
-  shared_preferences: ^2.2.2
-  fluttertoast: ^8.2.2
-  lottie: ^2.6.0
   flutter:
     sdk: flutter
+  shared_preferences: ^2.2.2
+  fluttertoast: ^8.2.2
+  lottie: ^3.1.0
   dio: ^5.4.0
-
-
-
   cupertino_icons: ^1.0.8
-  intl:
-  intl_phone_field:
+  intl: ^0.18.1
+  intl_phone_field: ^3.2.0
   image_picker: ^1.1.2
   file_picker: ^10.0.0
   permission_handler: ^11.4.0
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-
   flutter_lints: ^5.0.0
 
 flutter:
-
   uses-material-design: true
 
   assets:
     - images/
-
-
+    - assets/animations/

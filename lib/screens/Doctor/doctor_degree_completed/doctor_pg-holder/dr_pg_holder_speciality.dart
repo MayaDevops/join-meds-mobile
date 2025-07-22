@@ -101,7 +101,7 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
     if (workExpStatus == 'No') {
       Navigator.pushNamed(context, '/County_that_you_preferred_page');
 
-    } else {
+    } else if(workExpStatus == 'Yes') {
       Navigator.pushNamed(context, '/work_experience'); // Navigate to work experience page
     }
   }

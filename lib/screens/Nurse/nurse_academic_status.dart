@@ -114,9 +114,9 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
 
       if (workExpStatus == null) return;
 
-      if (workExpStatus == 'No') {
+      if (workExpStatus == 'Work Experience-No') {
         Navigator.pushNamed(context, '/County_that_you_preferred_page');
-      } else {
+      } else if(workExpStatus == 'Work Experience-Yes') {
         Navigator.pushNamed(context, '/work_experience');
       }
     }

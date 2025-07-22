@@ -171,7 +171,7 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
           TextFormWidget(
             controller: _moreExperienceDetails,
             validator: (value) {
-              if (value == null || value.isEmpty || value.length < 5) {
+              if (value == null || value.isEmpty || value.isEmpty) {
                 return 'Please enter at least 5 characters';
               }
               if (!RegExp(r"^[a-zA-Z0-9\s,.-]+$").hasMatch(value)) {
@@ -180,7 +180,7 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
               return null;
             },
             keyboardType: TextInputType.text,
-            hintText: 'Eg: 6 years, 7 years, etc.',
+            hintText: 'Eg: 6, 7, etc.',
             obscureText: false,
           ),
         ],

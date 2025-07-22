@@ -10,7 +10,8 @@ class AfterCountryPreferredPage extends StatefulWidget {
   const AfterCountryPreferredPage({super.key});
 
   @override
-  State<AfterCountryPreferredPage> createState() => _AfterCountryPreferredPageState();
+  State<AfterCountryPreferredPage> createState() =>
+      _AfterCountryPreferredPageState();
 }
 
 class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
@@ -55,18 +56,22 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
     await _fetchUserDetails();
   }
 
-
   Future<void> _fetchUserDetails() async {
     try {
-      final response = await http.get(Uri.parse('https://api.joinmeds.in/api/user-details/$userId'));
+      final response = await http
+          .get(Uri.parse('https://api.joinmeds.in/api/user-details/$userId'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
           languageTestStatus = data['languageTest'];
-          _clearedTestOption = data['languageTestCleared'] != null ? 'Yes' : 'No';
+          _clearedTestOption =
+              data['languageTestCleared'] != null ? 'Yes' : 'No';
           _selectedClearedTest = data['languageTestCleared']?.split(' ')?.first;
-          _testScoreController.text = data['languageTestCleared']?.split(' ')?.sublist(1).join(' ') ?? '';
-          _certificationOptionStatus = data['certification']?.isNotEmpty == true ? 'Yes' : 'No';
+          _testScoreController.text =
+              data['languageTestCleared']?.split(' ')?.sublist(1).join(' ') ??
+                  '';
+          _certificationOptionStatus =
+              data['certification']?.isNotEmpty == true ? 'Yes' : 'No';
           _certificateController.text = data['certification'] ?? '';
         });
       }
@@ -76,14 +81,14 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
   }
 
   Future<void> _submit() async {
-
     if (_formKey.currentState?.validate() ?? false) {
       final languageTestFinal = languageTestStatus ?? '';
       final clearedTestFinal = _clearedTestOption == 'Yes'
           ? "${_selectedClearedTest ?? ''} ${_testScoreController.text.trim()}"
           : '';
-      final certificationFinal =
-      _certificationOptionStatus == 'Yes' ? _certificateController.text.trim() : '';
+      final certificationFinal = _certificationOptionStatus == 'Yes'
+          ? _certificateController.text.trim()
+          : '';
 
       final body = {
         "userId": userId ?? '',
@@ -96,13 +101,14 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
 
       try {
         final response = await http.put(
-          Uri.parse('https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId'),
+          Uri.parse(
+              'https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(body),
         );
 
         if (response.statusCode == 200 || response.statusCode == 204) {
-          Navigator.pushNamed(context, '/home');
+          Navigator.pushNamed(context, '/success');
         } else {
           debugPrint('Response: ${response.body}');
           ScaffoldMessenger.of(context).showSnackBar(
@@ -123,7 +129,6 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
     }
   }
 
-
   Widget _buildDropdown({
     required String hintText,
     required List<String> items,
@@ -143,7 +148,8 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
       initialSelection: value,
       textStyle: hintStyle,
       onSelected: onChanged,
-      dropdownMenuEntries: items.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
+      dropdownMenuEntries:
+          items.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
     );
   }
 
@@ -178,7 +184,9 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
     final oetRegex = RegExp(r'\s*[A-C]');
     final germanRegex = RegExp(r'\b(A[1-2]|B[1-2]|C[1-2])\b');
 
-    if (!ieltsRegex.hasMatch(input) && !oetRegex.hasMatch(input) && !germanRegex.hasMatch(input)) {
+    if (!ieltsRegex.hasMatch(input) &&
+        !oetRegex.hasMatch(input) &&
+        !germanRegex.hasMatch(input)) {
       return 'Enter a valid score (e.g., IELTS 7.0, OET B, B2)';
     }
 
@@ -202,7 +210,8 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
         automaticallyImplyLeading: true,
         centerTitle: true,
         backgroundColor: mainBlue,
-        title: const Text('Language & Certification', style: TextStyle(color: Colors.white)),
+        title: const Text('Language & Certification',
+            style: TextStyle(color: Colors.white)),
       ),
       body: RawScrollbar(
         thumbColor: Colors.black38,
@@ -218,15 +227,16 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: spacing + 10),
-                const LabelText(labelText: 'Have you written any language test?'),
+                const LabelText(
+                    labelText: 'Have you written any language test?'),
                 const SizedBox(height: 5),
                 _buildRadioGroup(
                   groupValue: languageTestStatus,
                   onChanged: (val) => setState(() => languageTestStatus = val),
                 ),
-
                 const SizedBox(height: spacing),
-                const LabelText(labelText: 'Have you cleared any language test?'),
+                const LabelText(
+                    labelText: 'Have you cleared any language test?'),
                 const SizedBox(height: 5),
                 _buildRadioGroup(
                   groupValue: _clearedTestOption,
@@ -240,7 +250,6 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
                     });
                   },
                 ),
-
                 if (_clearedTestOption == 'Yes') ...[
                   const SizedBox(height: spacing),
                   const LabelText(labelText: 'Specify the Test Cleared'),
@@ -249,9 +258,9 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
                     hintText: 'Select Test',
                     items: clearedTests,
                     value: _selectedClearedTest,
-                    onChanged: (val) => setState(() => _selectedClearedTest = val),
+                    onChanged: (val) =>
+                        setState(() => _selectedClearedTest = val),
                   ),
-
                   const SizedBox(height: 10),
                   const LabelText(labelText: 'Score Obtained'),
                   const SizedBox(height: 5),
@@ -263,7 +272,6 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
                     obscureText: false,
                   ),
                 ],
-
                 const SizedBox(height: spacing),
                 const LabelText(labelText: 'Have you done any certifications?'),
                 const SizedBox(height: 5),
@@ -278,7 +286,6 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
                     });
                   },
                 ),
-
                 if (_certificationOptionStatus == 'Yes') ...[
                   const SizedBox(height: spacing),
                   const LabelText(labelText: 'Mention your certifications'),
@@ -316,7 +323,8 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
-          child: const Text('Continue', style: TextStyle(fontSize: 20.0, color: Colors.white)),
+          child: const Text('Continue',
+              style: TextStyle(fontSize: 20.0, color: Colors.white)),
         ),
       ),
     );

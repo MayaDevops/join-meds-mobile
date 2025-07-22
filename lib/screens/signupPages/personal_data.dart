@@ -139,7 +139,7 @@ class _PersonalDataState extends State<PersonalData> {
                               );
                               if (date != null) {
                                 final formattedDate =
-                                DateFormat("yyyy-MM-dd").format(date);
+                                DateFormat("dd-mm-yyyy").format(date);
                                 setState(() {
                                   _dobController.text = formattedDate;
                                 });

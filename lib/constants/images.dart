@@ -21,3 +21,7 @@ const bodyBg = 'images/body-bg.jpg';
 const profileDefaultImg = 'images/profile_default_img.jpg';
 const resumeImg1 = 'images/resume_img-1.png';
 const resumeImg2 = 'images/resume_img-2.png';
+
+
+
+const successAnimation = 'assets/animations/Success animation.json';
