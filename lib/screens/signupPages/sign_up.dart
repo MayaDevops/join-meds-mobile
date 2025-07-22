@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/widgets/text_form_widget2.dart';
@@ -8,6 +7,8 @@ import '../../constants/images.dart';
 import '../../widgets/main_button.dart';
 import '../../api/user_api_service.dart';
 import '../../models/signup_request.dart';
+
+const String sharedPrefUserIdKey = 'userId'; // 🔑 Constant Key
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -57,7 +58,6 @@ class _SignUpState extends State<SignUp> {
     return null;
   }
 
-
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
@@ -74,7 +74,7 @@ class _SignUpState extends State<SignUp> {
         children: [
           Text(label,
               style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+              const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
           const SizedBox(height: 5),
           TextFormWidget2(
             controller: controller,
@@ -90,36 +90,34 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-
   Future<void> _submitSignup() async {
     if (_signInKey.currentState!.validate()) {
       final request = SignupRequest(
-        orgName: "", // Replace or get from UI
-        officialEmail: "", // Replace or get from UI
-        officialPhone: "", // Replace or get from UI
-        incorporationNo: "", // Replace or get from UI
-        emailMobile: _emailPhoneController.text,
-        password: _passwordController.text,
-        confirmPassword: _confirmPasswordController.text,
+        orgName: "",
+        officialEmail: "",
+        officialPhone: "",
+        incorporationNo: "",
+        emailMobile: _emailPhoneController.text.trim(),
+        password: _passwordController.text.trim(),
+        confirmPassword: _confirmPasswordController.text.trim(),
         createdAt: "",
         userType: "CITIZEN",
-
       );
-      debugPrint("Signup Request JSON: ${jsonEncode(request.toJson())}");
-      final response = await UserApiService().signup(request);
 
+      debugPrint("Signup Request JSON: ${jsonEncode(request.toJson())}");
+
+      final response = await UserApiService().signup(request);
 
       if ((response.statusCode == 200 || response.statusCode == 201) && isChecked) {
         final responseData = jsonDecode(response.body);
 
         if (responseData['id'] != null) {
-          // 👇 Save userId locally
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('userId', responseData['id']);
-          debugPrint("Saved userId: ${responseData['id']}");
+          await prefs.setString(sharedPrefUserIdKey, responseData['id']);
+          debugPrint("✅ Saved userId to prefs: ${responseData['id']}");
         }
 
-        Navigator.pushNamed(context, '/sign_up_loading');
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
       } else if (!isChecked) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -144,6 +142,7 @@ class _SignUpState extends State<SignUp> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -208,7 +207,8 @@ class _SignUpState extends State<SignUp> {
                               ),
                               onPressed: () {
                                 setState(() {
-                                  _showConfirmPassword = !_showConfirmPassword;
+                                  _showConfirmPassword =
+                                  !_showConfirmPassword;
                                 });
                               },
                             ),
@@ -240,7 +240,7 @@ class _SignUpState extends State<SignUp> {
                                         Navigator.pushNamed(context,
                                             'user_terms_and_conditions');
                                       },
-                                      child: Text(
+                                      child: const Text(
                                         'Terms and Conditions',
                                         style: TextStyle(
                                             fontSize: 18,
@@ -259,13 +259,13 @@ class _SignUpState extends State<SignUp> {
                                 ),
                                 Row(
                                   children: [
-                                    SizedBox(width: 45),
+                                    const SizedBox(width: 45),
                                     InkWell(
                                       onTap: () {
                                         Navigator.pushNamed(context,
                                             'user_terms_and_conditions');
                                       },
-                                      child: Text(
+                                      child: const Text(
                                         'Privacy Policy',
                                         style: TextStyle(
                                             fontSize: 18,
@@ -307,7 +307,8 @@ class _SignUpState extends State<SignUp> {
                   const Text('If you have an account ',
                       style: TextStyle(fontSize: 16)),
                   GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, '/login_page'),
+                    onTap: () =>
+                        Navigator.pushNamed(context, '/login_page'),
                     child: Text(
                       'Login',
                       style: TextStyle(

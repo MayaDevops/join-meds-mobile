@@ -236,8 +236,15 @@ class _UserProfileSectionState extends State<UserProfileSection> {
             );
           }),
           const Divider(),
-          _buildDrawerItem(Icons.logout, 'Logout', () {
-            Navigator.pushNamed(context, '/landing_page');
+          _buildDrawerItem(Icons.logout, 'Logout', () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.clear(); // This clears userId and any other saved data
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/landing_page',
+                  (Route<dynamic> route) => false, // This removes all previous routes
+            );
+
           }),
         ],
       ),
