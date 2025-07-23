@@ -8,6 +8,7 @@ class PersonalDataModel {
   final String? resumeId;
   final String? profession;
   final String? academicStatus;
+  final String? emailOrPhone;
   final String? pgStatus;
   final String? speciality;
   final String? phdStatus;
@@ -33,6 +34,7 @@ class PersonalDataModel {
     this.resumeId,
     this.profession,
     this.academicStatus,
+    this.emailOrPhone,
     this.pgStatus,
     this.speciality,
     this.phdStatus,

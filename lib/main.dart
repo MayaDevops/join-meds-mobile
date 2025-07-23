@@ -59,9 +59,11 @@ import 'package:untitled/screens/country_preferred_pages/country_that_you_prefer
 import 'package:untitled/screens/landing_page.dart';
 import 'package:untitled/screens/login_page/delete_account.dart';
 import 'package:untitled/screens/login_page/home_screen.dart';
+import 'package:untitled/screens/login_page/log_out_loading.dart';
 import 'package:untitled/screens/login_page/login_page.dart';
 import 'package:untitled/screens/login_page/login_page_loading.dart';
 import 'package:untitled/screens/login_page/my_jobs_screen.dart';
+import 'package:untitled/screens/login_page/sign_up_loading.dart';
 import 'package:untitled/screens/login_page/user_notification.dart';
 import 'package:untitled/screens/login_page/user_privacy_policy.dart';
 import 'package:untitled/screens/login_page/user_terms_and_condition.dart';
@@ -89,7 +91,6 @@ import 'package:untitled/screens/signupPages/profile_update_success_page.dart';
 import 'package:untitled/screens/signupPages/resume_upload.dart';
 import 'package:untitled/screens/signupPages/sign_up.dart';
 import 'screens/signupPages/personal_data.dart';
-import 'screens/signupPages/sing_up_loading.dart';
 
 void main() {
   runApp(
@@ -163,6 +164,8 @@ void main() {
         '/sign_up': (context) => const SignUp(), // Sing Up Page of the App
         '/sign_up_loading': (context) =>
             const SignUpLoading(), // After Singing Up loading Page of the App
+        '/logOut_loading': (context) =>
+        const LogOutLoading(),
         // Login and Sing Up pages of App ends here
 
         // Personal data collection pages of the App starts here

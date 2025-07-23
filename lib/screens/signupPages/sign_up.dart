@@ -117,7 +117,7 @@ class _SignUpState extends State<SignUp> {
           debugPrint("✅ Saved userId to prefs: ${responseData['id']}");
         }
 
-        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+        Navigator.pushNamedAndRemoveUntil(context, '/sign_up_loading', (route) => false);
       } else if (!isChecked) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

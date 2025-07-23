@@ -10,7 +10,8 @@ class CountryThatYouPreferred extends StatefulWidget {
   const CountryThatYouPreferred({super.key});
 
   @override
-  State<CountryThatYouPreferred> createState() => _CountryThatYouPreferredState();
+  State<CountryThatYouPreferred> createState() =>
+      _CountryThatYouPreferredState();
 }
 
 class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
@@ -27,9 +28,38 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
   String? _workExperienceDuration;
 
   static const List<String> countries = [
-   "India", "United States", "United Kingdom","Canada","Ireland"];
+    "United Kingdom (UK)",
+    "Germany",
+    "Ireland",
+    "Australia",
+    "Canada",
+    "United States (USA)",
+    "New Zealand",
+    "United Arab Emirates (UAE)",
+    "Saudi Arabia",
+    "Qatar",
+    "Oman",
+    "Kuwait",
+    "Singapore",
+    "Norway",
+    "Sweden",
+    "Italy",
+    "Finland",
+    "France",
+    "Japan",
+    "Malta",
+    "South Africa",
+    "Malaysia",
+  ];
   static const List<String> clearedTests = ['DHA', 'MOH', 'HAD'];
-  static const List<String> years = ['1 Year', '2 Years', '3 Years', '4 Years', '5 Years', 'more'];
+  static const List<String> years = [
+    '1 Year',
+    '2 Years',
+    '3 Years',
+    '4 Years',
+    '5 Years',
+    'more'
+  ];
 
   @override
   void initState() {
@@ -47,7 +77,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
 
   Future<void> _fetchUserDetails() async {
     try {
-      final response = await http.get(Uri.parse('https://api.joinmeds.in/api/user-details/$userId?userId=$userId'));
+      final response = await http.get(Uri.parse(
+          'https://api.joinmeds.in/api/user-details/$userId?userId=$userId'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -55,10 +86,13 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
           _hasClearedTest = data['foreignTest'];
           _clearedTestName = data['foreignTestDetails'];
           _hasForeignWorkExperience = data['foreignCountryExp'];
-          _workExperienceCountry = data['foreignCountryWorked']?.split(' - ')?.first;
-          _workExperienceDuration = data['foreignCountryWorkExp']?.split(' - ')?.last;
+          _workExperienceCountry =
+              data['foreignCountryWorked']?.split(' - ')?.first;
+          _workExperienceDuration =
+              data['foreignCountryWorkExp']?.split(' - ')?.last;
           if (_workExperienceDuration == 'more') {
-            _moreExperienceDetails.text = data['workExperience']?.split(':')?.last ?? '';
+            _moreExperienceDetails.text =
+                data['workExperience']?.split(':')?.last ?? '';
           }
         });
       }
@@ -82,7 +116,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
 
       try {
         final response = await http.put(
-          Uri.parse('https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId'),
+          Uri.parse(
+              'https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(formData),
         );
@@ -91,12 +126,15 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
           Navigator.pushNamed(context, '/after_County_preferred_page');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to update. Code: ${response.statusCode}'), backgroundColor: Colors.red),
+            SnackBar(
+                content: Text('Failed to update. Code: ${response.statusCode}'),
+                backgroundColor: Colors.red),
           );
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error occurred: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Error occurred: $e'), backgroundColor: Colors.red),
         );
       }
     }
@@ -122,7 +160,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
       initialSelection: value,
       textStyle: hintStyle,
       onSelected: onChanged,
-      dropdownMenuEntries: items.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
+      dropdownMenuEntries:
+          items.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
     );
   }
 
@@ -132,12 +171,17 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: ['Yes', 'No'].map((option) => Row(
-        children: [
-          Text(option, style: radioTextStyle),
-          Radio<String>(value: option, groupValue: groupValue, onChanged: onChanged),
-        ],
-      )).toList(),
+      children: ['Yes', 'No']
+          .map((option) => Row(
+                children: [
+                  Text(option, style: radioTextStyle),
+                  Radio<String>(
+                      value: option,
+                      groupValue: groupValue,
+                      onChanged: onChanged),
+                ],
+              ))
+          .toList(),
     );
   }
 
@@ -157,7 +201,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                       Radio<String>(
                         value: years[i + j],
                         groupValue: _workExperienceDuration,
-                        onChanged: (value) => setState(() => _workExperienceDuration = value),
+                        onChanged: (value) =>
+                            setState(() => _workExperienceDuration = value),
                       ),
                     ],
                   ),
@@ -199,10 +244,11 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true,
         centerTitle: true,
         backgroundColor: mainBlue,
-        title: const Text('Preferred Country', style: TextStyle(color: Colors.white)),
+        title: const Text('Preferred Country',
+            style: TextStyle(color: Colors.white)),
       ),
       body: RawScrollbar(
         thumbColor: Colors.black38,
@@ -227,7 +273,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                   onChanged: (val) => setState(() => _preferredCountry = val),
                 ),
                 const SizedBox(height: 20),
-                const LabelText(labelText: 'Have you Cleared any Foreign Test?'),
+                const LabelText(
+                    labelText: 'Have you Cleared any Foreign Test?'),
                 const SizedBox(height: 5),
                 _buildRadioGroup(
                   groupValue: _hasClearedTest,
@@ -250,7 +297,9 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                   ),
                 ],
                 const SizedBox(height: 20),
-                const LabelText(labelText: 'Do you have Work Experience in any Foreign Countries?'),
+                const LabelText(
+                    labelText:
+                        'Do you have Work Experience in any Foreign Countries?'),
                 const SizedBox(height: 5),
                 _buildRadioGroup(
                   groupValue: _hasForeignWorkExperience,
@@ -273,7 +322,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                     hintText: 'Select Country',
                     items: countries,
                     value: _workExperienceCountry,
-                    onChanged: (val) => setState(() => _workExperienceCountry = val),
+                    onChanged: (val) =>
+                        setState(() => _workExperienceCountry = val),
                   ),
                   const SizedBox(height: 20),
                   const LabelText(labelText: 'Years of experience'),
@@ -296,7 +346,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           ),
-          child: const Text('Continue', style: TextStyle(fontSize: 20.0, color: Colors.white)),
+          child: const Text('Continue',
+              style: TextStyle(fontSize: 20.0, color: Colors.white)),
         ),
       ),
     );

@@ -4,14 +4,14 @@ import 'package:untitled/constants/images.dart';
 import 'package:untitled/screens/landing_page.dart';
 import 'package:untitled/screens/login_page/home_screen.dart';
 
-class LoginLoading extends StatefulWidget {
-  const LoginLoading({super.key});
+class LogOutLoading extends StatefulWidget {
+  const LogOutLoading({super.key});
 
   @override
-  State<LoginLoading> createState() => _LoginLoadingState();
+  State<LogOutLoading> createState() => _LogOutLoadingState();
 }
 
-class _LoginLoadingState extends State<LoginLoading> {
+class _LogOutLoadingState extends State<LogOutLoading> {
   @override
   void initState() {
     super.initState();
@@ -24,7 +24,7 @@ class _LoginLoadingState extends State<LoginLoading> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const HomeScreen(),
+        builder: (context) => const LandingPage(),
       ),
     );
   }
@@ -50,14 +50,14 @@ class _LoginLoadingState extends State<LoginLoading> {
 
                 // Lottie animation
                 Lottie.asset(
-                  loadingAnimation2, // Make sure this file exists
-                  height: 200,
+                  logOutAnimation, // Make sure this file exists
+                  height: 60,
                 ),
 
                 const SizedBox(height: 10),
 
                 const Text(
-                  'Logging you in...',
+                  'Just a moment... Logging you out...',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,

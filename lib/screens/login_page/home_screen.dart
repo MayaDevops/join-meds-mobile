@@ -29,7 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       drawer: _buildDrawer(context),
       appBar: _buildAppBar(context),
       body: _pages[_selectedIndex],
@@ -41,6 +40,43 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppBar(
       backgroundColor: const Color(0xffD9D9D9),
       automaticallyImplyLeading: false,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text("Log Out"),
+                  content: const Text("Are you sure you want to log out?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close the dialog
+                      },
+                      child: const Text("No"),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close dialog first
+                        // Then perform logout logic
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/logOut_loading', // Replace with your login screen route
+                              (route) => false,
+                        );
+                      },
+                      child: const Text("Yes"),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        )
+
+      ],
       titleSpacing: 16,
       title: const Text.rich(
         TextSpan(
@@ -51,12 +87,9 @@ class _HomeScreenState extends State<HomeScreen> {
               text: 'Meds',
               style: TextStyle(color: mainBlue, fontWeight: FontWeight.bold),
             ),
-
           ],
         ),
-
       ),
-
     );
   }
 
@@ -110,7 +143,8 @@ class _HomeScreenState extends State<HomeScreen> {
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.work), label: 'My Jobs'),
-        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notification'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.notifications), label: 'Notification'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ],
     );
@@ -122,7 +156,8 @@ class HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView( // Makes the page scrollable
+    return SingleChildScrollView(
+      // Makes the page scrollable
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -141,7 +176,6 @@ class HomeTab extends StatelessWidget {
     );
   }
 }
-
 
 class ContactPage extends StatelessWidget {
   const ContactPage({super.key});

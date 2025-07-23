@@ -26,9 +26,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
   Future<void> loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('userId');
-    if (userId != null) {
-      fetchAppliedJobs();
-    }
+    if (userId != null) fetchAppliedJobs();
   }
 
   Future<void> fetchAppliedJobs() async {
@@ -45,9 +43,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
         throw Exception('Failed to load jobs');
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
@@ -56,92 +52,86 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
 
   Widget _buildTag(String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.only(right: 6, bottom: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: mainBlue.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(4),
+        color: mainBlue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: mainBlue),
       ),
-      child: Text(
-        text,
-        style: const TextStyle(color: mainBlue, fontSize: 14),
-      ),
+      child: Text(text, style: const TextStyle(color: mainBlue, fontSize: 13)),
     );
   }
 
   Widget _buildJobCard(dynamic job) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: mainBlue),
-      ),
+    return Card(
+      elevation: 3,
+      margin: const EdgeInsets.only(bottom: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
             decoration: const BoxDecoration(
               color: mainBlue,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
             ),
-            padding: const EdgeInsets.all(12),
             child: Text(
-              job['hiringFor'] ?? 'hiringFor',
-              style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+              job['hiringFor'] ?? 'Position',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
 
-          // Info
+          // Job Info
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  job['orgName'] ?? 'Data Not available',
-                  style: const TextStyle(fontSize: 16),
+                  job['orgName'] ?? 'Organization',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
-                const SizedBox(height: 10),
-
-                Row(
+                const SizedBox(height: 8),
+                Wrap(
                   children: [
-                    Expanded(
-                      child: _buildTag('Salary Range: ${_formatSalary(job['payFrom'], job['payTo'], job['payRange'])}'),
-                    ),
-
-
+                    _buildTag(
+                        'Salary: ${_formatSalary(job['payFrom'], job['payTo'], job['payRange'])}'),
+                    _buildTag(
+                        'Applied On: ${job['submittedAt']?.toString().substring(0, 10) ?? 'Date'}'),
                   ],
                 ),
-                const SizedBox(height: 8),
-                // Rest of the tags vertically
-                _buildTag('Applied On: ${job['submittedAt']?.toString().substring(0, 10) ?? 'Date'}'),
-                const SizedBox(height: 8),
-                /// ✅ Horizontal scrolling tags
+                const SizedBox(height: 4),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
                       _buildTag('Status: ${job['status'] ?? 'N/A'}'),
-                      const SizedBox(width: 7),
-                      _buildTag('Job Type: ${job['natureJob'] ?? 'N/A'}'),
-                      // _buildTag(job['natureJob'] ?? 'natureJob'),
-                    //  _buildTag(job['submittedAt']?.toString().substring(0, 10) ?? 'Date'),
+                      _buildTag('Type: ${job['natureJob'] ?? 'N/A'}'),
                     ],
                   ),
                 ),
               ],
-
             ),
-
           ),
-
 
           // View Button
           Container(
+            width: double.infinity,
             decoration: const BoxDecoration(
               color: mainBlue,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
             ),
             child: TextButton(
               onPressed: () {
@@ -154,7 +144,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
               },
               child: const Text(
                 'View Details',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
           ),
@@ -166,11 +156,12 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('My Jobs', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
-        elevation: 0,
+        elevation: 1,
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -179,7 +170,8 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
           : ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: appliedJobs.length,
-        itemBuilder: (context, index) => _buildJobCard(appliedJobs[index]),
+        itemBuilder: (context, index) =>
+            _buildJobCard(appliedJobs[index]),
       ),
     );
   }
@@ -188,11 +180,10 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
 String _formatSalary(dynamic payFrom, dynamic payTo, String? payRange) {
   if (payFrom == null && payTo == null) return 'N/A';
   if (payFrom != null && payTo != null) {
-    return '$payFrom-$payTo/${payRange ?? "N/A"}';
+    return '$payFrom - $payTo / ${payRange ?? "N/A"}';
   } else if (payFrom != null) {
-    return '$payFrom/${payRange ?? "N/A"}';
+    return '$payFrom / ${payRange ?? "N/A"}';
   } else {
-    return '$payTo/${payRange ?? "N/A"}';
+    return '$payTo / ${payRange ?? "N/A"}';
   }
 }
-

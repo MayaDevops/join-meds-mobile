@@ -16,10 +16,7 @@ class UserViewJobDetails extends StatefulWidget {
 class _UserViewJobDetailsState extends State<UserViewJobDetails> {
   Map<String, dynamic>? jobData;
   bool isLoading = true;
-  String? userId;
-  String? orgId;
-  String? resumeId;
-  String? fullName;
+  String? userId, orgId, resumeId, fullName;
   bool isApplied = false;
 
   @override
@@ -35,36 +32,35 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
     final prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('userId');
     resumeId = prefs.getString('resumeId');
-
     final personalDataJson = prefs.getString('personal_data');
     if (personalDataJson != null) {
-      final personalData = PersonalDataModel.fromJson(json.decode(personalDataJson));
+      final personalData =
+      PersonalDataModel.fromJson(json.decode(personalDataJson));
       fullName = personalData.fullname;
     }
   }
 
   Future<void> fetchJobDetails() async {
-    final url = Uri.parse('https://api.joinmeds.in/api/org-job/fetch/${widget.jobId}');
     try {
+      final url =
+      Uri.parse('https://api.joinmeds.in/api/org-job/fetch/${widget.jobId}');
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final decoded = json.decode(response.body);
-        if (decoded is List && decoded.isNotEmpty && decoded[0] is Map<String, dynamic>) {
+        if (decoded is List && decoded.isNotEmpty) {
           setState(() {
             jobData = decoded[0];
             orgId = decoded[0]['orgId'];
             isLoading = false;
           });
-        } else {
-          throw Exception('Unexpected response format.');
         }
       } else {
-        throw Exception('Failed to load job: ${response.statusCode}');
+        throw Exception('Failed to load job');
       }
     } catch (e) {
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching job details: $e')),
+        SnackBar(content: Text('Error fetching job: $e')),
       );
     }
   }
@@ -73,41 +69,23 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
     if (userId == null || widget.jobId.isEmpty) return;
 
     final url = Uri.parse(
-      'https://api.joinmeds.in/api/job-applied/search?userId=$userId&jobId=${widget.jobId}',
-    );
-
-    print('🔍 Checking if already applied...');
-    print('userId: $userId');
-    print('jobId: ${widget.jobId}');
-
+        'https://api.joinmeds.in/api/job-applied/search?userId=$userId&jobId=${widget.jobId}');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final List<dynamic> responseBody = json.decode(response.body);
-
-        // Check if any application in the list has status 'APPLIED'
-        bool foundApplied = responseBody.any((item) =>
-        item is Map<String, dynamic> && item['status'] == 'APPLIED');
-
-        if (foundApplied) {
-          setState(() {
-            isApplied = true;
-          });
-          print('✅ User already applied.');
-        } else {
-          print('ℹ️ No existing application with status APPLIED.');
-        }
-      } else {
-        print('❌ Failed to check applications. Status code: ${response.statusCode}');
+        setState(() {
+          isApplied = responseBody.any((item) =>
+          item is Map<String, dynamic> && item['status'] == 'APPLIED');
+        });
       }
     } catch (e) {
-      print('❌ Error during application check: $e');
+      debugPrint('Error checking application: $e');
     }
   }
 
-
   Future<void> applyToJob() async {
-    if (userId == null || orgId == null || widget.jobId.isEmpty || resumeId == null ) {
+    if ([userId, orgId, widget.jobId, resumeId].contains(null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Missing required profile details')),
       );
@@ -119,7 +97,6 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
       "orgId": orgId,
       "jobId": widget.jobId,
       "resumeId": resumeId,
-
     };
 
     try {
@@ -135,34 +112,102 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
           const SnackBar(
             content: Text('🎉 Application submitted successfully!'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
           ),
         );
         Future.delayed(const Duration(seconds: 2), () {
           Navigator.pushReplacementNamed(context, '/job');
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to apply: ${response.statusCode}')),
-        );
+        throw Exception('Apply failed: ${response.statusCode}');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error submitting application: $e')),
+        SnackBar(content: Text('Application error: $e')),
       );
     }
   }
 
-  Widget _buildLabelValue(String label, String? value) {
+  Widget _buildDetailItem(String label, String? value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: RichText(
-        text: TextSpan(
-          style: const TextStyle(fontSize: 16, color: Colors.black),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label: ",
+            style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
+          ),
+          Expanded(child: Text(value?.isNotEmpty == true ? value! : "N/A",style: TextStyle(fontSize: 18),)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildJobCard() {
+    return Card(
+      margin: const EdgeInsets.all(16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextSpan(text: '$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-            TextSpan(text: value?.isNotEmpty == true ? value : 'N/A'),
+            Text(
+              jobData?['orgName'] ?? 'Organization',
+              style: const TextStyle(
+                fontSize: 24,
+                color: mainBlue,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildDetailItem("Hiring For", jobData?['hiringFor']),
+            _buildDetailItem("Experience", jobData?['yearExp']),
+            _buildDetailItem("Skills", jobData?['skills']),
+            _buildDetailItem("Nature of Job", jobData?['natureJob']),
+            _buildDetailItem(
+              "Pay Range",
+              '₹${jobData?['payFrom'] ?? ''} - ₹${jobData?['payTo'] ?? ''} / ${jobData?['payRange'] ?? ''}',
+            ),
+            _buildDetailItem("Description", jobData?['jobDesc']),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildApplyButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+      width: double.infinity,
+      height: 50,
+      decoration: BoxDecoration(
+        gradient: isApplied
+            ? const LinearGradient(colors: [Colors.green, Colors.green])
+            : const LinearGradient(colors: [mainBlue, Color(0xFF045DE9)]),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          )
+        ],
+      ),
+      child: ElevatedButton.icon(
+        icon: Icon(isApplied ? Icons.check_circle : Icons.send),
+        label: Text(
+          isApplied ? 'Applied' : 'Apply Now',
+          style: const TextStyle(fontSize: 16),
+        ),
+        onPressed: isApplied ? null : applyToJob,
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         ),
       ),
     );
@@ -173,7 +218,6 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xffD9D9D9),
-        automaticallyImplyLeading: true,
         titleSpacing: 16,
         title: const Text.rich(
           TextSpan(
@@ -182,7 +226,8 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
             children: [
               TextSpan(
                 text: 'Meds',
-                style: TextStyle(color: mainBlue, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: mainBlue, fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -190,62 +235,11 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              color: mainBlue,
-              child: Text(
-                'Hiring For: ${jobData?['hiringFor'] ?? 'N/A'}',
-                style: const TextStyle(fontSize: 20, color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildLabelValue('Organization Name', jobData?['orgName']),
-            _buildLabelValue('Experience Required', jobData?['yearExp']),
-            _buildLabelValue('Skills', jobData?['skills']),
-            _buildLabelValue('Nature of Job', jobData?['natureJob']),
-            _buildLabelValue(
-              'Pay Range',
-              '₹${jobData?['payFrom'] ?? ''} - ₹${jobData?['payTo'] ?? ''} / ${jobData?['payRange'] ?? ''}',
-            ),
-            _buildLabelValue('Job Description', jobData?['jobDesc']),
-            const SizedBox(height: 30),
-            Center(
-              child: ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                        (Set<MaterialState> states) {
-                      if (states.contains(MaterialState.disabled)) {
-                        return Colors.green; // ✅ Disabled state color
-                      }
-                      return mainBlue; // ✅ Default state color
-                    },
-                  ),
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                  padding: MaterialStateProperty.all<EdgeInsets>(
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
-                  ),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-                onPressed: isApplied ? null : applyToJob,
-                child: Text(
-                  isApplied ? 'Applied' : 'Apply Now',
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-
-          ],
-        ),
+          : Column(
+        children: [
+          Expanded(child: _buildJobCard()),
+          _buildApplyButton(),
+        ],
       ),
     );
   }

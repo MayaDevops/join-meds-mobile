@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:untitled/constants/images.dart';
-import 'package:untitled/screens/landing_page.dart';
 import 'package:untitled/screens/login_page/home_screen.dart';
+import 'package:untitled/screens/signupPages/personal_data.dart';
 
-class LoginLoading extends StatefulWidget {
-  const LoginLoading({super.key});
+class SignUpLoading extends StatefulWidget {
+  const SignUpLoading({super.key});
 
   @override
-  State<LoginLoading> createState() => _LoginLoadingState();
+  State<SignUpLoading> createState() => _SignUpLoadingState();
 }
 
-class _LoginLoadingState extends State<LoginLoading> {
+class _SignUpLoadingState extends State<SignUpLoading> {
   @override
   void initState() {
     super.initState();
@@ -24,7 +24,7 @@ class _LoginLoadingState extends State<LoginLoading> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const HomeScreen(),
+        builder: (context) => const PersonalData(),
       ),
     );
   }
@@ -54,10 +54,10 @@ class _LoginLoadingState extends State<LoginLoading> {
                   height: 200,
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 30),
 
                 const Text(
-                  'Logging you in...',
+                  'Please wait while we sign you in...',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
