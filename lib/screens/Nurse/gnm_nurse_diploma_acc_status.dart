@@ -239,19 +239,22 @@ class _PostGraduationSheet extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: onSave,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(15),
-                backgroundColor: mainBlue,
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero),
+            Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(context).viewPadding.bottom + 20,
               ),
-              child: const Text(
-                'Save',
-                style: TextStyle(fontSize: 20, color: Colors.white),
+              child: ElevatedButton(
+                onPressed: onSave,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(15),
+                  backgroundColor: mainBlue,
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                ),
+                child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
               ),
-            ),
+            )
           ],
         ),
       ),
@@ -342,29 +345,33 @@ class _OptionBottomSheet extends StatelessWidget {
             ),
           ),
           SizedBox(height: 20,),
-          ElevatedButton(
-            onPressed: () {
-              if (selectedValue != null) {
-                Navigator.pop(context, selectedValue);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please select an option',
-                        textAlign: TextAlign.center),
-                    backgroundColor: Colors.red,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: mainBlue,
-              padding: const EdgeInsets.all(15),
-              shape:
-              const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              bottom: MediaQuery.of(context).viewPadding.bottom + 20,
             ),
-            child: const Text('Save',
-                style: TextStyle(fontSize: 20, color: Colors.white)),
+            child: ElevatedButton(
+              onPressed: () {
+                if (selectedValue != null) {
+                  Navigator.pop(context, selectedValue);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please select an option', textAlign: TextAlign.center),
+                      backgroundColor: Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: mainBlue,
+                padding: const EdgeInsets.all(15),
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              ),
+              child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+            ),
           ),
         ],
       ),
@@ -432,26 +439,28 @@ class _WorkExpSheetState extends State<WorkExpSheet> {
           ],
         ),
         const SizedBox(height: 30),
-        ElevatedButton(
-          onPressed: (){
-            if(workExpStatus == 'Work-Experience-Yes'){
-              Navigator.pushNamed(context, '/nurse_work_experience');
-            }else{
-              Navigator.pushNamed(context, '/County_that_you_preferred_page');
-              // country that you preferred page
-            }
-          },
-          style: ButtonStyle(
-            padding: WidgetStatePropertyAll(EdgeInsets.all(15),),
-            backgroundColor: WidgetStatePropertyAll(mainBlue),
-            shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(0),),),
+        Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewPadding.bottom + 20,
           ),
-
-          child: Text('continue',style: TextStyle(
-            fontSize: 20.0,
-            color: Colors.white,
-          ),),
-        ),
+          child: ElevatedButton(
+            onPressed: () {
+              if (workExpStatus == 'Work-Experience-Yes') {
+                Navigator.pushNamed(context, '/nurse_work_experience');
+              } else {
+                Navigator.pushNamed(context, '/County_that_you_preferred_page');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.all(15),
+              backgroundColor: mainBlue,
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            ),
+            child: const Text('Continue', style: TextStyle(fontSize: 20, color: Colors.white)),
+          ),
+        )
       ],
     );
   }

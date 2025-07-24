@@ -108,63 +108,73 @@ class _BPharmaAcademicStatusState extends State<BPharmaAcademicStatus> {
       builder: (_) {
         String? selectedValue = postGraduation;
         return StatefulBuilder(
-          builder: (context, setStateSheet) => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                alignment: Alignment.center,
-                padding: const EdgeInsets.only(top: 30, bottom: 20),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: inputBorderClr, width: 1.5),
+          builder: (context, setStateSheet) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.only(top: 30, bottom: 20),
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: inputBorderClr, width: 1.5),
+                    ),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(25),
+                      topRight: Radius.circular(25),
+                    ),
                   ),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(25),
-                    topRight: Radius.circular(25),
+                  child: const Text('Are you a Post Graduate?', style: TextStyle(fontSize: 20)),
+                ),
+                const SizedBox(height: 30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _RadioOption(
+                      text: 'Yes',
+                      value: 'PG-Holder',
+                      groupValue: selectedValue,
+                      onChanged: (val) {
+                        setStateSheet(() => selectedValue = val);
+                        setState(() => postGraduation = val);
+                      },
+                    ),
+                    const SizedBox(width: 70),
+                    _RadioOption(
+                      text: 'No',
+                      value: 'Not-PG-Holder',
+                      groupValue: selectedValue,
+                      onChanged: (val) {
+                        setStateSheet(() => selectedValue = val);
+                        setState(() => postGraduation = val);
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 30),
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    bottom: MediaQuery.of(context).viewPadding.bottom + 20,
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _handleSubmit();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(15),
+                      backgroundColor: mainBlue,
+                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                    ),
+                    child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
                   ),
                 ),
-                child: const Text('Are you a Post Graduate?', style: TextStyle(fontSize: 20)),
-              ),
-              const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _RadioOption(
-                    text: 'Yes',
-                    value: 'PG-Holder',
-                    groupValue: selectedValue,
-                    onChanged: (val) {
-                      setStateSheet(() => selectedValue = val);
-                      setState(() => postGraduation = val);
-                    },
-                  ),
-                  const SizedBox(width: 70),
-                  _RadioOption(
-                    text: 'No',
-                    value: 'Not-PG-Holder',
-                    groupValue: selectedValue,
-                    onChanged: (val) {
-                      setStateSheet(() => selectedValue = val);
-                      setState(() => postGraduation = val);
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _handleSubmit();
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(15),
-                  backgroundColor: mainBlue,
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                ),
-                child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
-              ),
-            ],
+            
+              ],
+            ),
           ),
         );
       },
@@ -312,64 +322,73 @@ class _OptionBottomSheet extends StatelessWidget {
     String? selectedValue;
 
     return StatefulBuilder(
-      builder: (context, setState) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.only(top: 30, bottom: 20),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(25),
-                topRight: Radius.circular(25),
+      builder: (context, setState) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              alignment: Alignment.center,
+              padding: const EdgeInsets.only(top: 30, bottom: 20),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(25),
+                  topRight: Radius.circular(25),
+                ),
+              ),
+              child: Text(title, style: const TextStyle(fontSize: 20)),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 20,
+                children: options.entries.map((entry) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(entry.value, style: radioTextStyle),
+                      Radio<String>(
+                        value: entry.key,
+                        groupValue: selectedValue,
+                        onChanged: (value) => setState(() => selectedValue = value),
+                      ),
+                    ],
+                  );
+                }).toList(),
               ),
             ),
-            child: Text(title, style: const TextStyle(fontSize: 20)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 20,
-              children: options.entries.map((entry) {
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(entry.value, style: radioTextStyle),
-                    Radio<String>(
-                      value: entry.key,
-                      groupValue: selectedValue,
-                      onChanged: (value) => setState(() => selectedValue = value),
-                    ),
-                  ],
-                );
-              }).toList(),
+            Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(context).viewPadding.bottom + 20,
+              ),
+              child: ElevatedButton(
+                onPressed: () {
+                  if (selectedValue != null) {
+                    Navigator.pop(context, selectedValue);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please select an option', textAlign: TextAlign.center),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: mainBlue,
+                  padding: const EdgeInsets.all(15),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                ),
+                child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+              ),
             ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (selectedValue != null) {
-                Navigator.pop(context, selectedValue);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please select an option', textAlign: TextAlign.center),
-                    backgroundColor: Colors.red,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: mainBlue,
-              padding: const EdgeInsets.all(15),
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-            ),
-            child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

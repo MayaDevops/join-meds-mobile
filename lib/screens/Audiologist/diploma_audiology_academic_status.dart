@@ -195,67 +195,75 @@ class _RadioSelectionSheetState extends State<_RadioSelectionSheet> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: SingleChildScrollView(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(vertical: 25),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20, // Prevent keyboard + nav overlap
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(vertical: 25),
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+                ),
+                child: Text(widget.title, style: const TextStyle(fontSize: 20)),
               ),
-              child: Text(widget.title, style: const TextStyle(fontSize: 20)),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 70,
-                children: widget.options.entries.map((entry) {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(entry.value, style: radioTextStyle),
-                      Radio<String>(
-                        value: entry.key,
-                        groupValue: selectedValue,
-                        activeColor: mainBlue,
-                        onChanged: (value) => setState(() => selectedValue = value),
-                      ),
-                    ],
-                  );
-                }).toList(),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 70,
+                  children: widget.options.entries.map((entry) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(entry.value, style: radioTextStyle),
+                        Radio<String>(
+                          value: entry.key,
+                          groupValue: selectedValue,
+                          activeColor: mainBlue,
+                          onChanged: (value) => setState(() => selectedValue = value),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                if (selectedValue != null) {
-                  widget.onSave(selectedValue!);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please select an option', textAlign: TextAlign.center),
-                      backgroundColor: Colors.red,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: mainBlue,
-                padding: const EdgeInsets.all(15),
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (selectedValue != null) {
+                      widget.onSave(selectedValue!);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please select an option', textAlign: TextAlign.center),
+                          backgroundColor: Colors.red,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: mainBlue,
+                    padding: const EdgeInsets.all(15),
+                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  ),
+                  child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+                ),
               ),
-              child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+
   }
 }

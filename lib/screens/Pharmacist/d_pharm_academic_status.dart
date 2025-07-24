@@ -232,27 +232,36 @@ class _RadioSelectionSheetState extends State<_RadioSelectionSheet> {
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                if (selectedValue != null) {
-                  widget.onSave(selectedValue!);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please select an option', textAlign: TextAlign.center),
-                      backgroundColor: Colors.red,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: mainBlue,
-                padding: const EdgeInsets.all(15),
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(context).viewPadding.bottom + 20,
+                top: 10,
               ),
-              child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+              child: ElevatedButton(
+                onPressed: () {
+                  if (selectedValue != null) {
+                    widget.onSave(selectedValue!);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please select an option', textAlign: TextAlign.center),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: mainBlue,
+                  padding: const EdgeInsets.all(15),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                ),
+                child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+              ),
             ),
+
           ],
         ),
       ),

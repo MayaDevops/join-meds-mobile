@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import '../constants/constant.dart';
-
 
 class PharmacistCourseTypeSelection extends StatefulWidget {
   const PharmacistCourseTypeSelection({super.key});
@@ -15,7 +13,11 @@ class _PharmacistCourseTypeSelectionState extends State<PharmacistCourseTypeSele
 
   void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
+      SnackBar(
+        content: Text(message, textAlign: TextAlign.center),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -37,48 +39,58 @@ class _PharmacistCourseTypeSelectionState extends State<PharmacistCourseTypeSele
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          decoration: const BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: inputBorderClr, width: 1.5),
-            ),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(25),
-              topRight: Radius.circular(25),
-            ),
-          ),
-          padding: const EdgeInsets.only(top: 30, bottom: 20),
-          child: const Text(
-            'Select Your Academic Qualification',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 20),
+    final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Pharmacist", style: appBarText),
+        backgroundColor: mainBlue,
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: ListView(
+            padding: EdgeInsets.only(bottom: bottomPadding + 20),
+            children: [
+              const SizedBox(height: 30),
+              Container(
+                padding: const EdgeInsets.only(bottom: 15),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: inputBorderClr, width: 1.5),
+                  ),
+                ),
+                child: const Text(
+                  'Select Your Academic Qualification',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(height: 30),
+              ...['B-Pharm', 'Pharm-D', 'D-Pharm'].map((course) {
+                return RadioListTile<String>(
+                  value: course,
+                  groupValue: nurseCourseType,
+                  title: Text(course, style: radioTextStyle),
+                  activeColor: mainBlue,
+                  onChanged: (value) => setState(() => nurseCourseType = value),
+                );
+              }).toList(),
+              const SizedBox(height: 40),
+              ElevatedButton(
+                onPressed: _navigateBasedOnCourse,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: mainBlue,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Save', style: TextStyle(fontSize: 18, color: Colors.white)),
+              ),
+            ],
           ),
         ),
-        ...['B-Pharm', 'Pharm-D', 'D-Pharm']
-            .map((course) => RadioListTile<String>(
-          value: course,
-          groupValue: nurseCourseType,
-          onChanged: (value) => setState(() => nurseCourseType = value),
-          title: Text(course, style: radioTextStyle),
-        ))
-            .toList(),
-        const SizedBox(height: 30),
-        ElevatedButton(
-          onPressed: _navigateBasedOnCourse,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.all(15),
-            backgroundColor: mainBlue,
-            shape:
-            const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-          ),
-          child: const Text('Save',
-              style: TextStyle(fontSize: 20, color: Colors.white)),
-        ),
-      ],
+      ),
     );
   }
 }

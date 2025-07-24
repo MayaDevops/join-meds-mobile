@@ -217,15 +217,22 @@ class _PostGraduationSheetState extends State<_PostGraduationSheet> {
             ],
           ),
           const SizedBox(height: 30),
-          ElevatedButton(
-            onPressed: widget.onSave,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.all(15),
-              backgroundColor: mainBlue,
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              bottom: MediaQuery.of(context).viewPadding.bottom + 20,
             ),
-            child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
-          ),
+            child: ElevatedButton(
+              onPressed: widget.onSave,
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(15),
+                backgroundColor: mainBlue,
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              ),
+              child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+            ),
+          )
         ],
       ),
     );
@@ -303,26 +310,33 @@ class _OptionBottomSheetState extends State<_OptionBottomSheet> {
           ),
         ),
         const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: () {
-            if (selectedValue != null) {
-              Navigator.pop(context, widget.options[selectedValue!]);
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Please select an option', textAlign: TextAlign.center),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: mainBlue,
-            padding: const EdgeInsets.all(15),
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewPadding.bottom + 20,
           ),
-          child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+          child: ElevatedButton(
+            onPressed: () {
+              if (selectedValue != null) {
+                Navigator.pop(context, widget.options[selectedValue!]);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please select an option', textAlign: TextAlign.center),
+                    backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: mainBlue,
+              padding: const EdgeInsets.all(15),
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            ),
+            child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+          ),
         ),
       ],
     );
