@@ -197,12 +197,12 @@ class _BScAudiologyAcademicStatusState extends State<BScAudiologyAcademicStatus>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _AcademicOption(
+              AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Degree Ongoing',
                 onTap: () => Navigator.pushNamed(context, '/bsc_audiology_degree_ongoing'),
               ),
-              _AcademicOption(
+              AcademicOption(
                 icon: Icons.school,
                 label: 'Degree Completed',
                 onTap: _openPostGraduationSheet,
@@ -215,41 +215,52 @@ class _BScAudiologyAcademicStatusState extends State<BScAudiologyAcademicStatus>
   }
 }
 
-class _AcademicOption extends StatelessWidget {
+class AcademicOption extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
 
-  const _AcademicOption({
+  const AcademicOption({
     required this.icon,
     required this.label,
     required this.onTap,
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        width: 180,
-        padding: const EdgeInsets.symmetric(vertical: 30),
+        width: screenWidth * 0.42, // ~42% of screen width
+        padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 10),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
           color: const Color(0xffD9D9D9),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              offset: const Offset(2, 4),
+              blurRadius: 6,
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 70, color: mainBlue),
-            const SizedBox(height: 10),
+            Icon(icon, size: screenWidth * 0.12, color: mainBlue),
+            const SizedBox(height: 12),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 18,
-                color: mainBlue,
-                fontWeight: FontWeight.w500,
-              ),
               textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: screenWidth * 0.04, // Responsive font size
+                color: mainBlue,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

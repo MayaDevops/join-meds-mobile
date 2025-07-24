@@ -6,10 +6,12 @@ class DiplomaAnaesthesiaTechAcademicStatus extends StatefulWidget {
   const DiplomaAnaesthesiaTechAcademicStatus({super.key});
 
   @override
-  State<DiplomaAnaesthesiaTechAcademicStatus> createState() => _DiplomaAnaesthesiaTechAcademicStatusState();
+  State<DiplomaAnaesthesiaTechAcademicStatus> createState() =>
+      _DiplomaAnaesthesiaTechAcademicStatusState();
 }
 
-class _DiplomaAnaesthesiaTechAcademicStatusState extends State<DiplomaAnaesthesiaTechAcademicStatus> {
+class _DiplomaAnaesthesiaTechAcademicStatusState
+    extends State<DiplomaAnaesthesiaTechAcademicStatus> {
   String? internshipStatus;
 
   void _handleSubmit() async {
@@ -96,18 +98,22 @@ class _DiplomaAnaesthesiaTechAcademicStatusState extends State<DiplomaAnaesthesi
           const Text(
             'Please select your academic status 🎓',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: inputBorderClr),
+            style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: inputBorderClr),
           ),
           const SizedBox(height: 100),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _AcademicOption(
+              AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Diploma Ongoing',
-                onTap: () => Navigator.pushNamed(context, '/dat_diploma_ongoing'),
+                onTap: () =>
+                    Navigator.pushNamed(context, '/dat_diploma_ongoing'),
               ),
-              _AcademicOption(
+              AcademicOption(
                 icon: Icons.school,
                 label: 'Diploma Completed',
                 onTap: _openInternshipSheet,
@@ -120,37 +126,52 @@ class _DiplomaAnaesthesiaTechAcademicStatusState extends State<DiplomaAnaesthesi
   }
 }
 
-class _AcademicOption extends StatelessWidget {
+class AcademicOption extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
 
-  const _AcademicOption({
+  const AcademicOption({
     required this.icon,
     required this.label,
     required this.onTap,
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        width: 180,
-        padding: const EdgeInsets.symmetric(vertical: 30),
+        width: screenWidth * 0.42, // ~42% of screen width
+        padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 10),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
           color: const Color(0xffD9D9D9),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              offset: const Offset(2, 4),
+              blurRadius: 6,
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 70, color: mainBlue),
-            const SizedBox(height: 10),
+            Icon(icon, size: screenWidth * 0.12, color: mainBlue),
+            const SizedBox(height: 12),
             Text(
               label,
-              style: const TextStyle(fontSize: 18, color: mainBlue, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: screenWidth * 0.04, // Responsive font size
+                color: mainBlue,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -181,7 +202,8 @@ class _RadioSelectionSheetState extends State<_RadioSelectionSheet> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: SingleChildScrollView(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
@@ -190,7 +212,8 @@ class _RadioSelectionSheetState extends State<_RadioSelectionSheet> {
               alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(vertical: 25),
               decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
+                border: Border(
+                    bottom: BorderSide(color: inputBorderClr, width: 1.5)),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
               ),
               child: Text(widget.title, style: const TextStyle(fontSize: 20)),
@@ -209,7 +232,8 @@ class _RadioSelectionSheetState extends State<_RadioSelectionSheet> {
                         value: entry.key,
                         groupValue: selectedValue,
                         activeColor: mainBlue,
-                        onChanged: (value) => setState(() => selectedValue = value),
+                        onChanged: (value) =>
+                            setState(() => selectedValue = value),
                       ),
                     ],
                   );
@@ -224,7 +248,8 @@ class _RadioSelectionSheetState extends State<_RadioSelectionSheet> {
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Please select an option', textAlign: TextAlign.center),
+                      content: Text('Please select an option',
+                          textAlign: TextAlign.center),
                       backgroundColor: Colors.red,
                       behavior: SnackBarBehavior.floating,
                     ),
@@ -234,9 +259,11 @@ class _RadioSelectionSheetState extends State<_RadioSelectionSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: mainBlue,
                 padding: const EdgeInsets.all(15),
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero),
               ),
-              child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+              child: const Text('Save',
+                  style: TextStyle(fontSize: 20, color: Colors.white)),
             ),
           ],
         ),

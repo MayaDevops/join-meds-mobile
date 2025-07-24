@@ -48,17 +48,9 @@ class _SelectionProfessionState extends State<SelectionProfession> {
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedUserId = prefs.getString('userId');
-    final savedProfession = prefs.getString('profession');
-
-    if (mounted) {
-      setState(() {
-        userId = savedUserId;
-        profession = savedProfession;
-      });
-    }
-
-    print('Loaded userId: $savedUserId, profession: $savedProfession');
+    userId = prefs.getString('userId');
+    profession = prefs.getString('profession');
+    setState(() {});
   }
 
   Future<void> _saveProfession() async {
@@ -66,17 +58,14 @@ class _SelectionProfessionState extends State<SelectionProfession> {
       _showSnackBar("Please select a profession", Colors.red);
       return;
     }
-
     if (userId == null) {
       _showSnackBar("User ID not found. Please login again.", Colors.red);
       return;
     }
 
-    final url = Uri.parse("https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId");
-
-    final body = jsonEncode({
-      "profession": profession,
-    });
+    final url = Uri.parse(
+        "https://api.joinmeds.in/api/user-details/update/$userId?userId=$userId");
+    final body = jsonEncode({"profession": profession});
 
     try {
       final response = await http.put(
@@ -104,66 +93,55 @@ class _SelectionProfessionState extends State<SelectionProfession> {
         break;
       case 'Nurse':
         showModalBottomSheet(
-          context: context,
-          builder: (_) => const NurseCourseTypeSelection(),
-        );
+            context: context, builder: (_) => const NurseCourseTypeSelection());
         break;
       case 'Pharmacist':
         showModalBottomSheet(
-          context: context,
-          builder: (_) => const PharmacistCourseTypeSelection(),
-        );
+            context: context,
+            builder: (_) => const PharmacistCourseTypeSelection());
         break;
       case 'Lab Technician':
         showModalBottomSheet(
-          context: context,
-          builder: (_) => const LabTechnicianCourseTypeSelection(),
-        );
+            context: context,
+            builder: (_) => const LabTechnicianCourseTypeSelection());
         break;
       case 'Anesthesia Technician':
         showModalBottomSheet(
-          context: context,
-          builder: (_) => const AnaesthesiaTechnicianCourseTypeSelection(),
-        );
+            context: context,
+            builder: (_) => const AnaesthesiaTechnicianCourseTypeSelection());
         break;
       case 'Dentist':
         Navigator.pushNamed(context, '/dentist_academic_status');
         break;
       case 'Physiotherapy':
         showModalBottomSheet(
-          context: context,
-          builder: (_) => const PhysiotherapyCourseTypeSelection(),
-        );
+            context: context,
+            builder: (_) => const PhysiotherapyCourseTypeSelection());
         break;
       case 'Audiologist':
         showModalBottomSheet(
-          context: context,
-          builder: (_) => const AudiologyCourseTypeSelection(),
-        );
+            context: context,
+            builder: (_) => const AudiologyCourseTypeSelection());
         break;
       case 'Dietitian':
         showModalBottomSheet(
-          context: context,
-          builder: (_) => const DietitianCourseTypeSelection(),
-        );
+            context: context,
+            builder: (_) => const DietitianCourseTypeSelection());
         break;
       case 'Clinical Psychologist':
         showModalBottomSheet(
-          context: context,
-          builder: (_) => const ClinicalPsychologyCourseTypeSelection(),
-        );
+            context: context,
+            builder: (_) => const ClinicalPsychologyCourseTypeSelection());
         break;
       case 'Social Worker':
         showModalBottomSheet(
-          context: context,
-          builder: (_) => const SocialWorkerCourseTypeSelection(),
-        );
+            context: context,
+            builder: (_) => const SocialWorkerCourseTypeSelection());
         break;
       case 'Hospital Administrator':
         showModalBottomSheet(
-          context: context,
-          builder: (_) => const HospitalAdministratorCourseTypeSelection(),
-        );
+            context: context,
+            builder: (_) => const HospitalAdministratorCourseTypeSelection());
         break;
       default:
         _showSnackBar("Invalid selection", Colors.red);
@@ -178,32 +156,75 @@ class _SelectionProfessionState extends State<SelectionProfession> {
 
   @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Profession'),
+        title: const Text(
+          'Select Profession',
+          style: TextStyle(color: Colors.white),
+        ),
         centerTitle: true,
         backgroundColor: mainBlue,
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(20),
-        itemBuilder: (context, index) => RadioListTile<String>(
-          activeColor: mainBlue,
-          value: professions[index],
-          groupValue: profession,
-          onChanged: (value) => setState(() => profession = value),
-          title: Text(professions[index], style: radioTextStyle),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.builder(
+          itemCount: professions.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isTablet ? 3 : 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 2.8,
+          ),
+          itemBuilder: (context, index) {
+            final isSelected = professions[index] == profession;
+            return GestureDetector(
+              onTap: () => setState(() => profession = professions[index]),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isSelected ? mainBlue : const Color(0xffE3E3E3),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                      color: isSelected ? mainBlue : Colors.grey.shade300,
+                      width: 1),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  professions[index],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isSelected ? Colors.white : Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
-        separatorBuilder: (context, index) => const Divider(),
-        itemCount: professions.length,
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: _saveProfession,
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(15),
-          backgroundColor: mainBlue,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.all(16),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _saveProfession,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: mainBlue,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text(
+              'Save',
+              style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
         ),
-        child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
       ),
     );
   }
