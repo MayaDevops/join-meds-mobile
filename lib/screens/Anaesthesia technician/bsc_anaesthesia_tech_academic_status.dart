@@ -6,10 +6,12 @@ class BScAnaesthesiaTechAcademicStatus extends StatefulWidget {
   const BScAnaesthesiaTechAcademicStatus({super.key});
 
   @override
-  State<BScAnaesthesiaTechAcademicStatus> createState() => _BScAnaesthesiaTechAcademicStatusState();
+  State<BScAnaesthesiaTechAcademicStatus> createState() =>
+      _BScAnaesthesiaTechAcademicStatusState();
 }
 
-class _BScAnaesthesiaTechAcademicStatusState extends State<BScAnaesthesiaTechAcademicStatus> {
+class _BScAnaesthesiaTechAcademicStatusState
+    extends State<BScAnaesthesiaTechAcademicStatus> {
   String? postGraduation;
 
   void _handleSubmit() async {
@@ -124,7 +126,8 @@ class _BScAnaesthesiaTechAcademicStatusState extends State<BScAnaesthesiaTechAca
                     topRight: Radius.circular(25),
                   ),
                 ),
-                child: const Text('Are you a Post Graduate?', style: TextStyle(fontSize: 20)),
+                child: const Text('Are you a Post Graduate?',
+                    style: TextStyle(fontSize: 20)),
               ),
               const SizedBox(height: 30),
               Row(
@@ -160,9 +163,11 @@ class _BScAnaesthesiaTechAcademicStatusState extends State<BScAnaesthesiaTechAca
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(15),
                   backgroundColor: mainBlue,
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero),
                 ),
-                child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+                child: const Text('Save',
+                    style: TextStyle(fontSize: 20, color: Colors.white)),
               ),
             ],
           ),
@@ -197,13 +202,13 @@ class _BScAnaesthesiaTechAcademicStatusState extends State<BScAnaesthesiaTechAca
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _AcademicOption(
+              AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Degree Ongoing',
-                onTap: () => Navigator.pushNamed(context, '/bsc_at_degree_ongoing'),
+                onTap: () =>
+                    Navigator.pushNamed(context, '/bsc_at_degree_ongoing'),
               ),
-              SizedBox(width: 15,),
-              _AcademicOption(
+              AcademicOption(
                 icon: Icons.school,
                 label: 'Degree Completed',
                 onTap: _openPostGraduationSheet,
@@ -216,41 +221,52 @@ class _BScAnaesthesiaTechAcademicStatusState extends State<BScAnaesthesiaTechAca
   }
 }
 
-class _AcademicOption extends StatelessWidget {
+class AcademicOption extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
 
-  const _AcademicOption({
+  const AcademicOption({
     required this.icon,
     required this.label,
     required this.onTap,
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        width: 180,
-        padding: const EdgeInsets.symmetric(vertical: 30),
+        width: screenWidth * 0.42, // ~42% of screen width
+        padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 10),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
           color: const Color(0xffD9D9D9),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              offset: const Offset(2, 4),
+              blurRadius: 6,
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 70, color: mainBlue),
-            const SizedBox(height: 10),
+            Icon(icon, size: screenWidth * 0.12, color: mainBlue),
+            const SizedBox(height: 12),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 18,
-                color: mainBlue,
-                fontWeight: FontWeight.w500,
-              ),
               textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: screenWidth * 0.04, // Responsive font size
+                color: mainBlue,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),
@@ -310,7 +326,8 @@ class _OptionBottomSheet extends StatelessWidget {
             alignment: Alignment.center,
             padding: const EdgeInsets.only(top: 30, bottom: 20),
             decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
+              border:
+                  Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(25),
                 topRight: Radius.circular(25),
@@ -331,7 +348,8 @@ class _OptionBottomSheet extends StatelessWidget {
                     Radio<String>(
                       value: entry.key,
                       groupValue: selectedValue,
-                      onChanged: (value) => setState(() => selectedValue = value),
+                      onChanged: (value) =>
+                          setState(() => selectedValue = value),
                     ),
                   ],
                 );
@@ -345,7 +363,8 @@ class _OptionBottomSheet extends StatelessWidget {
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Please select an option', textAlign: TextAlign.center),
+                    content: Text('Please select an option',
+                        textAlign: TextAlign.center),
                     backgroundColor: Colors.red,
                     behavior: SnackBarBehavior.floating,
                   ),
@@ -355,9 +374,11 @@ class _OptionBottomSheet extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: mainBlue,
               padding: const EdgeInsets.all(15),
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              shape:
+                  const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
             ),
-            child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+            child: const Text('Save',
+                style: TextStyle(fontSize: 20, color: Colors.white)),
           ),
         ],
       ),

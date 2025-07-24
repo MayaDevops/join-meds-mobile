@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/screens/login_page/home_screen.dart';
+import 'package:untitled/screens/login_page/login_page.dart';
 import 'package:untitled/screens/signupPages/personal_data.dart';
 
 class SignUpLoading extends StatefulWidget {
@@ -24,7 +25,7 @@ class _SignUpLoadingState extends State<SignUpLoading> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const PersonalData(),
+        builder: (context) => const LoginPage(),
       ),
     );
   }
