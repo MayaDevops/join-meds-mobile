@@ -202,6 +202,7 @@ class _BScAnaesthesiaTechAcademicStatusState extends State<BScAnaesthesiaTechAca
                 label: 'Degree Ongoing',
                 onTap: () => Navigator.pushNamed(context, '/bsc_at_degree_ongoing'),
               ),
+              SizedBox(width: 15,),
               _AcademicOption(
                 icon: Icons.school,
                 label: 'Degree Completed',
