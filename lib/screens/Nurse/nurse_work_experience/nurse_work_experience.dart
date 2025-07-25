@@ -161,7 +161,7 @@ class _NurseWorkExperienceState extends State<NurseWorkExperience> {
                     children: [
                       const LabelText(labelText: 'Type of Experience'),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           Row(
                             children: [
@@ -264,18 +264,32 @@ class _NurseWorkExperienceState extends State<NurseWorkExperience> {
           ),
         ),
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: () async {
-          if (_workExpKey.currentState!.validate()) {
-            await _saveExperienceData();
-            Navigator.pushNamed(context, '/County_that_you_preferred_page');
-          }
-        },
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(15),
-          backgroundColor: mainBlue,
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.all(25),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () async {
+              if (_workExpKey.currentState!.validate()) {
+                await _saveExperienceData();
+                Navigator.pushNamed(context, '/County_that_you_preferred_page');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: mainBlue,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text(
+              'Save',
+              style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
         ),
-        child: const Text('Continue', style: TextStyle(fontSize: 20.0, color: Colors.white)),
       ),
     );
   }

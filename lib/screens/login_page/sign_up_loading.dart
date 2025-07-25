@@ -51,7 +51,7 @@ class _SignUpLoadingState extends State<SignUpLoading> {
 
                 // Lottie animation
                 Lottie.asset(
-                  loadingAnimation2, // Make sure this file exists
+                  loadingAnimation3, // Make sure this file exists
                   height: 200,
                 ),
 
@@ -80,7 +80,7 @@ class _SignUpLoadingState extends State<SignUpLoading> {
         padding: const EdgeInsets.only(bottom: 20),
         child: Image.asset(
           medLandLogo,
-          height: 40,
+          height: 150,
         ),
       ),
     );

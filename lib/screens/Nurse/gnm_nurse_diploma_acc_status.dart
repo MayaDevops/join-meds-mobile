@@ -250,7 +250,7 @@ class _PostGraduationSheet extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(15),
                   backgroundColor: mainBlue,
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),),
                 ),
                 child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
               ),
@@ -368,7 +368,7 @@ class _OptionBottomSheet extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: mainBlue,
                 padding: const EdgeInsets.all(15),
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),),
               ),
               child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
             ),
@@ -456,7 +456,7 @@ class _WorkExpSheetState extends State<WorkExpSheet> {
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.all(15),
               backgroundColor: mainBlue,
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),),
             ),
             child: const Text('Continue', style: TextStyle(fontSize: 20, color: Colors.white)),
           ),

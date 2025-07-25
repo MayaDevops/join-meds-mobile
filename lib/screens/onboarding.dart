@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/screens/landing_page.dart';
+import 'package:lottie/lottie.dart';
 
 class Onboarding extends StatefulWidget {
   const Onboarding({super.key});
@@ -39,12 +40,15 @@ class _OnboardingState extends State<Onboarding> {
                 child: Image.asset(appLogo),
               ),
             ),
+            Lottie.asset(
+              loadingAnimation3,
+              height: 150,
+            ),
             const SizedBox(height: 20),
-            const CircularProgressIndicator(),
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.only(bottom: 20.0),
-              child: Image.asset(medLandLogo),
+              child: Image.asset(medLandLogo,height: 150,),
             ),
           ],
         ),

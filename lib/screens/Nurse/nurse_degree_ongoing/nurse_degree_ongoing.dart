@@ -190,40 +190,50 @@ class _NurseDegreeOngoingState extends State<NurseDegreeOngoing> {
           ],
         ),
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: () {
-          FocusScope.of(context).unfocus();
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.all(25),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              FocusScope.of(context).unfocus();
 
-          final selectedUniversity =
-              _university ?? _universityController.text.trim();
+              final selectedUniversity =
+                  _university ?? _universityController.text.trim();
 
-          if ((academicYear ?? "").isNotEmpty &&
-              selectedUniversity.isNotEmpty &&
-              userId != null) {
-            _university = selectedUniversity;
-            updateUserDetails();
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content:
-                Text('Please select both current year and university.'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-        style: ButtonStyle(
-          padding: const WidgetStatePropertyAll(EdgeInsets.all(15)),
-          backgroundColor: const WidgetStatePropertyAll(mainBlue),
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+              if ((academicYear ?? "").isNotEmpty &&
+                  selectedUniversity.isNotEmpty &&
+                  userId != null) {
+                _university = selectedUniversity;
+                updateUserDetails();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content:
+                    Text('Please select both current year and university.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: mainBlue,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text(
+              'Save',
+              style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
           ),
-        ),
-        child: const Text(
-          'Next',
-          style: TextStyle(fontSize: 20.0, color: Colors.white),
         ),
       ),
     );
   }
 }
+
+

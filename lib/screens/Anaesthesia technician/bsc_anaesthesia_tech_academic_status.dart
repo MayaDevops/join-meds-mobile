@@ -73,7 +73,7 @@ class _BScAnaesthesiaTechAcademicStatusState
   }
 
   void _navigateToInternshipCompleted() {
-    Navigator.pushNamed(context, '/pharmacist_work_experience');
+    Navigator.pushNamed(context, '/gn_nurse_internship_completed');
   }
 
   Future<String?> _showOptionBottomSheet({
@@ -159,7 +159,8 @@ class _BScAnaesthesiaTechAcademicStatusState
                 padding: EdgeInsets.only(
                   left: 20,
                   right: 20,
-                  bottom: MediaQuery.of(context).viewPadding.bottom + 20, // Prevent overlap
+                  bottom: MediaQuery.of(context).viewPadding.bottom +
+                      20, // Prevent overlap
                 ),
                 child: ElevatedButton(
                   onPressed: () {
@@ -170,7 +171,9 @@ class _BScAnaesthesiaTechAcademicStatusState
                     padding: const EdgeInsets.all(15),
                     backgroundColor: mainBlue,
                     shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(10),
+                      ),
                     ),
                   ),
                   child: const Text(
@@ -179,7 +182,6 @@ class _BScAnaesthesiaTechAcademicStatusState
                   ),
                 ),
               ),
-
             ],
           ),
         );
@@ -338,8 +340,8 @@ class _OptionBottomSheet extends StatelessWidget {
               alignment: Alignment.center,
               padding: const EdgeInsets.only(top: 30, bottom: 20),
               decoration: const BoxDecoration(
-                border:
-                    Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
+                border: Border(
+                    bottom: BorderSide(color: inputBorderClr, width: 1.5)),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(25),
                   topRight: Radius.circular(25),
@@ -370,7 +372,8 @@ class _OptionBottomSheet extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewPadding.bottom + 16, // prevent overlap
+                bottom: MediaQuery.of(context).viewPadding.bottom +
+                    16, // prevent overlap
                 left: 16,
                 right: 16,
                 top: 10,
@@ -393,15 +396,16 @@ class _OptionBottomSheet extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: mainBlue,
                   padding: const EdgeInsets.all(15),
-                  shape:
-                  const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(10),
+                    ),
+                  ),
                 ),
                 child: const Text('Save',
                     style: TextStyle(fontSize: 20, color: Colors.white)),
               ),
             ),
-
-
           ],
         ),
       ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:untitled/widgets/main_button.dart';
 import '../../../constants/constant.dart';
 import '../user_view_job_details.dart';
 
@@ -67,53 +68,114 @@ class _JobSearchInputState extends State<JobSearchInput> {
 
   Widget _buildJobCard(Map<String, dynamic> job) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: mainBlue),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Job Title Section
           Container(
+            padding: const EdgeInsets.all(14),
             decoration: const BoxDecoration(
-              color: mainBlue,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              color: Color(0xFFF5F5F5),
             ),
-            padding: const EdgeInsets.all(12),
             child: Text(
               job['hiringFor'] ?? 'Job Title',
-              style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
+
+          // Job Info Section
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 10),
-                Text(
-                  job['orgName'] ?? 'Organization',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 10),
+                // Organization Name
                 Row(
                   children: [
-                    if (job['payFrom'] != null) _buildTag('From ₹${job['payFrom']}'),
-                    const SizedBox(width: 8),
-                    _buildTag(job['jobType'] ?? 'Full-time'),
+                    const Icon(Icons.business, size: 18, color: Colors.black54),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        job['orgName'] ?? 'Organization',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Tags (Salary and Job Type)
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    if (job['payFrom'] != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.green),
+                        ),
+                        child: Text(
+                          'From ₹${job['payFrom']}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.orange.shade300),
+                      ),
+                      child: Text(
+                        job['jobType'] ?? 'Full-time',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.orange[800],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 10),
-          Container(
-            decoration: const BoxDecoration(
-              color: mainBlue,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(10)),
-            ),
-            child: TextButton(
+
+          const SizedBox(height: 8),
+
+          // View Details Button (Clean Black Button)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: ElevatedButton(
               onPressed: () async {
                 await _saveJobToPrefs(job);
                 Navigator.push(
@@ -123,9 +185,18 @@ class _JobSearchInputState extends State<JobSearchInput> {
                   ),
                 );
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: mainBlue,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
               child: const Text(
-                'View Details',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                'View Job Details',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -133,6 +204,8 @@ class _JobSearchInputState extends State<JobSearchInput> {
       ),
     );
   }
+
+
 
   @override
   Widget build(BuildContext context) {

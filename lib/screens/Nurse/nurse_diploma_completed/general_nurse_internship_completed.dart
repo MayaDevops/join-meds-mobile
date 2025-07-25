@@ -31,7 +31,6 @@ class _GeneralNurseInternshipCompletedState extends State<GeneralNurseInternship
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         centerTitle: true,
         title: Text(
           "Internship",
@@ -175,26 +174,37 @@ class _GeneralNurseInternshipCompletedState extends State<GeneralNurseInternship
           ),
         ],
       ),
-    bottomNavigationBar:   ElevatedButton(
-        onPressed: () {
-          if (_personalDataKey.currentState!.validate()) {
-            showModalBottomSheet(context: context, builder: (context) => WorkExpSheet(),);
-          }
-        },
-      style: ButtonStyle(
-        padding: WidgetStatePropertyAll(EdgeInsets.all(15),),
-        backgroundColor: WidgetStatePropertyAll(mainBlue),
-        shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(0),),),
+    bottomNavigationBar:   SafeArea(
+      minimum: const EdgeInsets.all(25),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () {
+            if (_personalDataKey.currentState!.validate()) {
+              showModalBottomSheet(context: context, builder: (context) => WorkExpSheet(),);
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: mainBlue,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          ),
+          child: const Text(
+            'Continue',
+            style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold),
+          ),
+        ),
       ),
-
-      child: Text('Continue',style: TextStyle(
-        fontSize: 20.0,
-        color: Colors.white,
-      ),),
-    )
+    ),
     );
   }
 }
+
+
 
 
 class WorkExpSheet extends StatefulWidget {
@@ -256,25 +266,34 @@ class _WorkExpSheetState extends State<WorkExpSheet> {
           ],
         ),
         const SizedBox(height: 30),
-    ElevatedButton(
-    onPressed: (){
-      if(workExpStatus == 'Work-Experience-Yes'){
-        Navigator.pushNamed(context, '/nurse_work_experience');
-      }else{
-        Navigator.pushNamed(context,  '/County_that_you_preferred_page');
-      }
-    },
-    style: ButtonStyle(
-    padding: WidgetStatePropertyAll(EdgeInsets.all(15),),
-    backgroundColor: WidgetStatePropertyAll(mainBlue),
-    shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(0),),),
-    ),
-
-    child: Text('continue',style: TextStyle(
-    fontSize: 20.0,
-    color: Colors.white,
-    ),),
-    ),
+        SafeArea(
+          minimum: const EdgeInsets.all(25),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                if(workExpStatus == 'Work-Experience-Yes'){
+                  Navigator.pushNamed(context, '/nurse_work_experience');
+                }else{
+                  Navigator.pushNamed(context,  '/County_that_you_preferred_page');
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: mainBlue,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text(
+                'Save',
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -71,7 +71,7 @@ class _BPharmaAcademicStatusState extends State<BPharmaAcademicStatus> {
   }
 
   void _navigateToInternshipCompleted() {
-    Navigator.pushNamed(context, '/pharmacist_work_experience');
+    Navigator.pushNamed(context, '/gn_nurse_internship_completed');
   }
 
   Future<String?> _showOptionBottomSheet({
@@ -167,7 +167,7 @@ class _BPharmaAcademicStatusState extends State<BPharmaAcademicStatus> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.all(15),
                       backgroundColor: mainBlue,
-                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),),
                     ),
                     child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
                   ),
@@ -382,7 +382,7 @@ class _OptionBottomSheet extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: mainBlue,
                   padding: const EdgeInsets.all(15),
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),),
                 ),
                 child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
               ),

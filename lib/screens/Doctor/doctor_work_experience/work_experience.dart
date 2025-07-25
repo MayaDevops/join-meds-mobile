@@ -108,7 +108,7 @@ class _WorkExperienceState extends State<WorkExperience> {
                         LabelText(labelText: 'Type of Experience'),
                         const SizedBox(height: 5),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Row(
                               children: [
@@ -126,7 +126,7 @@ class _WorkExperienceState extends State<WorkExperience> {
                             ),
                             Row(
                               children: [
-                                const Text('Non Clinical(Eg: lecturer)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: inputBorderClr)),
+                                const Text('Non Clinical', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: inputBorderClr)),
                                 Radio(
                                   value: 'Non Clinical',
                                   groupValue: exp['clinicalStatus'],
@@ -262,34 +262,44 @@ class _WorkExperienceState extends State<WorkExperience> {
           ),
         ),
       ),
-      bottomNavigationBar: ElevatedButton(
-        onPressed: () {
-          if (_workExpKey.currentState!.validate()) {
-            List<Map<String, dynamic>> finalData = workExperienceList.map((exp) {
-              return {
-                'typeOfExperience': exp['clinicalStatus'],
-                'organisation': exp['organisationController'].text,
-                'specialisation': exp['specialisation'] == 'Others'
-                    ? exp['customSpecialisationController'].text
-                    : exp['specialisation'],
-                'from': exp['fromDateController'].text,
-                'to': exp['toDateController'].text,
-              };
-            }).toList();
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.all(25),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(onPressed: () {
+            if (_workExpKey.currentState!.validate()) {
+              List<Map<String, dynamic>> finalData = workExperienceList.map((exp) {
+                return {
+                  'typeOfExperience': exp['clinicalStatus'],
+                  'organisation': exp['organisationController'].text,
+                  'specialisation': exp['specialisation'] == 'Others'
+                      ? exp['customSpecialisationController'].text
+                      : exp['specialisation'],
+                  'from': exp['fromDateController'].text,
+                  'to': exp['toDateController'].text,
+                };
+              }).toList();
 
-           print(finalData);
+              print(finalData);
 
-            Navigator.pushNamed(context, '/dr_certification_of_spl');
-          }
-        },
-        style: ButtonStyle(
-          padding: const WidgetStatePropertyAll(EdgeInsets.all(15)),
-          backgroundColor: const WidgetStatePropertyAll(mainBlue),
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+              Navigator.pushNamed(context, '/dr_certification_of_spl');
+            }
+          },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: mainBlue,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text(
+              'Save',
+              style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
           ),
         ),
-        child: const Text('Continue', style: TextStyle(fontSize: 20.0, color: Colors.white)),
       ),
     );
   }

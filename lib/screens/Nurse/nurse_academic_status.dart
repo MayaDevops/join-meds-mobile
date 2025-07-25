@@ -334,7 +334,7 @@ class _PostGraduationSheet extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(15),
                   backgroundColor: mainBlue,
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),),
                 ),
                 child: const Text(
                   'Save',
@@ -398,7 +398,7 @@ class _OptionBottomSheet extends StatelessWidget {
         children: [
           Container(
             alignment: Alignment.center,
-            padding: const EdgeInsets.only(top: 30, bottom: 20),
+            padding: const EdgeInsets.only(top: 40, bottom: 40),
             decoration: const BoxDecoration(
               border:
               Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
@@ -453,7 +453,7 @@ class _OptionBottomSheet extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: mainBlue,
                 padding: const EdgeInsets.all(15),
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),),
               ),
               child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
             ),

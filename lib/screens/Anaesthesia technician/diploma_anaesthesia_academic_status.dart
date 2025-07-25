@@ -266,7 +266,9 @@ class _RadioSelectionSheetState extends State<_RadioSelectionSheet> {
                   backgroundColor: mainBlue,
                   padding: const EdgeInsets.all(15),
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.zero,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(10),
+                    ),
                   ),
                 ),
                 child: const Text(
@@ -275,7 +277,6 @@ class _RadioSelectionSheetState extends State<_RadioSelectionSheet> {
                 ),
               ),
             ),
-
           ],
         ),
       ),

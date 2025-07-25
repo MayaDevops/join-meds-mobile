@@ -71,7 +71,7 @@ class _BScMLTAcademicStatusState extends State<BScMLTAcademicStatus> {
   }
 
   void _navigateToInternshipCompleted() {
-    Navigator.pushNamed(context, '/pharmacist_work_experience');
+    Navigator.pushNamed(context, '/gn_nurse_internship_completed');
   }
 
   Future<String?> _showOptionBottomSheet({
@@ -124,7 +124,8 @@ class _BScMLTAcademicStatusState extends State<BScMLTAcademicStatus> {
                     topRight: Radius.circular(25),
                   ),
                 ),
-                child: const Text('Are you a Post Graduate?', style: TextStyle(fontSize: 20)),
+                child: const Text('Are you a Post Graduate?',
+                    style: TextStyle(fontSize: 20)),
               ),
               const SizedBox(height: 30),
               Row(
@@ -166,12 +167,16 @@ class _BScMLTAcademicStatusState extends State<BScMLTAcademicStatus> {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.all(15),
                     backgroundColor: mainBlue,
-                    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(10),
+                      ),
+                    ),
                   ),
-                  child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+                  child: const Text('Save',
+                      style: TextStyle(fontSize: 20, color: Colors.white)),
                 ),
               ),
-
             ],
           ),
         );
@@ -208,7 +213,8 @@ class _BScMLTAcademicStatusState extends State<BScMLTAcademicStatus> {
               AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Degree Ongoing',
-                onTap: () => Navigator.pushNamed(context, '/bsc_mlt_degree_ongoing'),
+                onTap: () =>
+                    Navigator.pushNamed(context, '/bsc_mlt_degree_ongoing'),
               ),
               AcademicOption(
                 icon: Icons.school,
@@ -328,7 +334,8 @@ class _OptionBottomSheet extends StatelessWidget {
             alignment: Alignment.center,
             padding: const EdgeInsets.only(top: 30, bottom: 20),
             decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
+              border:
+                  Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(25),
                 topRight: Radius.circular(25),
@@ -349,7 +356,8 @@ class _OptionBottomSheet extends StatelessWidget {
                     Radio<String>(
                       value: entry.key,
                       groupValue: selectedValue,
-                      onChanged: (value) => setState(() => selectedValue = value),
+                      onChanged: (value) =>
+                          setState(() => selectedValue = value),
                     ),
                   ],
                 );
@@ -369,7 +377,8 @@ class _OptionBottomSheet extends StatelessWidget {
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Please select an option', textAlign: TextAlign.center),
+                      content: Text('Please select an option',
+                          textAlign: TextAlign.center),
                       backgroundColor: Colors.red,
                       behavior: SnackBarBehavior.floating,
                     ),
@@ -379,12 +388,16 @@ class _OptionBottomSheet extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: mainBlue,
                 padding: const EdgeInsets.all(15),
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(10),
+                  ),
+                ),
               ),
-              child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+              child: const Text('Save',
+                  style: TextStyle(fontSize: 20, color: Colors.white)),
             ),
           ),
-
         ],
       ),
     );

@@ -27,4 +27,5 @@ const resumeImg2 = 'images/resume_img-2.png';
 const successAnimation = 'assets/animations/Success animation.json';
 const loadingAnimation = 'assets/animations/loading.json';
 const loadingAnimation2 = 'assets/animations/como funciona 01.json';
+const loadingAnimation3 = 'assets/animations/ECG.json';
 const logOutAnimation = 'assets/animations/Loading sand clock.json';

@@ -146,36 +146,83 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
   Widget _buildJobCard() {
     return Card(
       margin: const EdgeInsets.all(16),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 6,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Organization Name
             Text(
               jobData?['orgName'] ?? 'Organization',
               style: const TextStyle(
                 fontSize: 24,
-                color: mainBlue,
                 fontWeight: FontWeight.bold,
+                color: mainBlue,
               ),
             ),
+            const SizedBox(height: 8),
+            const Divider(thickness: 1.2, color: Colors.grey),
             const SizedBox(height: 16),
-            _buildDetailItem("Hiring For", jobData?['hiringFor']),
-            _buildDetailItem("Experience", jobData?['yearExp']),
-            _buildDetailItem("Skills", jobData?['skills']),
-            _buildDetailItem("Nature of Job", jobData?['natureJob']),
-            _buildDetailItem(
+
+            // Job Details
+            _buildItem(Icons.person, "Hiring For", jobData?['hiringFor']),
+            _buildItem(Icons.work_history, "Experience", jobData?['yearExp']),
+            _buildItem(Icons.build, "Skills", jobData?['skills']),
+            _buildItem(Icons.accessibility_new, "Nature of Job", jobData?['natureJob']),
+            _buildItem(
+              Icons.attach_money,
               "Pay Range",
               '₹${jobData?['payFrom'] ?? ''} - ₹${jobData?['payTo'] ?? ''} / ${jobData?['payRange'] ?? ''}',
             ),
-            _buildDetailItem("Description", jobData?['jobDesc']),
+            _buildItem(Icons.description_outlined, "Description", jobData?['jobDesc']),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildItem(IconData icon, String title, String? value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: mainBlue, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value?.isNotEmpty == true ? value! : 'Not specified',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    height: 1.4,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
 
   Widget _buildApplyButton() {
     return Container(
@@ -196,10 +243,10 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
         ],
       ),
       child: ElevatedButton.icon(
-        icon: Icon(isApplied ? Icons.check_circle : Icons.send),
+        icon: Icon(isApplied ? Icons.check_circle : Icons.send,color: Colors.white,),
         label: Text(
           isApplied ? 'Applied' : 'Apply Now',
-          style: const TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16,color: Colors.white),
         ),
         onPressed: isApplied ? null : applyToJob,
         style: ElevatedButton.styleFrom(
@@ -235,12 +282,16 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-        children: [
-          Expanded(child: _buildJobCard()),
-          _buildApplyButton(),
-        ],
+          : SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          children: [
+            _buildJobCard(),
+            _buildApplyButton(),
+          ],
+        ),
       ),
+
     );
   }
 }

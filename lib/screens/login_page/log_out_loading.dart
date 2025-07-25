@@ -79,7 +79,7 @@ class _LogOutLoadingState extends State<LogOutLoading> {
         padding: const EdgeInsets.only(bottom: 20),
         child: Image.asset(
           medLandLogo,
-          height: 40,
+          height: 150,
         ),
       ),
     );

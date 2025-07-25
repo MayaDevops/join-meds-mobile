@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:untitled/constants/images.dart';
-import 'package:untitled/screens/landing_page.dart';
 import 'package:untitled/screens/login_page/home_screen.dart';
 
 class LoginLoading extends StatefulWidget {
@@ -44,13 +43,13 @@ class _LoginLoadingState extends State<LoginLoading> {
                 // App logo
                 Image.asset(
                   appLogo,
-                  height: 100,
+                  height: 150,
                 ),
                 const SizedBox(height: 40),
 
                 // Lottie animation
                 Lottie.asset(
-                  loadingAnimation2, // Make sure this file exists
+                  loadingAnimation3, // Make sure this file exists
                   height: 200,
                 ),
 
@@ -67,9 +66,7 @@ class _LoginLoadingState extends State<LoginLoading> {
 
                 const SizedBox(height: 20),
 
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
+
               ],
             ),
           ),
@@ -79,7 +76,7 @@ class _LoginLoadingState extends State<LoginLoading> {
         padding: const EdgeInsets.only(bottom: 20),
         child: Image.asset(
           medLandLogo,
-          height: 40,
+          height: 130,
         ),
       ),
     );

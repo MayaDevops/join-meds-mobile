@@ -103,24 +103,65 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
+
+                // Tags (plain Texts in pill-style Containers)
                 Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
                   children: [
-                    _buildTag(
-                        'Salary: ${_formatSalary(job['payFrom'], job['payTo'], job['payRange'])}'),
-                    _buildTag(
-                        'Applied On: ${job['submittedAt']?.toString().substring(0, 10) ?? 'Date'}'),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Salary: ${_formatSalary(job['payFrom'], job['payTo'], job['payRange'])}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Applied On: ${job['submittedAt']?.toString().substring(0, 10) ?? 'Date'}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      _buildTag('Status: ${job['status'] ?? 'N/A'}'),
-                      _buildTag('Type: ${job['natureJob'] ?? 'N/A'}'),
-                    ],
-                  ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Status: ${job['status'] ?? 'N/A'}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Type: ${job['natureJob'] ?? 'N/A'}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -152,6 +193,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

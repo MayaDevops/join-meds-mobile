@@ -205,7 +205,7 @@ class _SelectionProfessionState extends State<SelectionProfession> {
         ),
       ),
       bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.all(16),
+        minimum: const EdgeInsets.all(25),
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -214,7 +214,7 @@ class _SelectionProfessionState extends State<SelectionProfession> {
               backgroundColor: mainBlue,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(10)),
             ),
             child: const Text(
               'Save',

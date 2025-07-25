@@ -156,14 +156,27 @@ class _NurseCourseTypeSelectionState extends State<NurseCourseTypeSelection> {
                 ),
               ),
               const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: _saveAcademicQualification,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: mainBlue,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              SafeArea(
+                minimum: const EdgeInsets.only(left: 50,right: 50,bottom: 40),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _saveAcademicQualification,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: mainBlue,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
-                child: const Text('Save', style: TextStyle(fontSize: 18, color: Colors.white)),
               ),
             ],
           ),
