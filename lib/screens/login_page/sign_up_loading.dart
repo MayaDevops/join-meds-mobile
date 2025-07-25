@@ -33,6 +33,7 @@ class _SignUpLoadingState extends State<SignUpLoading> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Container(
           decoration: const BoxDecoration(

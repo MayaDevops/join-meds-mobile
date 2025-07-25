@@ -91,13 +91,21 @@ class _JobSearchInputState extends State<JobSearchInput> {
               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               color: Color(0xFFF5F5F5),
             ),
-            child: Text(
-              job['hiringFor'] ?? 'Job Title',
-              style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Row(
+              children: [
+                const Icon(Icons.work_outline, color: Colors.black54, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    job['hiringFor'] ?? 'Job Title',
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -139,13 +147,20 @@ class _JobSearchInputState extends State<JobSearchInput> {
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: Colors.green),
                         ),
-                        child: Text(
-                          'From ₹${job['payFrom']}',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.green,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.currency_rupee, size: 16, color: Colors.green),
+                            const SizedBox(width: 4),
+                            Text(
+                              'From ₹${job['payFrom']}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     Container(
@@ -155,13 +170,20 @@ class _JobSearchInputState extends State<JobSearchInput> {
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.orange.shade300),
                       ),
-                      child: Text(
-                        job['jobType'] ?? 'Full-time',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.orange[800],
-                          fontWeight: FontWeight.w500,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.access_time, size: 16, color: Colors.orange),
+                          const SizedBox(width: 4),
+                          Text(
+                            job['jobType'] ?? 'Full-time',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.orange[800],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -172,7 +194,7 @@ class _JobSearchInputState extends State<JobSearchInput> {
 
           const SizedBox(height: 8),
 
-          // View Details Button (Clean Black Button)
+          // View Details Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: ElevatedButton(
@@ -207,6 +229,7 @@ class _JobSearchInputState extends State<JobSearchInput> {
 
 
 
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -228,6 +251,7 @@ class _JobSearchInputState extends State<JobSearchInput> {
             onPressed: () {
               final keyword = _controller.text.trim();
               if (keyword.isNotEmpty) {
+                FocusScope.of(context).unfocus();
                 searchJobs(keyword);
               }
             },

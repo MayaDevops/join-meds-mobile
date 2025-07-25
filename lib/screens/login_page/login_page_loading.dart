@@ -31,6 +31,7 @@ class _LoginLoadingState extends State<LoginLoading> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Container(
           decoration: const BoxDecoration(

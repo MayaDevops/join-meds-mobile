@@ -50,22 +50,10 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
     }
   }
 
-  Widget _buildTag(String text) {
-    return Container(
-      margin: const EdgeInsets.only(right: 6, bottom: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: mainBlue.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: mainBlue),
-      ),
-      child: Text(text, style: const TextStyle(color: mainBlue, fontSize: 13)),
-    );
-  }
 
   Widget _buildJobCard(dynamic job) {
     return Card(
-      elevation: 3,
+      elevation: 4,
       margin: const EdgeInsets.only(bottom: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
@@ -91,75 +79,57 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
 
           // Job Info
           Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  job['orgName'] ?? 'Organization',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // Tags (plain Texts in pill-style Containers)
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
+                // Organization with icon
+                Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                    const Icon(Icons.business, color: Colors.black54),
+                    const SizedBox(width: 8),
+                    Expanded(
                       child: Text(
-                        'Salary: ${_formatSalary(job['payFrom'], job['payTo'], job['payRange'])}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Applied On: ${job['submittedAt']?.toString().substring(0, 10) ?? 'Date'}',
-                        style: const TextStyle(fontSize: 14),
+                        job['orgName'] ?? 'Organization',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
+
+                // Tags/Details with colorful chips
                 Wrap(
                   spacing: 10,
-                  runSpacing: 8,
+                  runSpacing: 10,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Status: ${job['status'] ?? 'N/A'}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
+                    _colorChip(
+                      Icons.monetization_on,
+                      'Salary: ${_formatSalary(job['payFrom'], job['payTo'], job['payRange'])}',
+                      Colors.green.shade100,
+                      Colors.green.shade800,
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade200,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        'Type: ${job['natureJob'] ?? 'N/A'}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
+                    _colorChip(
+                      Icons.date_range,
+                      'Applied On: ${job['submittedAt']?.toString().substring(0, 10) ?? 'Date'}',
+                      Colors.blue.shade100,
+                      Colors.blue.shade800,
+                    ),
+                    _colorChip(
+                      Icons.info,
+                      'Status: ${job['status'] ?? 'N/A'}',
+                      Colors.orange.shade100,
+                      Colors.orange.shade800,
+                    ),
+                    _colorChip(
+                      Icons.work,
+                      'Type: ${job['natureJob'] ?? 'N/A'}',
+                      Colors.purple.shade100,
+                      Colors.purple.shade800,
                     ),
                   ],
                 ),
@@ -193,6 +163,24 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
       ),
     );
   }
+  Widget _colorChip(IconData icon, String label, Color bgColor, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: textColor),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(color: textColor, fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
 
 
   @override
