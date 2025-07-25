@@ -98,12 +98,12 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
     if (workExpStatus == null) return;
 
     // Navigate based on work experience status
-    if (workExpStatus == 'No') {
+    if (workExpStatus == 'Work Experience-No') {
       Navigator.pushNamed(context, '/County_that_you_preferred_page');
-
-    } else if(workExpStatus == 'Yes') {
-      Navigator.pushNamed(context, '/work_experience'); // Navigate to work experience page
+    } else if (workExpStatus == 'Work Experience-Yes') {
+      Navigator.pushNamed(context, '/work_experience');
     }
+
   }
 
   Future<String?> _showOptionBottomSheet({
@@ -121,6 +121,7 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -128,24 +129,50 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
         centerTitle: true,
         backgroundColor: mainBlue,
       ),
-      body: ListView.separated(
+      body: Padding(
         padding: const EdgeInsets.all(20),
-        itemCount: doctorSpeciality.length,
-        separatorBuilder: (_, __) => const Divider(),
-        itemBuilder: (context, index) {
-          final profession = doctorSpeciality[index];
-          return ListTile(
-            leading: Radio<String>(
-              activeColor: mainBlue,
-              value: profession,
-              groupValue: speciality,
-              onChanged: (value) => setState(() => speciality = value),
-            ),
-            title: Text(profession, style: radioTextStyle),
-            onTap: () => setState(() => speciality = profession),
-          );
-        },
+        child: GridView.count(
+          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 3,
+          children: doctorSpeciality.map((item) {
+            final isSelected = item == speciality;
+            return GestureDetector(
+              onTap: () => setState(() => speciality = item),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: isSelected ? mainBlue : Colors.white,
+                  border: Border.all(
+                    color: isSelected ? mainBlue : Colors.grey.shade300,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  item,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16, //
+                    color: isSelected ? Colors.white : Colors.black87,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
       ),
+
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(15),
         child: ElevatedButton(
@@ -153,13 +180,16 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.all(15),
             backgroundColor: mainBlue,
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
           ),
           child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
         ),
       ),
     );
   }
+
 }
 
 class OthersTextField extends StatelessWidget {
@@ -272,28 +302,36 @@ class _OptionBottomSheetState extends State<_OptionBottomSheet> {
             }).toList(),
           ),
         ),
-        ElevatedButton(
-          onPressed: () {
-            if (selectedValue != null) {
-              Navigator.pop(context, selectedValue);
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Please select an option', textAlign: TextAlign.center),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: mainBlue,
-            padding: const EdgeInsets.all(15),
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewPadding.bottom + 20,
           ),
-          child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+          child: ElevatedButton(
+            onPressed: () {
+              if (selectedValue != null) {
+                Navigator.pop(context, selectedValue);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please select an option', textAlign: TextAlign.center),
+                    backgroundColor: Colors.red,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: mainBlue,
+              padding: const EdgeInsets.all(15),
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),),
+            ),
+            child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+          ),
         ),
       ],
     );
   }
 }
+
