@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled/widgets/main_button.dart';
+import 'package:http/http.dart' as http;
 import '../../constants/constant.dart';
 import '../../constants/images.dart';
+import '../../widgets/main_button.dart';
 
 class ProfilePicture extends StatefulWidget {
   const ProfilePicture({super.key});
@@ -17,85 +17,80 @@ class ProfilePicture extends StatefulWidget {
 class _ProfilePictureState extends State<ProfilePicture> {
   XFile? _imageFile;
   String? _userId;
-  String?_photoId;
   String? _serverImageUrl;
   final ImagePicker _picker = ImagePicker();
+  bool _isUploading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUserId();
+    _loadUserIdAndPhoto();
   }
-  Future<void> _loadUserId() async {
+
+  Future<void> _loadUserIdAndPhoto() async {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getString('userId');
-    final photoId = prefs.getString('photoId'); // get from login state
+    final photoId = prefs.getString('photoId'); // only local
 
-    if (id != null) {
-      setState(() {
-        _userId = id;
-        _photoId = photoId; // ✅ store it in state
-      });
+    if (id != null && mounted) {
+      setState(() => _userId = id);
 
-      if (_photoId != null && _photoId!.isNotEmpty) {
-        await loadExistingProfileImage(_photoId!);
-      } else {
-        debugPrint('No photoId found in login state.');
+      if (photoId != null && photoId.isNotEmpty) {
+        await _loadExistingProfileImage(photoId);
       }
     }
   }
 
-  Future<void> loadExistingProfileImage(String photoId) async {
+  Future<void> _loadExistingProfileImage(String photoId) async {
     final imageUrl = 'https://api.joinmeds.in/api/images/$photoId';
 
-
-    final response = await http.get(Uri.parse(imageUrl));
-    if (response.statusCode == 200) {
-      setState(() {
-        _serverImageUrl = imageUrl;
-      });
-    } else {
-      debugPrint('No existing profile image found. photoId=$photoId');
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode == 200 && mounted) {
+        setState(() => _serverImageUrl = imageUrl);
+      }
+    } catch (e) {
+      debugPrint('Failed to load existing profile image: $e');
     }
   }
 
-  Future<void> takePhoto(ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
-    if (pickedFile != null) {
-      final file = File(pickedFile.path);
-      final bytes = await file.length();
-
-      debugPrint('Image size: $bytes bytes');
-      debugPrint('Image size: ${(bytes / 1024).toStringAsFixed(2)} KB');
-      debugPrint('Image size: ${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB');
-
+  Future<void> _pickImage(ImageSource source) async {
+    final pickedFile = await _picker.pickImage(source: source, imageQuality: 80);
+    if (pickedFile != null && mounted) {
       setState(() {
         _imageFile = pickedFile;
-        _serverImageUrl = null; // Hide server image once new one is selected
+        _serverImageUrl = null; // hide old server image
       });
     }
   }
 
-  Future<bool> uploadProfileImage(String userId) async {
-    if (_imageFile == null) return false;
+  Future<bool> _uploadProfileImage() async {
+    if (_imageFile == null || _userId == null) return false;
+
+    setState(() => _isUploading = true);
 
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('https://api.joinmeds.in/api/images/upload/$userId'),
+      Uri.parse('https://api.joinmeds.in/api/images/upload/$_userId'),
     );
-
     request.files.add(await http.MultipartFile.fromPath('file', _imageFile!.path));
 
-    final response = await request.send();
-    debugPrint('Image size should below 1 MB: ${response.statusCode}');
-    return response.statusCode == 200 || response.statusCode == 201;
+    try {
+      final response = await request.send();
+      setState(() => _isUploading = false);
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      setState(() => _isUploading = false);
+      debugPrint('Upload failed: $e');
+      return false;
+    }
   }
 
-  Widget bottomSheet() {
+  Widget _bottomSheet() {
     return Container(
       width: double.infinity,
       height: 200,
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -104,8 +99,8 @@ class _ProfilePictureState extends State<ProfilePicture> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildOptionButton(Icons.camera_alt, "Open Camera", mainBlue, () => takePhoto(ImageSource.camera)),
-              _buildOptionButton(Icons.image, "Open Gallery", const Color(0xffFF6F61), () => takePhoto(ImageSource.gallery)),
+              _buildOptionButton(Icons.camera_alt, "Open Camera", mainBlue, () => _pickImage(ImageSource.camera)),
+              _buildOptionButton(Icons.image, "Open Gallery", const Color(0xffFF6F61), () => _pickImage(ImageSource.gallery)),
             ],
           ),
         ],
@@ -132,7 +127,7 @@ class _ProfilePictureState extends State<ProfilePicture> {
     );
   }
 
-  Widget buildProfileImageWidget() {
+  Widget _buildProfileImage() {
     if (_imageFile != null) {
       return Image.file(File(_imageFile!.path), width: 200, height: 200, fit: BoxFit.cover);
     } else if (_serverImageUrl != null) {
@@ -171,7 +166,7 @@ class _ProfilePictureState extends State<ProfilePicture> {
                     CircleAvatar(
                       radius: 100,
                       backgroundColor: Colors.white,
-                      child: ClipOval(child: buildProfileImageWidget()),
+                      child: ClipOval(child: _buildProfileImage()),
                     ),
                     Positioned(
                       bottom: 8,
@@ -183,7 +178,7 @@ class _ProfilePictureState extends State<ProfilePicture> {
                           icon: const Icon(Icons.camera_alt, color: Colors.white, size: 22),
                           onPressed: () => showModalBottomSheet(
                             context: context,
-                            builder: (context) => bottomSheet(),
+                            builder: (_) => _bottomSheet(),
                           ),
                         ),
                       ),
@@ -195,8 +190,10 @@ class _ProfilePictureState extends State<ProfilePicture> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     MainButton(
-                      text: 'Next',
-                      onPressed: () async {
+                      text: _isUploading ? 'Uploading...' : 'Next',
+                      onPressed: _isUploading
+                          ? null
+                          : () async {
                         if (_imageFile == null && _serverImageUrl == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -205,14 +202,14 @@ class _ProfilePictureState extends State<ProfilePicture> {
                               duration: Duration(seconds: 2),
                             ),
                           );
-                        } else if (_imageFile != null && _userId != null) {
-                          bool success = await uploadProfileImage(_userId!);
+                        } else if (_imageFile != null) {
+                          final success = await _uploadProfileImage();
                           if (success) {
                             Navigator.pushNamed(context, '/resume_upload');
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Image size should below 1 MB'),
+                                content: Text('Image size should be below 1 MB'),
                                 backgroundColor: Colors.redAccent,
                               ),
                             );
@@ -224,12 +221,10 @@ class _ProfilePictureState extends State<ProfilePicture> {
                     ),
                     const SizedBox(height: 15),
                     OutlinedButton(
-                      style: ButtonStyle(
-                        padding: WidgetStatePropertyAll(EdgeInsets.all(15)),
-                        side: WidgetStatePropertyAll(BorderSide(color: mainBlue, width: 3)),
-                        shape: WidgetStatePropertyAll(
-                          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.all(15),
+                        side: const BorderSide(color: mainBlue, width: 3),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       onPressed: () => Navigator.pushNamed(context, '/resume_upload'),
                       child: const Text('Skip for now', style: TextStyle(fontSize: 20.0, color: mainBlue)),

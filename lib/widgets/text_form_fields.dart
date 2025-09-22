@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import '../constants/constant.dart';
-
 
 class TextFormWidget extends StatelessWidget {
   final TextEditingController controller;
@@ -9,7 +7,9 @@ class TextFormWidget extends StatelessWidget {
   final String hintText;
   final TextInputType keyboardType;
   final bool readOnly;
+  final bool obscureText;
   final Widget? suffixIcon;
+  final void Function(String)? onChanged; // simple and optional
 
   const TextFormWidget({
     super.key,
@@ -18,7 +18,9 @@ class TextFormWidget extends StatelessWidget {
     required this.hintText,
     this.keyboardType = TextInputType.text,
     this.readOnly = false,
-    this.suffixIcon, required bool obscureText,
+    this.suffixIcon,
+    this.obscureText = false,
+    this.onChanged,
   });
 
   @override
@@ -28,6 +30,8 @@ class TextFormWidget extends StatelessWidget {
       keyboardType: keyboardType,
       validator: validator,
       readOnly: readOnly,
+      obscureText: obscureText,
+      onChanged: onChanged,
       cursorColor: inputBorderClr,
       decoration: InputDecoration(
         fillColor: Colors.white,
@@ -44,4 +48,3 @@ class TextFormWidget extends StatelessWidget {
     );
   }
 }
-

@@ -16,6 +16,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
   List<dynamic> appliedJobs = [];
   String? userId;
   bool isLoading = true;
+  bool hasError = false;
 
   @override
   void initState() {
@@ -26,30 +27,61 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
   Future<void> loadUserId() async {
     final prefs = await SharedPreferences.getInstance();
     userId = prefs.getString('userId');
-    if (userId != null) fetchAppliedJobs();
+
+    if (userId != null) {
+      await fetchAppliedJobs();
+    } else {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+        hasError = true;
+      });
+    }
   }
 
   Future<void> fetchAppliedJobs() async {
+    if (!mounted) return;
+    setState(() {
+      isLoading = true;
+      hasError = false;
+    });
+
     try {
       final response = await http.get(
         Uri.parse('https://api.joinmeds.in/api/job-applied/search?userId=$userId'),
       );
+
       if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        List<dynamic> jobs = [];
+
+        if (decoded is List) {
+          jobs = decoded;
+        } else if (decoded is Map && decoded['data'] is List) {
+          jobs = decoded['data'];
+        }
+
+        if (!mounted) return;
         setState(() {
-          appliedJobs = json.decode(response.body);
+          appliedJobs = jobs;
           isLoading = false;
         });
       } else {
-        throw Exception('Failed to load jobs');
+        throw Exception('Failed to load jobs (code ${response.statusCode})');
       }
     } catch (e) {
-      setState(() => isLoading = false);
+      debugPrint("❌ Error fetching jobs: $e");
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+        hasError = true;
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        const SnackBar(content: Text('Failed to load jobs. Please try again.')),
       );
     }
   }
-
 
   Widget _buildJobCard(dynamic job) {
     return Card(
@@ -83,7 +115,6 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Organization with icon
                 Row(
                   children: [
                     const Icon(Icons.business, color: Colors.black54),
@@ -102,7 +133,6 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Tags/Details with colorful chips
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
@@ -163,6 +193,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
       ),
     );
   }
+
   Widget _colorChip(IconData icon, String label, Color bgColor, Color textColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -181,27 +212,30 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(
-        automaticallyImplyLeading: false,
+automaticallyImplyLeading: false,
         title: const Text('My Jobs', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 1,
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : appliedJobs.isEmpty
-          ? const Center(child: Text("No jobs applied yet."))
-          : ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: appliedJobs.length,
-        itemBuilder: (context, index) =>
-            _buildJobCard(appliedJobs[index]),
+      body: RefreshIndicator(
+        onRefresh: fetchAppliedJobs,
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : hasError
+            ? const Center(child: Text("Unable to load jobs. Please try again."))
+            : appliedJobs.isEmpty
+            ? const Center(child: Text("No jobs applied yet."))
+            : ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: appliedJobs.length,
+          itemBuilder: (context, index) =>
+              _buildJobCard(appliedJobs[index]),
+        ),
       ),
     );
   }

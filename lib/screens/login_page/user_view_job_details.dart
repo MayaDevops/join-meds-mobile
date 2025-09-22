@@ -115,7 +115,7 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
           ),
         );
         Future.delayed(const Duration(seconds: 2), () {
-          Navigator.pushReplacementNamed(context, '/job');
+          Navigator.pushReplacementNamed(context, '/home');
         });
       } else {
         throw Exception('Apply failed: ${response.statusCode}');

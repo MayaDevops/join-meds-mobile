@@ -21,58 +21,60 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
   final TextEditingController _certificateController = TextEditingController();
 
   String? userId;
+  String? languageTestStatus;
   String? _clearedTestOption;
   String? _selectedClearedTest;
   String? _certificationOptionStatus;
-  String? languageTestStatus;
 
-  static const List<String> clearedTests = ['IELTS', 'OET', 'German'];
+  static const List<String> clearedTests = ['IELTS', 'OET', 'German','PTE'];
 
   @override
   void initState() {
     super.initState();
-    _loadUserIdAndFetch();
+    _loadUserIdAndSelections();
   }
 
-  Future<void> _loadUserIdAndFetch() async {
+  Future<void> _loadUserIdAndSelections() async {
     final prefs = await SharedPreferences.getInstance();
-    final storedUserId = prefs.getString('userId');
+    userId = prefs.getString('userId');
 
-    if (storedUserId == null || storedUserId.isEmpty) {
-      debugPrint('Error: userId not found in SharedPreferences');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('User ID not found. Please log in again.'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
+    // Load previous selections if available
+    languageTestStatus = prefs.getString('languageTestStatus');
+    _clearedTestOption = prefs.getString('_clearedTestOption');
+    _selectedClearedTest = prefs.getString('_selectedClearedTest');
+    _testScoreController.text = prefs.getString('_testScoreController') ?? '';
+    _certificationOptionStatus = prefs.getString('_certificationOptionStatus');
+    _certificateController.text = prefs.getString('_certificateController') ?? '';
+
+    // Fetch latest from API if needed
+    if (userId != null) {
+      await _fetchUserDetails();
     }
 
-    setState(() {
-      userId = storedUserId;
-    });
-
-    await _fetchUserDetails();
+    // Refresh UI after loading
+    setState(() {});
   }
 
   Future<void> _fetchUserDetails() async {
     try {
-      final response = await http
-          .get(Uri.parse('https://api.joinmeds.in/api/user-details/$userId'));
+      final response =
+      await http.get(Uri.parse('https://api.joinmeds.in/api/user-details/$userId'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
         setState(() {
-          languageTestStatus = data['languageTest'];
-          _clearedTestOption =
-              data['languageTestCleared'] != null ? 'Yes' : 'No';
-          _selectedClearedTest = data['languageTestCleared']?.split(' ')?.first;
-          _testScoreController.text =
-              data['languageTestCleared']?.split(' ')?.sublist(1).join(' ') ??
-                  '';
-          _certificationOptionStatus =
-              data['certification']?.isNotEmpty == true ? 'Yes' : 'No';
-          _certificateController.text = data['certification'] ?? '';
+          // Only set if not already loaded from SharedPreferences
+          languageTestStatus ??= data['languageTest'];
+          _clearedTestOption ??= data['languageTestCleared'] != null ? 'Yes' : 'No';
+          _selectedClearedTest ??= data['languageTestCleared']?.split(' ')?.first;
+          if (_testScoreController.text.isEmpty) {
+            _testScoreController.text =
+                data['languageTestCleared']?.split(' ')?.sublist(1).join(' ') ?? '';
+          }
+          _certificationOptionStatus ??= (data['certification']?.isNotEmpty == true) ? 'Yes' : 'No';
+          if (_certificateController.text.isEmpty) {
+            _certificateController.text = data['certification'] ?? '';
+          }
         });
       }
     } catch (e) {
@@ -80,9 +82,20 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
     }
   }
 
+  Future<void> _saveSelectionsLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('languageTestStatus', languageTestStatus ?? '');
+    await prefs.setString('_clearedTestOption', _clearedTestOption ?? '');
+    await prefs.setString('_selectedClearedTest', _selectedClearedTest ?? '');
+    await prefs.setString('_testScoreController', _testScoreController.text);
+    await prefs.setString('_certificationOptionStatus', _certificationOptionStatus ?? '');
+    await prefs.setString('_certificateController', _certificateController.text);
+  }
+
   Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
-      final languageTestFinal = languageTestStatus ?? '';
+      await _saveSelectionsLocally();
+
       final clearedTestFinal = _clearedTestOption == 'Yes'
           ? "${_selectedClearedTest ?? ''} ${_testScoreController.text.trim()}"
           : '';
@@ -92,12 +105,10 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
 
       final body = {
         "userId": userId ?? '',
-        "languageTest": languageTestFinal,
+        "languageTest": languageTestStatus ?? '',
         "languageTestCleared": clearedTestFinal,
         "certification": certificationFinal
       };
-
-      print('Sending Body: ${jsonEncode(body)}'); // DEBUG PRINT
 
       try {
         final response = await http.put(
@@ -110,7 +121,6 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
         if (response.statusCode == 200 || response.statusCode == 204) {
           Navigator.pushNamed(context, '/success');
         } else {
-          debugPrint('Response: ${response.body}');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Failed to update. Code: ${response.statusCode}'),
@@ -149,7 +159,7 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
       textStyle: hintStyle,
       onSelected: onChanged,
       dropdownMenuEntries:
-          items.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
+      items.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
     );
   }
 
@@ -178,7 +188,6 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
     if (value == null || value.trim().isEmpty) {
       return 'Please enter your language test score';
     }
-
     final input = value.trim().toUpperCase();
     final ieltsRegex = RegExp(r'\s*([4-9](\.\d)?)');
     final oetRegex = RegExp(r'\s*[A-C]');
@@ -189,7 +198,6 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
         !germanRegex.hasMatch(input)) {
       return 'Enter a valid score (e.g., IELTS 7.0, OET B, B2)';
     }
-
     return null;
   }
 
@@ -227,16 +235,14 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: spacing + 10),
-                const LabelText(
-                    labelText: 'Have you written any language test?'),
+                const LabelText(labelText: 'Have you written any language test?'),
                 const SizedBox(height: 5),
                 _buildRadioGroup(
                   groupValue: languageTestStatus,
                   onChanged: (val) => setState(() => languageTestStatus = val),
                 ),
                 const SizedBox(height: spacing),
-                const LabelText(
-                    labelText: 'Have you cleared any language test?'),
+                const LabelText(labelText: 'Have you cleared any language test?'),
                 const SizedBox(height: 5),
                 _buildRadioGroup(
                   groupValue: _clearedTestOption,
@@ -258,8 +264,7 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
                     hintText: 'Select Test',
                     items: clearedTests,
                     value: _selectedClearedTest,
-                    onChanged: (val) =>
-                        setState(() => _selectedClearedTest = val),
+                    onChanged: (val) => setState(() => _selectedClearedTest = val),
                   ),
                   const SizedBox(height: 10),
                   const LabelText(labelText: 'Score Obtained'),
@@ -280,9 +285,7 @@ class _AfterCountryPreferredPageState extends State<AfterCountryPreferredPage> {
                   onChanged: (val) {
                     setState(() {
                       _certificationOptionStatus = val;
-                      if (val == 'No') {
-                        _certificateController.clear();
-                      }
+                      if (val == 'No') _certificateController.clear();
                     });
                   },
                 ),

@@ -1,14 +1,13 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled/widgets/text_form_widget2.dart';
+import 'package:dio/dio.dart';
+
 import '../../constants/constant.dart';
 import '../../constants/images.dart';
 import '../../widgets/main_button.dart';
-import 'package:untitled/models/login_request.dart';
-import 'package:untitled/api/api_service.dart';
-import 'package:dio/dio.dart'; // Required for catching DioError
+import '../../widgets/text_form_widget2.dart';
+import '../../api/api_service.dart';
+import '../../models/login_request.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,6 +18,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool _showPassword = true;
+  bool _isLoading = false;
+
   final _loginKey = GlobalKey<FormState>();
   final _emailPhoneController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -30,6 +31,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  // ---------- Validators ----------
   String? _validateEmailOrPhone(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Required Email/Phone Number';
@@ -48,6 +50,7 @@ class _LoginPageState extends State<LoginPage> {
     return null;
   }
 
+  // ---------- Reusable Text Field ----------
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
@@ -62,8 +65,10 @@ class _LoginPageState extends State<LoginPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
           const SizedBox(height: 5),
           TextFormWidget2(
             controller: controller,
@@ -79,58 +84,67 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // ---------- Handle Login ----------
   Future<void> _handleLogin() async {
-    if (_loginKey.currentState!.validate()) {
-      final loginRequest = LoginRequest(
-        username: _emailPhoneController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+    if (!_loginKey.currentState!.validate()) return;
 
-      try {
-        final response = await ApiService().login(loginRequest);
+    setState(() => _isLoading = true);
 
-        if (response.statusCode == 200) {
-          // ✅ Use response.data directly, no jsonDecode
-          final responseBody = response.data;
-          final userId = responseBody['id']; // Adjust this key as needed
+    final loginRequest = LoginRequest(
+      username: _emailPhoneController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
 
-          if (userId != null) {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('userId', userId.toString());
-            debugPrint('✅ userId stored: $userId');
-          }
+    try {
+      final response = await ApiService().login(loginRequest);
 
-          Navigator.pushReplacementNamed(context, '/login_page_loading');
-        } else {
-          print('❌ Login failed: ${response.statusCode} - ${response.data}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Login failed: ${response.statusMessage}')),
-          );
-        }
-      } on DioException catch (dioError) {
-        String message = 'Unknown error';
-        if (dioError.response != null) {
-          message =
-          'Server Error ${dioError.response?.statusCode}: ${dioError.response?.data}';
-        } else {
-          message = 'Network error: ${dioError.message}';
+      if (response.statusCode == 200 && response.data != null) {
+        final responseBody = response.data;
+        final userId = responseBody['id']; // adjust based on backend
+
+        if (userId != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', userId.toString());
+          debugPrint('✅ userId stored: $userId');
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-      } catch (e, stack) {
-        print('❗ Unexpected error: $e');
-        print('StackTrace: $stack');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Unexpected error: ${e.toString()}')),
-        );
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, '/login_page_loading');
+      } else {
+        _showSnackBar('Login failed. Please check your credentials.');
       }
+    } on DioException catch (dioError) {
+      final statusCode = dioError.response?.statusCode ?? 0;
+
+      if (statusCode == 401 || statusCode == 400) {
+        _showSnackBar("Invalid email or password. Please try again.");
+      } else if (statusCode >= 500) {
+        _showSnackBar("Server is unavailable. Please try later.");
+      } else if (dioError.type == DioExceptionType.connectionTimeout ||
+          dioError.type == DioExceptionType.receiveTimeout) {
+        _showSnackBar("Connection timeout. Please try again.");
+      } else {
+        _showSnackBar("Network error. Please check your connection.");
+      }
+
+      debugPrint("❌ Dio error [$statusCode]: ${dioError.response?.data}");
+    } catch (e, stack) {
+      debugPrint('❗ Unexpected error: $e');
+      debugPrint('StackTrace: $stack');
+      _showSnackBar("Unexpected error. Please try again.");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  void _showSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
-
+  // ---------- UI ----------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,8 +157,11 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Image.asset(loginBanner,
-                      fit: BoxFit.cover, width: double.infinity),
+                  Image.asset(
+                    loginBanner,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
                   Form(
                     key: _loginKey,
                     child: Column(
@@ -170,9 +187,7 @@ class _LoginPageState extends State<LoginPage> {
                               color: mainBlue,
                             ),
                             onPressed: () {
-                              setState(() {
-                                _showPassword = !_showPassword;
-                              });
+                              setState(() => _showPassword = !_showPassword);
                             },
                           ),
                           validator: _validatePassword,
@@ -194,23 +209,26 @@ class _LoginPageState extends State<LoginPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             MainButton(
-              text: 'Login',
-              onPressed: _handleLogin,
+              text: _isLoading ? "Logging in..." : 'Login',
+              onPressed: _isLoading ? null : _handleLogin,
             ),
             const SizedBox(height: 15),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('If you don’t have an account ',
-                    style: TextStyle(fontSize: 16)),
+                const Text(
+                  'If you don’t have an account ',
+                  style: TextStyle(fontSize: 16),
+                ),
                 GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/sign_up'),
                   child: Text(
                     ' Sign Up',
                     style: TextStyle(
-                        fontSize: 16,
-                        color: mainBlue,
-                        fontWeight: FontWeight.w500),
+                      fontSize: 16,
+                      color: mainBlue,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
               ],

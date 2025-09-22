@@ -35,6 +35,7 @@ class _SignUpState extends State<SignUp> {
     super.dispose();
   }
 
+  // ---------- Validators ----------
   String? _validateEmailOrPhone(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Required Email/Phone Number';
@@ -58,6 +59,7 @@ class _SignUpState extends State<SignUp> {
     return null;
   }
 
+  // ---------- Reusable Text Field ----------
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
@@ -90,25 +92,36 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
+  // ---------- Signup ----------
   Future<void> _submitSignup() async {
-    if (_signInKey.currentState!.validate()) {
-      final request = SignupRequest(
-        orgName: "",
-        officialEmail: "",
-        officialPhone: "",
-        incorporationNo: "",
-        emailMobile: _emailPhoneController.text.trim(),
-        password: _passwordController.text.trim(),
-        confirmPassword: _confirmPasswordController.text.trim(),
-        createdAt: "",
-        userType: "CITIZEN",
+    if (!_signInKey.currentState!.validate()) return;
+
+    if (!isChecked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You must accept the Terms & Privacy Policy.'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
+      return;
+    }
 
-      debugPrint("Signup Request JSON: ${jsonEncode(request.toJson())}");
+    final request = SignupRequest(
+      orgName: "",
+      officialEmail: "",
+      officialPhone: "",
+      incorporationNo: "",
+      emailMobile: _emailPhoneController.text.trim(),
+      password: _passwordController.text.trim(),
+      confirmPassword: _confirmPasswordController.text.trim(),
+      createdAt: "",
+      userType: "CITIZEN",
+    );
 
+    try {
       final response = await UserApiService().signup(request);
 
-      if ((response.statusCode == 200 || response.statusCode == 201) && isChecked) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
 
         if (responseData['id'] != null) {
@@ -117,32 +130,38 @@ class _SignUpState extends State<SignUp> {
           debugPrint("✅ Saved userId to prefs: ${responseData['id']}");
         }
 
-        Navigator.pushNamedAndRemoveUntil(context, '/sign_up_loading', (route) => false);
-      } else if (!isChecked) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('You must accept the terms and conditions.'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(
+            context, '/sign_up_loading', (route) => false);
       } else {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text("Signup Failed"),
-            content: Text("Error: ${response.body}"),
-            actions: [
-              TextButton(
-                child: const Text("OK"),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-        );
+        _showErrorDialog("Signup Failed",
+            "Something went wrong. Please try again later.");
+        debugPrint("❌ Signup API Error: ${response.body}");
       }
+    } catch (e) {
+      _showErrorDialog("Error", "Unable to connect. Check your internet.");
+      debugPrint("❌ Exception during signup: $e");
     }
   }
 
+  void _showErrorDialog(String title, String message) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            child: const Text("OK"),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------- UI ----------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -237,8 +256,8 @@ class _SignUpState extends State<SignUp> {
                                     ),
                                     InkWell(
                                       onTap: () {
-                                        Navigator.pushNamed(context,
-                                            'user_terms_and_conditions');
+                                        Navigator.pushNamed(
+                                            context, 'user_terms_and_conditions');
                                       },
                                       child: const Text(
                                         'Terms and Conditions',
@@ -262,8 +281,8 @@ class _SignUpState extends State<SignUp> {
                                     const SizedBox(width: 45),
                                     InkWell(
                                       onTap: () {
-                                        Navigator.pushNamed(context,
-                                            'user_terms_and_conditions');
+                                        Navigator.pushNamed(
+                                            context, 'user_privacy_policy');
                                       },
                                       child: const Text(
                                         'Privacy Policy',
@@ -307,8 +326,7 @@ class _SignUpState extends State<SignUp> {
                   const Text('If you have an account ',
                       style: TextStyle(fontSize: 16)),
                   GestureDetector(
-                    onTap: () =>
-                        Navigator.pushNamed(context, '/login_page'),
+                    onTap: () => Navigator.pushNamed(context, '/login_page'),
                     child: Text(
                       'Login',
                       style: TextStyle(

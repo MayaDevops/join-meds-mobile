@@ -43,7 +43,7 @@ class _NurseCourseTypeSelectionState extends State<NurseCourseTypeSelection> {
             isLoading = false;
           });
         } else {
-          _showSnackBar("Failed to fetch data", Colors.red);
+          // _showSnackBar("Failed to fetch data", Colors.red);
           setState(() => isLoading = false);
         }
       } catch (e) {

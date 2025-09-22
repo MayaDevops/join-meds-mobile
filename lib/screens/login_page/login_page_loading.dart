@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:untitled/constants/images.dart';
-import 'package:untitled/screens/login_page/home_screen.dart';
 
 class LoginLoading extends StatefulWidget {
   const LoginLoading({super.key});
@@ -20,11 +19,11 @@ class _LoginLoadingState extends State<LoginLoading> {
   Future<void> _redirectToNextPage() async {
     await Future.delayed(const Duration(seconds: 5));
     if (!mounted) return;
-    Navigator.pushReplacement(
+    // Navigate to Home and remove all previous routes
+    Navigator.pushNamedAndRemoveUntil(
       context,
-      MaterialPageRoute(
-        builder: (context) => const HomeScreen(),
-      ),
+      '/home', // Replace with your home page route
+          (route) => false,
     );
   }
 
@@ -61,7 +60,7 @@ class _LoginLoadingState extends State<LoginLoading> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    color: Colors.black54,
                   ),
                 ),
 

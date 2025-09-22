@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/screens/landing_page.dart';
-import 'package:untitled/screens/login_page/home_screen.dart';
 
 class LogOutLoading extends StatefulWidget {
   const LogOutLoading({super.key});

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:untitled/constants/images.dart';
-import 'package:untitled/screens/login_page/home_screen.dart';
 import 'package:untitled/screens/login_page/login_page.dart';
-import 'package:untitled/screens/signupPages/personal_data.dart';
 
 class SignUpLoading extends StatefulWidget {
   const SignUpLoading({super.key});
@@ -40,39 +38,43 @@ class _SignUpLoadingState extends State<SignUpLoading> {
 
           ),
           child: SafeArea(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // App logo
-                Image.asset(
-                  appLogo,
-                  height: 100,
-                ),
-                const SizedBox(height: 40),
-
-                // Lottie animation
-                Lottie.asset(
-                  loadingAnimation3, // Make sure this file exists
-                  height: 200,
-                ),
-
-                const SizedBox(height: 30),
-
-                const Text(
-                  'Please wait while we sign you in...',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // App logo
+                  Image.asset(
+                    appLogo,
+                    height: 100,
                   ),
-                ),
+                  const SizedBox(height: 40),
 
-                const SizedBox(height: 20),
+                  // Lottie animation
+                  Lottie.asset(
+                    loadingAnimation3, // Make sure this file exists
+                    height: 200,
+                  ),
 
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              ],
+                  const SizedBox(height: 30),
+
+                  const Text(
+                    'You have signed in successfully. Redirecting to the login page...',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black54,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

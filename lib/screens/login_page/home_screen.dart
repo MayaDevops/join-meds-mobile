@@ -1,9 +1,13 @@
+
 import 'package:flutter/material.dart';
-import 'package:untitled/screens/login_page/my_jobs_screen.dart';
-import 'package:untitled/screens/login_page/user_notification.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:untitled/screens/login_page/user_profile_section.dart';
 import '../../constants/constant.dart';
+import '../login_page/my_jobs_screen.dart';
+import '../login_page/user_notification.dart';
 import 'widgets/job_search_input.dart';
-import '../login_page/user_profile_section.dart';
+
+/// ---------------------------- HOME SCREEN ----------------------------
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,25 +19,30 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  final List<Widget> _pages = const [
-    HomeTab(),
-    MyJobsScreen(),
-    UserNotification(),
-    UserProfileSection(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: _buildDrawer(context),
       appBar: _buildAppBar(context),
-      body: _pages[_selectedIndex],
+      body: _buildPage(),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
+  }
+
+  /// Each time profile tab is selected, force rebuild with unique key
+  Widget _buildPage() {
+    switch (_selectedIndex) {
+      case 0:
+        return const HomeTab();
+      case 1:
+        return const MyJobsScreen();
+      case 2:
+        return const UserNotification();
+      case 3:
+        return KeyedSubtree(key: UniqueKey(), child: const UserProfileSection());
+      default:
+        return const HomeTab();
+    }
   }
 
   AppBar _buildAppBar(BuildContext context) {
@@ -43,39 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
       actions: [
         IconButton(
           icon: const Icon(Icons.logout),
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text("Log Out"),
-                  content: const Text("Are you sure you want to log out?"),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Close the dialog
-                      },
-                      child: const Text("No"),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Close dialog first
-                        // Then perform logout logic
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          '/logOut_loading', // Replace with your login screen route
-                              (route) => false,
-                        );
-                      },
-                      child: const Text("Yes"),
-                    ),
-                  ],
-                );
-              },
-            );
-          },
-        )
-
+          onPressed: () => _confirmLogout(context),
+        ),
       ],
       titleSpacing: 16,
       title: const Text.rich(
@@ -112,16 +90,13 @@ class _HomeScreenState extends State<HomeScreen> {
             title: const Text('Profile'),
             onTap: () {
               Navigator.pop(context);
-              setState(() => _selectedIndex = 3); // Go to UserProfileSection
+              setState(() => _selectedIndex = 3);
             },
           ),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
-            onTap: () {
-              // Add logout logic here
-              Navigator.pop(context);
-            },
+            onTap: () => _confirmLogout(context),
           ),
         ],
       ),
@@ -131,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
   BottomNavigationBar _buildBottomNavigationBar() {
     return BottomNavigationBar(
       currentIndex: _selectedIndex,
-      onTap: _onItemTapped,
+      onTap: (index) => setState(() => _selectedIndex = index),
       backgroundColor: const Color(0xffD9D9D9),
       selectedItemColor: mainBlue,
       unselectedItemColor: Colors.black54,
@@ -143,13 +118,36 @@ class _HomeScreenState extends State<HomeScreen> {
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.work), label: 'My Jobs'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.notifications), label: 'Notification'),
+        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Notification'),
         BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
       ],
     );
   }
+
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Log Out"),
+        content: const Text("Are you sure you want to log out?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("No")),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
+              if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/logOut_loading', (_) => false);
+            },
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+/// ---------------------------- HOME TAB ----------------------------
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
@@ -157,7 +155,6 @@ class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      // Makes the page scrollable
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -173,17 +170,6 @@ class HomeTab extends StatelessWidget {
           const SizedBox(height: 20),
         ],
       ),
-    );
-  }
-}
-
-class ContactPage extends StatelessWidget {
-  const ContactPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text("Contact Page", style: TextStyle(fontSize: 18)),
     );
   }
 }

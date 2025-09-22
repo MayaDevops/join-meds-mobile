@@ -1,10 +1,9 @@
-// Add these imports
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http_parser/http_parser.dart';
 import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/constant.dart';
 import '../../constants/images.dart';
 import '../../widgets/main_button.dart';
@@ -34,26 +33,32 @@ class _ResumeUploadState extends State<ResumeUpload> {
   Future<void> _loadUserIdAndCheckResume() async {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getString('userId');
-    final resumeId = prefs.getString('resumeId'); // fetch from login data
+    final resumeId = prefs.getString('resumeId');
 
     if (id != null) {
       setState(() {
         _userId = id;
-        _fileName = resumeId; // this will now show the correct resume name
+        _fileName = resumeId;
         _resumeUrl = resumeId != null
             ? 'https://api.joinmeds.in/api/resume/$resumeId'
             : null;
       });
 
-      // If resumeId is not null, assume it's already uploaded
-      if (resumeId != null) {
-        final resumeCheck = await http.head(Uri.parse(_resumeUrl!));
-        if (resumeCheck.statusCode == 200) {
-          setState(() {
-            resumeHeader = 'Resume already uploaded';
-          });
-        } else {
-          // fallback if file not found
+      if (_resumeUrl != null) {
+        try {
+          final head = await http.head(Uri.parse(_resumeUrl!));
+          if (head.statusCode == 200) {
+            setState(() {
+              resumeHeader = 'Resume already uploaded';
+            });
+          } else {
+            setState(() {
+              _fileName = null;
+              _resumeUrl = null;
+              resumeHeader = 'Please upload your Resume';
+            });
+          }
+        } catch (_) {
           setState(() {
             _fileName = null;
             _resumeUrl = null;
@@ -64,7 +69,6 @@ class _ResumeUploadState extends State<ResumeUpload> {
     }
   }
 
-
   Future<void> pickFile() async {
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -72,27 +76,23 @@ class _ResumeUploadState extends State<ResumeUpload> {
         allowedExtensions: ['pdf'],
       );
 
-      if (result != null) {
+      if (result != null && result.files.single.path != null) {
         final file = File(result.files.single.path!);
-        if (file.path.endsWith(".pdf")) {
-          setState(() {
-            _fileName = result.files.single.name;
-            _pickedFile = file;
-            resumeHeader = 'Resume uploaded successfully';
-            _resumeUrl = null; // Clear old resume preview if user picks new one
-          });
-          _showSnackBar("Resume selected!", Colors.green);
-        } else {
-          _showSnackBar("Only PDF files are allowed.", Colors.red);
-        }
+        setState(() {
+          _fileName = result.files.single.name;
+          _pickedFile = file;
+          _resumeUrl = null;
+          resumeHeader = 'Resume uploaded successfully';
+        });
+        _showSnackBar("Resume selected!", Colors.green);
       }
     } catch (e) {
-      _showSnackBar("Error picking file: ${e.toString()}", Colors.red);
+      _showSnackBar("Error picking file: $e", Colors.red);
     }
   }
 
   Future<void> uploadResume() async {
-    if (_pickedFile == null) {
+    if (_pickedFile == null && _resumeUrl == null) {
       _showSnackBar("Please upload a resume first!", Colors.red);
       return;
     }
@@ -106,39 +106,49 @@ class _ResumeUploadState extends State<ResumeUpload> {
       _isUploading = true;
     });
 
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('https://api.joinmeds.in/api/resume/upload/$_userId'),
-    );
-
-    request.files.add(
-      await http.MultipartFile.fromPath(
-        'file',
-        _pickedFile!.path,
-        contentType: MediaType('application', 'pdf'),
-      ),
-    );
-
-    final response = await request.send();
-    final respStr = await response.stream.bytesToString();
-    debugPrint('Upload status code: ${response.statusCode}');
-    debugPrint('Upload response body: $respStr');
-
-    setState(() {
-      _isUploading = false;
-    });
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const SelectionProfession()),
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://api.joinmeds.in/api/resume/upload/$_userId'),
       );
-    } else {
-      _showSnackBar("Upload failed: $respStr", Colors.red);
+
+      if (_pickedFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'file',
+            _pickedFile!.path,
+            contentType: MediaType('application', 'pdf'),
+          ),
+        );
+      }
+
+      final response = await request.send();
+      final respStr = await response.stream.bytesToString();
+      debugPrint('Upload status code: ${response.statusCode}');
+      debugPrint('Upload response body: $respStr');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SelectionProfession()),
+        );
+      } else {
+        _showSnackBar("Upload failed: $respStr", Colors.red);
+      }
+    } catch (e) {
+      _showSnackBar("Upload failed: $e", Colors.red);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
     }
   }
 
   void _showSnackBar(String message, Color color) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: color),
     );
@@ -157,22 +167,22 @@ class _ResumeUploadState extends State<ResumeUpload> {
         children: [
           Expanded(
             child: Text(
-              _fileName!,
+              _fileName ?? '',
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.green),
+                  fontSize: 16, fontWeight: FontWeight.w500, color: Colors.green),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: () => setState(() {
-              _fileName = null;
-              _pickedFile = null;
-              _resumeUrl = null;
-              resumeHeader = 'Please upload your Resume';
-            }),
+            onPressed: () {
+              setState(() {
+                _fileName = null;
+                _pickedFile = null;
+                _resumeUrl = null;
+                resumeHeader = 'Please upload your Resume';
+              });
+            },
           ),
         ],
       ),
@@ -183,16 +193,25 @@ class _ResumeUploadState extends State<ResumeUpload> {
     if (_resumeUrl != null) {
       return Column(
         children: [
-          const Text("Preview not supported, but resume is already uploaded.", style: TextStyle(color: Colors.grey)),
+          const Text(
+            "Preview not supported, but resume is already uploaded.",
+            style: TextStyle(color: Colors.grey),
+          ),
           const SizedBox(height: 10),
           const Icon(Icons.check_circle, color: Colors.green, size: 50),
           const SizedBox(height: 10),
           TextButton(
             onPressed: () {
-              _showSnackBar("Resume is already uploaded. You may change it.", Colors.blue);
+              _showSnackBar(
+                "Resume is already uploaded. You may change it.",
+                Colors.blue,
+              );
             },
-            child: const Text("Resume already exists", style: TextStyle(color: Colors.blue)),
-          )
+            child: const Text(
+              "Resume already exists",
+              style: TextStyle(color: Colors.blue),
+            ),
+          ),
         ],
       );
     } else {
@@ -226,7 +245,8 @@ class _ResumeUploadState extends State<ResumeUpload> {
             if (_resumeUrl != null && _pickedFile == null) {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const SelectionProfession()),
+                MaterialPageRoute(
+                    builder: (_) => const SelectionProfession()),
               );
             } else {
               uploadResume();
@@ -245,7 +265,8 @@ class _ResumeUploadState extends State<ResumeUpload> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const SelectionProfession()),
+              MaterialPageRoute(
+                  builder: (_) => const SelectionProfession()),
             );
           },
           child: const Text('Skip for now',

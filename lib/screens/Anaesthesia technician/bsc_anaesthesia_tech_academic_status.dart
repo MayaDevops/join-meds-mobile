@@ -197,38 +197,40 @@ class _BScAnaesthesiaTechAcademicStatusState
         title: const Text("Academic Status", style: appBarText),
         backgroundColor: mainBlue,
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 50),
-          FormsMainHead(text: 'Bsc AT'),
-          const Text(
-            'Please select your academic status 🎓',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: inputBorderClr,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 50),
+            FormsMainHead(text: 'Bsc AT'),
+            const Text(
+              'Please select your academic status 🎓',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: inputBorderClr,
+              ),
             ),
-          ),
-          const SizedBox(height: 100),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              AcademicOption(
-                icon: Icons.menu_book,
-                label: 'Degree Ongoing',
-                onTap: () =>
-                    Navigator.pushNamed(context, '/bsc_at_degree_ongoing'),
-              ),
-              AcademicOption(
-                icon: Icons.school,
-                label: 'Degree Completed',
-                onTap: _openPostGraduationSheet,
-              ),
-            ],
-          ),
-        ],
+            const SizedBox(height: 100),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                AcademicOption(
+                  icon: Icons.menu_book,
+                  label: 'Degree Ongoing',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/bsc_at_degree_ongoing'),
+                ),
+                AcademicOption(
+                  icon: Icons.school,
+                  label: 'Degree Completed',
+                  onTap: _openPostGraduationSheet,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

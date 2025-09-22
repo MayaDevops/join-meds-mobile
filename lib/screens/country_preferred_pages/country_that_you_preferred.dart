@@ -50,8 +50,35 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
     "Malta",
     "South Africa",
     "Malaysia",
+    "Denmark",
+    "Switzerland",
+    "Netherlands",
+    "Belgium",
+    "Spain",
+    "Portugal",
+    "Austria",
+    "Czech Republic",
+    "Poland",
+    "Hungary",
+    "Lithuania",
+    "Luxembourg",
+    "Bahrain",
+    "Jordan",
+    "Turkey",
+    "China",
+    "South Korea",
+    "Thailand",
+    "Philippines",
+    "Indonesia",
+    "Vietnam",
+    "Brunei",
+    "Mauritius",
+    "Fiji",
+    "Trinidad and Tobago",
+    "Jamaica",
+    "Guyana"
   ];
-  static const List<String> clearedTests = ['DHA', 'MOH', 'HAD'];
+  static const List<String> clearedTests = ['DHA', 'MOH', 'HAAD'];
   static const List<String> years = [
     '1 Year',
     '2 Years',
@@ -65,6 +92,7 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
   void initState() {
     super.initState();
     _loadUserIdAndData();
+    _loadPreferences();
   }
 
   Future<void> _loadUserIdAndData() async {
@@ -82,13 +110,13 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          _preferredCountry = data['countryPreffered'];
-          _hasClearedTest = data['foreignTest'];
-          _clearedTestName = data['foreignTestDetails'];
-          _hasForeignWorkExperience = data['foreignCountryExp'];
-          _workExperienceCountry =
+          _preferredCountry ??= data['countryPreffered'];
+          _hasClearedTest ??= data['foreignTest'];
+          _clearedTestName ??= data['foreignTestDetails'];
+          _hasForeignWorkExperience ??= data['foreignCountryExp'];
+          _workExperienceCountry ??=
               data['foreignCountryWorked']?.split(' - ')?.first;
-          _workExperienceDuration =
+          _workExperienceDuration ??=
               data['foreignCountryWorkExp']?.split(' - ')?.last;
           if (_workExperienceDuration == 'more') {
             _moreExperienceDetails.text =
@@ -101,8 +129,37 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
     }
   }
 
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _preferredCountry = prefs.getString('preferredCountry') ?? _preferredCountry;
+      _hasClearedTest = prefs.getString('hasClearedTest') ?? _hasClearedTest;
+      _clearedTestName = prefs.getString('clearedTestName') ?? _clearedTestName;
+      _hasForeignWorkExperience = prefs.getString('hasForeignWorkExperience') ?? _hasForeignWorkExperience;
+      _workExperienceCountry = prefs.getString('workExperienceCountry') ?? _workExperienceCountry;
+      _workExperienceDuration = prefs.getString('workExperienceDuration') ?? _workExperienceDuration;
+      _moreExperienceDetails.text = prefs.getString('moreExperienceDetails') ?? _moreExperienceDetails.text;
+    });
+  }
+
+  Future<void> _saveToPrefs(String key, String? value) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (value != null) {
+      await prefs.setString(key, value);
+    }
+  }
+
   Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
+      // Save selections locally
+      await _saveToPrefs('preferredCountry', _preferredCountry);
+      await _saveToPrefs('hasClearedTest', _hasClearedTest);
+      await _saveToPrefs('clearedTestName', _clearedTestName);
+      await _saveToPrefs('hasForeignWorkExperience', _hasForeignWorkExperience);
+      await _saveToPrefs('workExperienceCountry', _workExperienceCountry);
+      await _saveToPrefs('workExperienceDuration', _workExperienceDuration);
+      await _saveToPrefs('moreExperienceDetails', _moreExperienceDetails.text);
+
       final formData = {
         "countryPreffered": _preferredCountry,
         "foreignTest": _hasClearedTest,
@@ -140,7 +197,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
     }
   }
 
-  Widget _buildDropdown({
+  Widget buildPersistentDropdown({
+    required String keyName,
     required String hintText,
     required List<String> items,
     required String? value,
@@ -159,28 +217,36 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
       hintText: hintText,
       initialSelection: value,
       textStyle: hintStyle,
-      onSelected: onChanged,
+      onSelected: (val) {
+        onChanged(val);
+        _saveToPrefs(keyName, val);
+      },
       dropdownMenuEntries:
-          items.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
+      items.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
     );
   }
 
-  Widget _buildRadioGroup({
+  Widget buildPersistentRadioGroup({
+    required String keyName,
     required String? groupValue,
     required void Function(String?) onChanged,
+    List<String> options = const ['Yes', 'No'],
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: ['Yes', 'No']
+      children: options
           .map((option) => Row(
-                children: [
-                  Text(option, style: radioTextStyle),
-                  Radio<String>(
-                      value: option,
-                      groupValue: groupValue,
-                      onChanged: onChanged),
-                ],
-              ))
+        children: [
+          Text(option, style: radioTextStyle),
+          Radio<String>(
+              value: option,
+              groupValue: groupValue,
+              onChanged: (val) {
+                onChanged(val);
+                _saveToPrefs(keyName, val);
+              }),
+        ],
+      ))
           .toList(),
     );
   }
@@ -201,8 +267,10 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                       Radio<String>(
                         value: years[i + j],
                         groupValue: _workExperienceDuration,
-                        onChanged: (value) =>
-                            setState(() => _workExperienceDuration = value),
+                        onChanged: (value) {
+                          setState(() => _workExperienceDuration = value);
+                          _saveToPrefs('workExperienceDuration', value);
+                        },
                       ),
                     ],
                   ),
@@ -217,7 +285,7 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
             controller: _moreExperienceDetails,
             validator: (value) {
               if (value == null || value.isEmpty || value.isEmpty) {
-                return 'Please enter at least 5 characters';
+                return 'Please enter at least 1 character';
               }
               if (!RegExp(r"^[a-zA-Z0-9\s,.-]+$").hasMatch(value)) {
                 return 'Invalid characters';
@@ -227,6 +295,7 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
             keyboardType: TextInputType.text,
             hintText: 'Eg: 6, 7, etc.',
             obscureText: false,
+            onChanged: (val) => _saveToPrefs('moreExperienceDetails', val),
           ),
         ],
       ],
@@ -266,17 +335,18 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                 const SizedBox(height: 30),
                 const LabelText(labelText: 'Country you prefer to work'),
                 const SizedBox(height: 5),
-                _buildDropdown(
+                buildPersistentDropdown(
+                  keyName: 'preferredCountry',
                   hintText: 'Select Country',
                   items: countries,
                   value: _preferredCountry,
                   onChanged: (val) => setState(() => _preferredCountry = val),
                 ),
                 const SizedBox(height: 20),
-                const LabelText(
-                    labelText: 'Have you Cleared any Foreign Test?'),
+                const LabelText(labelText: 'Have you Cleared any Foreign Test?'),
                 const SizedBox(height: 5),
-                _buildRadioGroup(
+                buildPersistentRadioGroup(
+                  keyName: 'hasClearedTest',
                   groupValue: _hasClearedTest,
                   onChanged: (val) {
                     setState(() {
@@ -289,7 +359,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                   const SizedBox(height: 20),
                   const LabelText(labelText: 'Specify the Test Cleared'),
                   const SizedBox(height: 5),
-                  _buildDropdown(
+                  buildPersistentDropdown(
+                    keyName: 'clearedTestName',
                     hintText: 'Select Test',
                     items: clearedTests,
                     value: _clearedTestName,
@@ -299,9 +370,10 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                 const SizedBox(height: 20),
                 const LabelText(
                     labelText:
-                        'Do you have Work Experience in any Foreign Countries?'),
+                    'Do you have Work Experience in any Foreign Countries?'),
                 const SizedBox(height: 5),
-                _buildRadioGroup(
+                buildPersistentRadioGroup(
+                  keyName: 'hasForeignWorkExperience',
                   groupValue: _hasForeignWorkExperience,
                   onChanged: (val) {
                     setState(() {
@@ -318,7 +390,8 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
                   const SizedBox(height: 20),
                   const LabelText(labelText: 'Which Country did you Work?'),
                   const SizedBox(height: 5),
-                  _buildDropdown(
+                  buildPersistentDropdown(
+                    keyName: 'workExperienceCountry',
                     hintText: 'Select Country',
                     items: countries,
                     value: _workExperienceCountry,

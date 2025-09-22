@@ -15,7 +15,7 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? speciality;
 
-  final List<String> doctorSpeciality = [
+  final List<String> doctorSpeciality = const [
     'Obstetrics And Gyneacology',
     'Pediatrics',
     'Radiology',
@@ -67,7 +67,7 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => OthersTextField(
+      builder: (_) => OthersTextField(
         formKey: _formKey,
         controller: _othersController,
       ),
@@ -75,7 +75,6 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
   }
 
   Future<void> _startNextSteps() async {
-    // Show PhD Status and Work Experience Status in sequence
     final phDStatus = await _showOptionBottomSheet(
       title: 'Are you a PhD holder?',
       options: {
@@ -84,7 +83,6 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
         'PhD Ongoing': 'Ongoing',
       },
     );
-
     if (phDStatus == null) return;
 
     final workExpStatus = await _showOptionBottomSheet(
@@ -94,16 +92,14 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
         'Work Experience-No': 'No',
       },
     );
-
     if (workExpStatus == null) return;
 
-    // Navigate based on work experience status
-    if (workExpStatus == 'Work Experience-No') {
-      Navigator.pushNamed(context, '/County_that_you_preferred_page');
-    } else if (workExpStatus == 'Work Experience-Yes') {
-      Navigator.pushNamed(context, '/work_experience');
-    }
-
+    Navigator.pushNamed(
+      context,
+      workExpStatus == 'Work Experience-No'
+          ? '/County_that_you_preferred_page'
+          : '/work_experience',
+    );
   }
 
   Future<String?> _showOptionBottomSheet({
@@ -116,13 +112,14 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => _OptionBottomSheet(title: title, options: options),
+      builder: (_) => _OptionBottomSheet(title: title, options: options),
     );
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
+    final isTablet = MediaQuery.of(context).size.width > 600;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Choose your Speciality', style: appBarText),
@@ -132,7 +129,7 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: GridView.count(
-          crossAxisCount: MediaQuery.of(context).size.width > 600 ? 3 : 2,
+          crossAxisCount: isTablet ? 3 : 2,
           mainAxisSpacing: 16,
           crossAxisSpacing: 16,
           childAspectRatio: 3,
@@ -141,8 +138,8 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
             return GestureDetector(
               onTap: () => setState(() => speciality = item),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
                 alignment: Alignment.center,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: isSelected ? mainBlue : Colors.white,
                   border: Border.all(
@@ -150,11 +147,11 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black12,
                       blurRadius: 4,
-                      offset: const Offset(0, 2),
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
@@ -162,7 +159,7 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
                   item,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16, //
+                    fontSize: 16,
                     color: isSelected ? Colors.white : Colors.black87,
                     fontWeight: FontWeight.w500,
                   ),
@@ -172,7 +169,6 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
           }).toList(),
         ),
       ),
-
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(15),
         child: ElevatedButton(
@@ -180,16 +176,18 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.all(15),
             backgroundColor: mainBlue,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
-          child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+          child: const Text(
+            'Save',
+            style: TextStyle(fontSize: 20, color: Colors.white),
+          ),
         ),
       ),
     );
   }
-
 }
 
 class OthersTextField extends StatelessWidget {
@@ -211,8 +209,8 @@ class OthersTextField extends StatelessWidget {
       child: Form(
         key: formKey,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const FormsMainHead(text: 'Specify your Speciality Here'),
             const SizedBox(height: 30),
@@ -223,11 +221,13 @@ class OthersTextField extends StatelessWidget {
               hintText: 'Enter your speciality',
               obscureText: false,
               validator: (value) {
-                if (value == null || value.isEmpty) {
+                if (value == null || value.trim().isEmpty) {
                   return 'Speciality is required';
-                } else if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
+                }
+                if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value)) {
                   return 'Use letters and spaces only';
-                } else if (value.trim().length < 3) {
+                }
+                if (value.trim().length < 3) {
                   return 'At least 3 characters required';
                 }
                 return null;
@@ -242,8 +242,11 @@ class OthersTextField extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: mainBlue,
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: const Text('Save', style: TextStyle(fontSize: 18)),
             ),
@@ -258,7 +261,10 @@ class _OptionBottomSheet extends StatefulWidget {
   final String title;
   final Map<String, String> options;
 
-  const _OptionBottomSheet({super.key, required this.title, required this.options});
+  const _OptionBottomSheet({
+    required this.title,
+    required this.options,
+  });
 
   @override
   State<_OptionBottomSheet> createState() => _OptionBottomSheetState();
@@ -267,20 +273,38 @@ class _OptionBottomSheet extends StatefulWidget {
 class _OptionBottomSheetState extends State<_OptionBottomSheet> {
   String? selectedValue;
 
+  void _saveSelection() {
+    if (selectedValue != null) {
+      Navigator.pop(context, selectedValue);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select an option',
+              textAlign: TextAlign.center),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(vertical: 30),
           decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: inputBorderClr, width: 1.5)),
+            border: Border(
+              bottom: BorderSide(color: inputBorderClr, width: 1.5),
+            ),
             borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
           ),
-          child: Text(widget.title, style: const TextStyle(fontSize: 20)),
+          child: Text(widget.title,
+              style: const TextStyle(fontSize: 20)),
         ),
         Padding(
           padding: const EdgeInsets.all(20),
@@ -295,7 +319,8 @@ class _OptionBottomSheetState extends State<_OptionBottomSheet> {
                   Radio<String>(
                     value: entry.key,
                     groupValue: selectedValue,
-                    onChanged: (value) => setState(() => selectedValue = value),
+                    onChanged: (value) =>
+                        setState(() => selectedValue = value),
                   ),
                 ],
               );
@@ -306,32 +331,22 @@ class _OptionBottomSheetState extends State<_OptionBottomSheet> {
           padding: EdgeInsets.only(
             left: 20,
             right: 20,
-            bottom: MediaQuery.of(context).viewPadding.bottom + 20,
+            bottom: 30,
           ),
           child: ElevatedButton(
-            onPressed: () {
-              if (selectedValue != null) {
-                Navigator.pop(context, selectedValue);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please select an option', textAlign: TextAlign.center),
-                    backgroundColor: Colors.red,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            },
+            onPressed: _saveSelection,
             style: ElevatedButton.styleFrom(
               backgroundColor: mainBlue,
               padding: const EdgeInsets.all(15),
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10),),),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('Save', style: TextStyle(fontSize: 20, color: Colors.white)),
+            child: const Text('Save',
+                style: TextStyle(fontSize: 20, color: Colors.white)),
           ),
         ),
       ],
     );
   }
 }
-
