@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -176,7 +177,7 @@ class _MyJobsScreenState extends State<MyJobsScreen> {
             ),
             child: TextButton(
               onPressed: () {
-                Navigator.push(
+                NavigationHelper.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => UserViewJobDetails(jobId: job['jobId']),

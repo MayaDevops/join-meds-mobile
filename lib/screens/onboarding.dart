@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/constants/images.dart';
-import 'package:untitled/screens/landing_page.dart';
 import 'package:lottie/lottie.dart';
+import 'package:go_router/go_router.dart';
 
 class Onboarding extends StatefulWidget {
   const Onboarding({super.key});
@@ -22,10 +22,7 @@ class _OnboardingState extends State<Onboarding> {
   void redirectToNextPage() async {
     await Future.delayed(const Duration(seconds: 5));
     if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => LandingPage()),
-    );
+    context.go('/landing_page');
   }
 
   @override

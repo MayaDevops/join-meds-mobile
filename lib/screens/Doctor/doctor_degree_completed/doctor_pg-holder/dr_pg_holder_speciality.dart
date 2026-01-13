@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import '../../../../constants/constant.dart';
 import '../../../../widgets/repeated_headings.dart';
 import '../../../../widgets/text_form_fields.dart';
@@ -94,7 +95,7 @@ class _SelectingDrSpecialityState extends State<SelectingDrSpeciality> {
     );
     if (workExpStatus == null) return;
 
-    Navigator.pushNamed(
+    NavigationHelper.pushNamed(
       context,
       workExpStatus == 'Work Experience-No'
           ? '/County_that_you_preferred_page'
@@ -237,7 +238,7 @@ class OthersTextField extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 if (formKey.currentState?.validate() ?? false) {
-                  Navigator.pop(context, controller.text.trim());
+                  NavigationHelper.pop(context, controller.text.trim());
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -275,7 +276,7 @@ class _OptionBottomSheetState extends State<_OptionBottomSheet> {
 
   void _saveSelection() {
     if (selectedValue != null) {
-      Navigator.pop(context, selectedValue);
+      NavigationHelper.pop(context, selectedValue);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

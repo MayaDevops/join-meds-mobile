@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/constants/organisation_datas.dart';
 import '../../constants/constant.dart';
 import '../../widgets/repeated_headings.dart';
@@ -63,7 +64,7 @@ class _OrganisationProfileEditState extends State<OrganisationProfileEdit> {
       _orgIncorporationData.organisationIncorporationNo =
           _incorporationNoController.text;
 
-      Navigator.pushNamed(context, '/profile_picture');
+      NavigationHelper.pushNamed(context, '/profile_picture');
     }
   }
 

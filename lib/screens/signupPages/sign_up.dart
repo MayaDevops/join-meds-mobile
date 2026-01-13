@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/widgets/text_form_widget2.dart';
@@ -131,7 +132,7 @@ class _SignUpState extends State<SignUp> {
         }
 
         if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(
+        NavigationHelper.pushNamedAndRemoveUntil(
             context, '/sign_up_loading', (route) => false);
       } else {
         _showErrorDialog("Signup Failed",
@@ -154,7 +155,7 @@ class _SignUpState extends State<SignUp> {
         actions: [
           TextButton(
             child: const Text("OK"),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => NavigationHelper.pop(context),
           ),
         ],
       ),
@@ -256,7 +257,7 @@ class _SignUpState extends State<SignUp> {
                                     ),
                                     InkWell(
                                       onTap: () {
-                                        Navigator.pushNamed(
+                                        NavigationHelper.pushNamed(
                                             context, 'user_terms_and_conditions');
                                       },
                                       child: const Text(
@@ -281,7 +282,7 @@ class _SignUpState extends State<SignUp> {
                                     const SizedBox(width: 45),
                                     InkWell(
                                       onTap: () {
-                                        Navigator.pushNamed(
+                                        NavigationHelper.pushNamed(
                                             context, 'user_privacy_policy');
                                       },
                                       child: const Text(
@@ -326,7 +327,7 @@ class _SignUpState extends State<SignUp> {
                   const Text('If you have an account ',
                       style: TextStyle(fontSize: 16)),
                   GestureDetector(
-                    onTap: () => Navigator.pushNamed(context, '/login_page'),
+                    onTap: () => NavigationHelper.pushNamed(context, '/login_page'),
                     child: Text(
                       'Login',
                       style: TextStyle(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import '../../constants/constant.dart';
 
 class UserProfileSettings extends StatelessWidget {
@@ -49,7 +50,7 @@ class UserProfileSettings extends StatelessWidget {
         itemBuilder: (context, index) {
           final item = _settings[index];
           return InkWell(
-            onTap: () => Navigator.pushNamed(context, item.route),
+            onTap: () => NavigationHelper.pushNamed(context, item.route),
             child: Container(
               padding:
               const EdgeInsets.only(left: 16, top: 15, bottom: 15),

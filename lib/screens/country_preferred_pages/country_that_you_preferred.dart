@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -180,7 +181,7 @@ class _CountryThatYouPreferredState extends State<CountryThatYouPreferred> {
         );
 
         if (response.statusCode == 200 || response.statusCode == 204) {
-          Navigator.pushNamed(context, '/after_County_preferred_page');
+          NavigationHelper.pushNamed(context, '/after_County_preferred_page');
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

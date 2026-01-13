@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import '../../constants/constant.dart';
 import './doctor_degree_completed/doctor_pg-holder/dr_pg_holder_speciality.dart';
 
@@ -19,7 +20,7 @@ class _DrAcademicStatusState extends State<DrAcademicStatus> {
     }
 
     if (postGraduation == 'PG-Holder') {
-      Navigator.pushNamed(context, '/dr_pg_holder_speciality');
+      NavigationHelper.pushNamed(context, '/dr_pg_holder_speciality');
     } else {
       final workExpStatus = await _showOptionBottomSheet(
         title: 'Do you have any Work Experience?',
@@ -27,7 +28,7 @@ class _DrAcademicStatusState extends State<DrAcademicStatus> {
       );
 
       if (workExpStatus == null) return;
-      Navigator.pushNamed(
+      NavigationHelper.pushNamed(
         context,
         workExpStatus == 'No'
             ? '/County_that_you_preferred_page'
@@ -97,7 +98,7 @@ class _DrAcademicStatusState extends State<DrAcademicStatus> {
               AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Degree Ongoing',
-                onTap: () => Navigator.pushNamed(context, '/dr_degree_ongoing_1'),
+                onTap: () => NavigationHelper.pushNamed(context, '/dr_degree_ongoing_1'),
               ),
               AcademicOption(
                 icon: Icons.school,
@@ -319,7 +320,7 @@ class _OptionBottomSheetState extends State<_OptionBottomSheet> {
           child: ElevatedButton(
             onPressed: () {
               if (selectedValue != null) {
-                Navigator.pop(context, widget.options[selectedValue!]);
+                NavigationHelper.pop(context, widget.options[selectedValue!]);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(

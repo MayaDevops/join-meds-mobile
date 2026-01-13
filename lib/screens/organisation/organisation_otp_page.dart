@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/constants/organisation_datas.dart';
 import 'package:untitled/widgets/main_button.dart';
@@ -49,7 +50,7 @@ class _OrganisationOtpPageState extends State<OrganisationOtpPage> {
     }
 
     OrganisationPhoneNumber().organisationPhoneNumber = _phoneNumber;
-    Navigator.pushNamed(context, '/organisation_signUpLoading');
+    NavigationHelper.pushNamed(context, '/organisation_signUpLoading');
   }
 
   Widget _buildOtpInputFields() {
@@ -79,7 +80,7 @@ class _OrganisationOtpPageState extends State<OrganisationOtpPage> {
             Text(_phoneNumber, style: subHeadForms),
             IconButton(
               icon: Icon(Icons.edit, color: mainBlue),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => NavigationHelper.pop(context),
             ),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import '../../constants/constant.dart';
 
 class OrganisationProfileSettings extends StatefulWidget {
@@ -34,7 +35,7 @@ class _OrganisationProfileSettingsState extends State<OrganisationProfileSetting
         children: [
           InkWell(
             onTap: (){
-              Navigator.pushNamed(context, 'organisation_privacy_policy');
+              NavigationHelper.pushNamed(context, 'organisation_privacy_policy');
             },
             child: Container(
               decoration: BoxDecoration(
@@ -51,7 +52,7 @@ class _OrganisationProfileSettingsState extends State<OrganisationProfileSetting
           ),
           InkWell(
             onTap: (){
-              Navigator.pushNamed(context, 'organisation_terms_and_conditions');
+              NavigationHelper.pushNamed(context, 'organisation_terms_and_conditions');
             },
             child: Container(
               decoration: BoxDecoration(
@@ -68,7 +69,7 @@ class _OrganisationProfileSettingsState extends State<OrganisationProfileSetting
           ),
           InkWell(
             onTap: (){
-              Navigator.pushNamed(context, '/organisation_delete_account');
+              NavigationHelper.pushNamed(context, '/organisation_delete_account');
             },
             child: Container(
               decoration: BoxDecoration(

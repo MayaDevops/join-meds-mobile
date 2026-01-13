@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/widgets/main_button.dart';
 import 'package:untitled/widgets/repeated_headings.dart';
@@ -94,7 +95,7 @@ class _OrganisationSignUpState extends State<OrganisationSignUp> {
     try {
       final response = await OrganisationApi.signupOrganisation(data);
       if (response.statusCode == 200 || response.statusCode == 201) {
-        Navigator.pushNamed(context, '/org_phone_number');
+        NavigationHelper.pushNamed(context, '/org_phone_number');
       } else {
         _showErrorDialog('Signup failed: ${response.statusCode}\n${response.body}');
       }
@@ -113,7 +114,7 @@ class _OrganisationSignUpState extends State<OrganisationSignUp> {
         content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => NavigationHelper.pop(context),
             child: const Text('OK'),
           ),
         ],
@@ -162,7 +163,7 @@ class _OrganisationSignUpState extends State<OrganisationSignUp> {
               children: [
                 const Text('If you have an account ', style: TextStyle(fontSize: 16)),
                 GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/organisation_login'),
+                  onTap: () => NavigationHelper.pushNamed(context, '/organisation_login'),
                   child: Text(
                     ' Login',
                     style: TextStyle(fontSize: 16, color: mainBlue, fontWeight: FontWeight.w500),
@@ -221,7 +222,7 @@ class _OrganisationSignUpState extends State<OrganisationSignUp> {
             ),
             const Text('I Agree ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: inputBorderClr)),
             InkWell(
-              onTap: () => Navigator.pushNamed(context, 'organisation_terms_and_conditions'),
+              onTap: () => NavigationHelper.pushNamed(context, 'organisation_terms_and_conditions'),
               child: const Text(
                 'Terms and Conditions',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.blueAccent),

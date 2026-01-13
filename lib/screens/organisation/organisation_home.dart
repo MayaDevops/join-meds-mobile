@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/screens/organisation/about_organisation.dart';
 import 'package:untitled/screens/organisation/organisation_profile.dart';
 import '../../constants/constant.dart';
@@ -55,7 +56,7 @@ class _OrganisationHomeState extends State<OrganisationHome> {
         actions:  [
           InkWell(
             onTap: (){
-              Navigator.pushNamed(context, 'organisation_notifications');
+              NavigationHelper.pushNamed(context, 'organisation_notifications');
             },
             child: Padding(
               padding: EdgeInsets.only(right: 16.0),
@@ -260,7 +261,7 @@ class JobActionButtons extends StatelessWidget {
         Expanded(
             child: InkWell(
               onTap: (){
-                Navigator.pushNamed(context, '/organisation_edit_job');
+                NavigationHelper.pushNamed(context, '/organisation_edit_job');
               },
                 child: const ActionButton(
                     label: 'Edit', color: mainBlue, isLeft: true),),),

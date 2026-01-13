@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -115,7 +116,7 @@ class _UserViewJobDetailsState extends State<UserViewJobDetails> {
           ),
         );
         Future.delayed(const Duration(seconds: 2), () {
-          Navigator.pushReplacementNamed(context, '/home');
+          NavigationHelper.pushReplacementNamed(context, '/home');
         });
       } else {
         throw Exception('Apply failed: ${response.statusCode}');

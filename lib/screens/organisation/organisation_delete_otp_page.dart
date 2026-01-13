@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/constants/organisation_datas.dart';
 import 'package:untitled/widgets/main_button.dart';
@@ -49,7 +50,7 @@ class _OrganisationDeleteOtpPageState extends State<OrganisationDeleteOtpPage> {
     }
 
     OrganisationPhoneNumber().organisationPhoneNumber = _phoneNumber;
-    Navigator.pushNamed(context, '/landing_page');
+    NavigationHelper.pushNamed(context, '/landing_page');
   }
 
   Widget _buildOtpInputFields() {
@@ -121,7 +122,7 @@ class _OrganisationDeleteOtpPageState extends State<OrganisationDeleteOtpPage> {
                   Text(_phoneNumber, style: subHeadForms),
                   IconButton(
                     icon: const Icon(Icons.edit, color: mainBlue),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => NavigationHelper.pop(context),
                   ),
                 ],
               ),

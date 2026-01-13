@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import '../../constants/constant.dart';
 import '../../constants/organisation_datas.dart';
 
@@ -60,13 +61,13 @@ class _OrganisationProfileState extends State<OrganisationProfile> {
               ),
             ),
             _buildDrawerItem(Icons.person, 'View Profile', () {
-              Navigator.pushNamed(context, '/organisation_view_profile');
+              NavigationHelper.pushNamed(context, '/organisation_view_profile');
             }),
             _buildDrawerItem(Icons.edit, 'Edit Profile', () {
-              Navigator.pushNamed(context, '/organisation_edit_profile');
+              NavigationHelper.pushNamed(context, '/organisation_edit_profile');
             }),
             _buildDrawerItem(Icons.settings, 'Settings', () {
-              Navigator.pushNamed(context, '/organisation_profile_settings');
+              NavigationHelper.pushNamed(context, '/organisation_profile_settings');
             }),
 
             const Divider(),
@@ -86,7 +87,7 @@ class _OrganisationProfileState extends State<OrganisationProfile> {
       leading: icon != null ? Icon(icon) : null,
       title: Text(title),
       onTap: () {
-        Navigator.pop(context);
+        NavigationHelper.pop(context);
         onTap();
       },
     );
@@ -256,9 +257,9 @@ class JobTitleHeader extends StatelessWidget {
                 );
 
                 if (selected == 'view') {
-                  Navigator.pushNamed(context, '/organisation_view_job_details');
+                  NavigationHelper.pushNamed(context, '/organisation_view_job_details');
                 } else if (selected == 'edit') {
-                  Navigator.pushNamed(context, '/organisation_edit_job');
+                  NavigationHelper.pushNamed(context, '/organisation_edit_job');
                 }
               },
             ),

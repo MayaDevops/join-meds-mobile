@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/widgets/repeated_headings.dart';
 import '../../constants/constant.dart';
 
@@ -20,7 +21,7 @@ class _GnNurseDiplomaAcademicStatusState extends State<GnNurseDiplomaAcademicSta
     }
 
     if (postGraduation == 'PG-Holder') {
-      Navigator.pushNamed(context, '/nurse_pg_holder_speciality');
+      NavigationHelper.pushNamed(context, '/nurse_pg_holder_speciality');
     } else {
       final internshipStatus = await _showOptionBottomSheet(
         title: 'Do you have any Internship?',
@@ -36,7 +37,7 @@ class _GnNurseDiplomaAcademicStatusState extends State<GnNurseDiplomaAcademicSta
       if (internshipStatus == 'Internship-No') {
         showModalBottomSheet(context: context, builder: (context) => WorkExpSheet(),);
       } else {
-        Navigator.pushNamed(
+        NavigationHelper.pushNamed(
             context, '/gn_nurse_internship_completed'); // Navigate to Internship page
       }
     }
@@ -110,7 +111,7 @@ class _GnNurseDiplomaAcademicStatusState extends State<GnNurseDiplomaAcademicSta
                 icon: Icons.menu_book,
                 label: 'Diploma Ongoing',
                 onTap: () =>
-                    Navigator.pushNamed(context, '/gn_nurse_diploma_ongoing'),
+                    NavigationHelper.pushNamed(context, '/gn_nurse_diploma_ongoing'),
               ),
               AcademicOption(
                 icon: Icons.school,
@@ -354,7 +355,7 @@ class _OptionBottomSheet extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 if (selectedValue != null) {
-                  Navigator.pop(context, selectedValue);
+                  NavigationHelper.pop(context, selectedValue);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -448,9 +449,9 @@ class _WorkExpSheetState extends State<WorkExpSheet> {
           child: ElevatedButton(
             onPressed: () {
               if (workExpStatus == 'Work-Experience-Yes') {
-                Navigator.pushNamed(context, '/nurse_work_experience');
+                NavigationHelper.pushNamed(context, '/nurse_work_experience');
               } else {
-                Navigator.pushNamed(context, '/County_that_you_preferred_page');
+                NavigationHelper.pushNamed(context, '/County_that_you_preferred_page');
               }
             },
             style: ElevatedButton.styleFrom(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:intl/intl.dart';
 import '../../../constants/constant.dart';
 import '../../../widgets/repeated_headings.dart';
@@ -273,9 +274,9 @@ class _WorkExpSheetState extends State<WorkExpSheet> {
             child: ElevatedButton(
               onPressed: () {
                 if(workExpStatus == 'Work-Experience-Yes'){
-                  Navigator.pushNamed(context, '/nurse_work_experience');
+                  NavigationHelper.pushNamed(context, '/nurse_work_experience');
                 }else{
-                  Navigator.pushNamed(context,  '/County_that_you_preferred_page');
+                  NavigationHelper.pushNamed(context,  '/County_that_you_preferred_page');
                 }
               },
               style: ElevatedButton.styleFrom(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/widgets/repeated_headings.dart';
 import '../../constants/constant.dart';
 
@@ -46,14 +47,14 @@ class _DentistAcademicStatusState extends State<DentistAcademicStatus> {
     if (workExpStatus == null) return;
 
     if (workExpStatus == 'Work Experience-No') {
-      Navigator.pushNamed(context, '/County_that_you_preferred_page');
+      NavigationHelper.pushNamed(context, '/County_that_you_preferred_page');
     } else {
       _navigateToWorkExperiencePage();
     }
   }
 
   void _navigateToWorkExperiencePage() {
-    Navigator.pushNamed(context, '/pharmacist_work_experience');
+    NavigationHelper.pushNamed(context, '/pharmacist_work_experience');
   }
 
   Future<String?> _showOptionBottomSheet({
@@ -143,7 +144,7 @@ class _DentistAcademicStatusState extends State<DentistAcademicStatus> {
                 ),
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    NavigationHelper.pop(context);
                     _handleSubmit();
                   },
                   style: ElevatedButton.styleFrom(
@@ -198,7 +199,7 @@ class _DentistAcademicStatusState extends State<DentistAcademicStatus> {
                 icon: Icons.menu_book,
                 label: 'Degree Ongoing',
                 onTap: () =>
-                    Navigator.pushNamed(context, '/dentist_degree_ongoing'),
+                    NavigationHelper.pushNamed(context, '/dentist_degree_ongoing'),
               ),
               AcademicOption(
                 icon: Icons.school,
@@ -357,7 +358,7 @@ class _OptionBottomSheet extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 if (selectedValue != null) {
-                  Navigator.pop(context, selectedValue);
+                  NavigationHelper.pop(context, selectedValue);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import '../../constants/constant.dart';
 import '../../constants/images.dart';
 import '../../widgets/main_button.dart';
@@ -145,7 +146,7 @@ class _OrganisationLoginState extends State<OrganisationLogin> {
                 const Text('If you don’t have an account ',
                     style: TextStyle(fontSize: 16)),
                 GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/organisation_sing_up'),
+                  onTap: () => NavigationHelper.pushNamed(context, '/organisation_sing_up'),
                   child: Text(
                     ' Sign Up',
                     style: TextStyle(

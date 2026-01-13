@@ -1,4 +1,5 @@
 
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:untitled/screens/login_page/user_profile_section.dart';
@@ -89,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: const Icon(Icons.person),
             title: const Text('Profile'),
             onTap: () {
-              Navigator.pop(context);
+              NavigationHelper.pop(context);
               setState(() => _selectedIndex = 3);
             },
           ),
@@ -131,13 +132,13 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("Log Out"),
         content: const Text("Are you sure you want to log out?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("No")),
+          TextButton(onPressed: () => NavigationHelper.pop(context), child: const Text("No")),
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              NavigationHelper.pop(context);
               final prefs = await SharedPreferences.getInstance();
               await prefs.clear();
-              if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/logOut_loading', (_) => false);
+              if (mounted) NavigationHelper.pushNamedAndRemoveUntil(context, '/logOut_loading', (_) => false);
             },
             child: const Text("Yes"),
           ),

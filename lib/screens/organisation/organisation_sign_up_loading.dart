@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/screens/organisation/organisation_home.dart';
-import 'package:untitled/screens/signupPages/personal_data.dart';
 
 class OrganisationSignUpLoading extends StatefulWidget {
   const OrganisationSignUpLoading({super.key});
@@ -20,7 +20,7 @@ class _OrganisationSignUpLoadingState extends State<OrganisationSignUpLoading> {
   Future<void> _redirectToNextPage() async {
     await Future.delayed(const Duration(seconds: 5));
     if (!mounted) return;
-    Navigator.pushReplacement(
+    NavigationHelper.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const OrganisationHome()),
     );

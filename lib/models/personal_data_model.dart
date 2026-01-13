@@ -91,7 +91,7 @@ class PersonalDataModel {
       'resumeId': resumeId,
       'profession': profession,
       'academicStatus': academicStatus,
-      'emailOrPhone': emailOrPhone,
+      // 'emailOrPhone': emailOrPhone,
       'pgStatus': pgStatus,
       'speciality': speciality,
       'phdStatus': phdStatus,

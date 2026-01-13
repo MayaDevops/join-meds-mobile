@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import '../../../constants/constant.dart';
 
 class BScDieteticsDegreeOngoing extends StatefulWidget {
@@ -786,7 +787,7 @@ class _BScDieteticsDegreeOngoingState extends State<BScDieteticsDegreeOngoing> {
             onPressed: () {
               FocusScope.of(context).unfocus(); // Hide keyboard
               if (_university != null && academicYear != null) {
-                Navigator.pushNamed(context, '/County_that_you_preferred_page');
+                NavigationHelper.pushNamed(context, '/County_that_you_preferred_page');
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(

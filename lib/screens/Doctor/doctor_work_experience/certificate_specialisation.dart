@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -133,7 +134,7 @@ class _CertificateOfSpecialisationState
             }
 
             // Proceed to next page or API upload logic
-            Navigator.pushNamed(context, '/next_page');
+            NavigationHelper.pushNamed(context, '/next_page');
           },
         ),
         const SizedBox(height: 15),
@@ -146,7 +147,7 @@ class _CertificateOfSpecialisationState
             ),
           ),
           onPressed: () {
-            Navigator.pushNamed(context, '/County_that_you_preferred_page');
+            NavigationHelper.pushNamed(context, '/County_that_you_preferred_page');
           },
           child: const Text(
             'Skip for now',

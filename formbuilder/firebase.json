@@ -1,0 +1,23 @@
+{
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "join-meds",
+          "configurations": {
+            "web": "1:660048172699:web:84ad8a537e4fa34422183e"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "site": "formbuilder-joinmed",
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

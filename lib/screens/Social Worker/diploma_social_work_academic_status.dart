@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/widgets/repeated_headings.dart';
 import '../../constants/constant.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 
 class DiplomaSocialWorkAcademicStatus extends StatefulWidget {
   const DiplomaSocialWorkAcademicStatus({super.key});
@@ -19,7 +20,7 @@ class _DiplomaSocialWorkAcademicStatusState extends State<DiplomaSocialWorkAcade
     }
 
     if (internshipStatus == 'Internship-Yes') {
-      Navigator.pushNamed(context, '/gn_nurse_internship_completed');
+      NavigationHelper.pushNamed(context, '/gn_nurse_internship_completed');
     } else {
       final workExperience = await _showOptionBottomSheet(
         title: 'Do you have any Work Experience?',
@@ -30,9 +31,9 @@ class _DiplomaSocialWorkAcademicStatusState extends State<DiplomaSocialWorkAcade
       );
 
       if (workExperience == 'Work Experience-Yes') {
-        Navigator.pushNamed(context, '/nurse_work_experience');
+        NavigationHelper.pushNamed(context, '/nurse_work_experience');
       } else if (workExperience == 'Work Experience-No') {
-        Navigator.pushNamed(context, '/County_that_you_preferred_page');
+        NavigationHelper.pushNamed(context, '/County_that_you_preferred_page');
       }
     }
   }
@@ -50,7 +51,7 @@ class _DiplomaSocialWorkAcademicStatusState extends State<DiplomaSocialWorkAcade
       builder: (_) => _RadioSelectionSheet(
         title: title,
         options: options,
-        onSave: (value) => Navigator.pop(context, value),
+        onSave: (value) => NavigationHelper.pop(context, value),
       ),
     );
   }
@@ -105,7 +106,7 @@ class _DiplomaSocialWorkAcademicStatusState extends State<DiplomaSocialWorkAcade
               AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Diploma Ongoing',
-                onTap: () => Navigator.pushNamed(context, '/diploma_social_worker_diploma_ongoing'),
+                onTap: () => NavigationHelper.pushNamed(context, '/diploma_social_worker_diploma_ongoing'),
               ),
               AcademicOption(
                 icon: Icons.school,

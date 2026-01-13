@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import '../../constants/constant.dart';
 import '../../widgets/text_form_widget2.dart';
 
@@ -88,7 +89,7 @@ class _DeleteAccountState extends State<DeleteAccount> {
                     const SnackBar(content: Text('Deleting account...')),
                   );
                   if(_passwordController.text.trim() == pass){
-                    Navigator.pushNamed(context, '/landing_page');
+                    NavigationHelper.pushNamed(context, '/landing_page');
                   }
                 }
               },

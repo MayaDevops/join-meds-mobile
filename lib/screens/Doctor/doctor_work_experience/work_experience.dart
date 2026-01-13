@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:intl/intl.dart';
 import '../../../constants/constant.dart';
 import '../../../widgets/repeated_headings.dart';
@@ -282,7 +283,7 @@ class _WorkExperienceState extends State<WorkExperience> {
 
               print(finalData);
 
-              Navigator.pushNamed(context, '/dr_certification_of_spl');
+              NavigationHelper.pushNamed(context, '/dr_certification_of_spl');
             }
           },
             style: ElevatedButton.styleFrom(

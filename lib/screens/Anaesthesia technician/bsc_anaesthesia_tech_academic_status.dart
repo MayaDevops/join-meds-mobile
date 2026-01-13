@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:untitled/widgets/repeated_headings.dart';
 import '../../constants/constant.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 
 class BScAnaesthesiaTechAcademicStatus extends StatefulWidget {
   const BScAnaesthesiaTechAcademicStatus({super.key});
@@ -66,14 +67,14 @@ class _BScAnaesthesiaTechAcademicStatusState
 
   void _navigateBasedOnExperience(String experienceStatus) {
     if (experienceStatus == 'Work Experience-No') {
-      Navigator.pushNamed(context, '/County_that_you_preferred_page');
+      NavigationHelper.pushNamed(context, '/County_that_you_preferred_page');
     } else {
       _navigateToInternshipCompleted();
     }
   }
 
   void _navigateToInternshipCompleted() {
-    Navigator.pushNamed(context, '/gn_nurse_internship_completed');
+    NavigationHelper.pushNamed(context, '/gn_nurse_internship_completed');
   }
 
   Future<String?> _showOptionBottomSheet({
@@ -164,7 +165,7 @@ class _BScAnaesthesiaTechAcademicStatusState
                 ),
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    NavigationHelper.pop(context);
                     _handleSubmit();
                   },
                   style: ElevatedButton.styleFrom(
@@ -220,7 +221,7 @@ class _BScAnaesthesiaTechAcademicStatusState
                   icon: Icons.menu_book,
                   label: 'Degree Ongoing',
                   onTap: () =>
-                      Navigator.pushNamed(context, '/bsc_at_degree_ongoing'),
+                      NavigationHelper.pushNamed(context, '/bsc_at_degree_ongoing'),
                 ),
                 AcademicOption(
                   icon: Icons.school,
@@ -383,7 +384,7 @@ class _OptionBottomSheet extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   if (selectedValue != null) {
-                    Navigator.pop(context, selectedValue);
+                    NavigationHelper.pop(context, selectedValue);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(

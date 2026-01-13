@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/constants/constant.dart';
 import 'package:untitled/constants/images.dart';
 import '../../widgets/main_button.dart';
@@ -28,12 +29,12 @@ class _OrganisationLandingPageState extends State<OrganisationLandingPage> {
               children: [
                 MainButton(
                   text: 'Login',
-                  onPressed: () => Navigator.pushNamed(context, '/organisation_login'),
+                  onPressed: () => NavigationHelper.pushNamed(context, '/organisation_login'),
                 ),
                 const SizedBox(height: 15),
                 OutlinedButton(
                   style: _outlinedButtonStyle(),
-                  onPressed: () => Navigator.pushNamed(context, '/organisation_sing_up'),
+                  onPressed: () => NavigationHelper.pushNamed(context, '/organisation_sing_up'),
                   child: const Text(
                     'Sign Up',
                     style: TextStyle(fontSize: 20.0, color: mainBlue),
@@ -56,7 +57,7 @@ class _OrganisationLandingPageState extends State<OrganisationLandingPage> {
               style: TextStyle(fontSize: 18),
             ),
             GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/landing_page'),
+              onTap: () => NavigationHelper.pushNamed(context, '/landing_page'),
               child: const Text(
                 ' click here',
                 style: TextStyle(fontSize: 18, color: mainBlue),

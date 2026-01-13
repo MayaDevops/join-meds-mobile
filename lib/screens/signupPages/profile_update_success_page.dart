@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:lottie/lottie.dart';
 import '../../constants/constant.dart';
 import '../../constants/images.dart';
@@ -52,7 +53,7 @@ class ProfileUpdateSuccessPage extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/home');
+                    NavigationHelper.pushReplacementNamed(context, '/home');
                   },
                   child: const Text(
                     'Continue',

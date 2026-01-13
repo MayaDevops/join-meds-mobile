@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/constants/constant.dart';
 import 'package:untitled/widgets/main_button.dart';
 import 'package:untitled/widgets/repeated_headings.dart';
@@ -219,7 +220,7 @@ class _EditJobOrganisationState extends State<EditJobOrganisation> {
                   text: 'Submit',
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      Navigator.pushNamed(context, '/organisation_home');
+                      NavigationHelper.pushNamed(context, '/organisation_home');
                     }
                   },
                 ),

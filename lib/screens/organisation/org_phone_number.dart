@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/widgets/main_button.dart';
@@ -43,7 +44,7 @@ class _OrgPhoneNumberState extends State<OrgPhoneNumber> {
     }
 
     _formKey.currentState!.save();
-    Navigator.pushNamed(
+    NavigationHelper.pushNamed(
       context,
       '/organisation_otp',
       arguments: {'phone_number': _fullPhoneNumber},

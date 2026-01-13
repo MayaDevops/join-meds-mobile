@@ -1,8 +1,18 @@
+// OLD - DEPRECATED
+// This file has been replaced by the new profession selection screen at:
+// lib/src/features/dynamic_forms/presentation/screens/profession_selection_screen.dart
+//
+// This file is kept temporarily for reference and will be deleted after migration is complete.
+// DO NOT USE THIS FILE. Use the new profession selection screen instead.
+
+// /*
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:go_router/go_router.dart';
 import '../constants/constant.dart';
+import '../src/core/config/feature_flags.dart';
 import 'anaesthesia_techician_course_type.dart';
 import 'package:untitled/widgets/audiology_course_selection.dart';
 import 'package:untitled/widgets/clinical_psychologist_course_selection.dart';
@@ -86,7 +96,37 @@ class _SelectionProfessionState extends State<SelectionProfession> {
     }
   }
 
+  /// Map profession display name to profession ID for feature flags
+  String _getProfessionId(String displayName) {
+    const professionMap = {
+      'Doctor': 'doctor',
+      'Nurse': 'nurse',
+      'Pharmacist': 'pharmacist',
+      'Lab Technician': 'lab_technician',
+      'Anesthesia Technician': 'anesthesia_technician',
+      'Dentist': 'dentist',
+      'Physiotherapy': 'physiotherapy',
+      'Audiologist': 'audiologist',
+      'Dietitian': 'dietitian',
+      'Clinical Psychologist': 'clinical_psychologist',
+      'Social Worker': 'social_worker',
+      'Hospital Administrator': 'hospital_administrator',
+    };
+    return professionMap[displayName] ?? displayName.toLowerCase().replaceAll(' ', '_');
+  }
+
   void _navigateToNextScreen() {
+    // Check feature flags for dynamic forms
+    final professionId = _getProfessionId(profession!);
+    final useDynamicForms = FeatureFlags.useDynamicForms(professionId, userId: userId);
+
+    if (useDynamicForms) {
+      // Navigate to new dynamic forms system
+      context.push('/dynamic-form/$professionId');
+      return;
+    }
+
+    // Fall back to old static screens
     switch (profession) {
       case 'Doctor':
         Navigator.pushNamed(context, '/dr_acd_status');
@@ -229,3 +269,4 @@ class _SelectionProfessionState extends State<SelectionProfession> {
     );
   }
 }
+// */

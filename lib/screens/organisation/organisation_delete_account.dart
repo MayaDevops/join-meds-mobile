@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/widgets/main_button.dart';
@@ -42,12 +43,12 @@ class _OrganisationDeleteAccountState extends State<OrganisationDeleteAccount> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => NavigationHelper.pop(context),
             child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              NavigationHelper.pop(context);
               _validateAndProceed();
             },
             child: const Text('Confirm'),
@@ -63,7 +64,7 @@ class _OrganisationDeleteAccountState extends State<OrganisationDeleteAccount> {
       return;
     }
     _formKey.currentState!.save();
-    Navigator.pushNamed(
+    NavigationHelper.pushNamed(
       context,
       '/organisation_delete_otp',
       arguments: {'phone_number': _fullPhoneNumber},

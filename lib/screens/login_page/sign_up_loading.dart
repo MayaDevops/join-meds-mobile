@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:lottie/lottie.dart';
 import 'package:untitled/constants/images.dart';
 import 'package:untitled/screens/login_page/login_page.dart';
@@ -20,7 +21,7 @@ class _SignUpLoadingState extends State<SignUpLoading> {
   Future<void> _redirectToNextPage() async {
     await Future.delayed(const Duration(seconds: 5));
     if (!mounted) return;
-    Navigator.pushReplacement(
+    NavigationHelper.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => const LoginPage(),

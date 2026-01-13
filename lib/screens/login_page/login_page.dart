@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 
@@ -7,7 +8,9 @@ import '../../constants/images.dart';
 import '../../widgets/main_button.dart';
 import '../../widgets/text_form_widget2.dart';
 import '../../api/api_service.dart';
+import '../../api/personal_data_service.dart';
 import '../../models/login_request.dart';
+import '../../models/personal_data_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -106,10 +109,12 @@ class _LoginPageState extends State<LoginPage> {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('userId', userId.toString());
           debugPrint('✅ userId stored: $userId');
-        }
 
-        if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/login_page_loading');
+          // Fetch user details to check profile completion
+          await _checkProfileAndNavigate(userId.toString());
+        } else {
+          _showSnackBar('Login successful but userId not found.');
+        }
       } else {
         _showSnackBar('Login failed. Please check your credentials.');
       }
@@ -142,6 +147,65 @@ class _LoginPageState extends State<LoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
+  }
+
+  // ---------- Profile Completion Check ----------
+  Future<void> _checkProfileAndNavigate(String userId) async {
+    try {
+      // Fetch user details
+      final userDetails = await PersonalDataService.getPersonalData(userId);
+
+      if (!mounted) return;
+
+      if (userDetails == null) {
+        // API call failed or user details not found
+        // Navigate to personal data to complete profile
+        debugPrint('⚠️ User details not found. Redirecting to profile completion.');
+        NavigationHelper.pushReplacementNamed(context, '/personal_data');
+        return;
+      }
+
+      // Check if profile is complete
+      bool isProfileComplete = _isProfileComplete(userDetails);
+
+      if (isProfileComplete) {
+        debugPrint('✅ Profile is complete. Navigating to home.');
+        NavigationHelper.pushReplacementNamed(context, '/home');
+      } else {
+        debugPrint('⚠️ Profile is incomplete. Redirecting to profile completion.');
+        NavigationHelper.pushReplacementNamed(context, '/personal_data');
+      }
+    } catch (e) {
+      debugPrint('❌ Error checking profile: $e');
+      // On error, default to profile completion screen for safety
+      if (!mounted) return;
+      NavigationHelper.pushReplacementNamed(context, '/personal_data');
+    }
+  }
+
+  bool _isProfileComplete(PersonalDataModel userDetails) {
+    // Define required fields for profile completion
+    // Basic required fields:
+    bool hasBasicInfo = userDetails.fullname != null &&
+                        userDetails.fullname!.isNotEmpty &&
+                        userDetails.dob != null &&
+                        userDetails.dob!.isNotEmpty &&
+                        userDetails.email != null &&
+                        userDetails.email!.isNotEmpty;
+
+    // Profession is critical for onboarding flow
+    bool hasProfession = userDetails.profession != null &&
+                         userDetails.profession!.isNotEmpty;
+
+    // Optional: Check if resume and photo are uploaded
+    bool hasDocuments = userDetails.resumeId != null &&
+                        userDetails.resumeId!.isNotEmpty;
+
+    // Profile is complete if user has:
+    // 1. Basic info (name, DOB, email)
+    // 2. Profession selected
+    // 3. Resume uploaded (optional - adjust based on requirements)
+    return hasBasicInfo && hasProfession && hasDocuments;
   }
 
   // ---------- UI ----------
@@ -221,7 +285,7 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(fontSize: 16),
                 ),
                 GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/sign_up'),
+                  onTap: () => NavigationHelper.pushNamed(context, '/sign_up'),
                   child: Text(
                     ' Sign Up',
                     style: TextStyle(

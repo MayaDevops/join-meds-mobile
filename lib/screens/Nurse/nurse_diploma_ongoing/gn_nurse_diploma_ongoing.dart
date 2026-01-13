@@ -1,4 +1,5 @@
 
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled/widgets/main_button.dart';
 import '../../../constants/constant.dart';
@@ -789,7 +790,7 @@ class _GnNurseDiplomaOngoingState extends State<GnNurseDiplomaOngoing> {
             onPressed: () {
               FocusScope.of(context).unfocus(); // Hide keyboard
               if (_university != null && academicYear != null) {
-                Navigator.pushNamed(context, '/County_that_you_preferred_page');
+                NavigationHelper.pushNamed(context, '/County_that_you_preferred_page');
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:lottie/lottie.dart';
 import 'package:untitled/constants/images.dart';
 
@@ -20,7 +21,7 @@ class _LoginLoadingState extends State<LoginLoading> {
     await Future.delayed(const Duration(seconds: 5));
     if (!mounted) return;
     // Navigate to Home and remove all previous routes
-    Navigator.pushNamedAndRemoveUntil(
+    NavigationHelper.pushNamedAndRemoveUntil(
       context,
       '/home', // Replace with your home page route
           (route) => false,

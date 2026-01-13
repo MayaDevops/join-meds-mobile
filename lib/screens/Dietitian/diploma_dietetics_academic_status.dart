@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:untitled/widgets/repeated_headings.dart';
 import '../../constants/constant.dart';
 
@@ -21,7 +22,7 @@ class _DiplomaDieteticsAcademicStatusState
     }
 
     if (internshipStatus == 'Internship-Yes') {
-      Navigator.pushNamed(context, '/gn_nurse_internship_completed');
+      NavigationHelper.pushNamed(context, '/gn_nurse_internship_completed');
     } else {
       final workExperience = await _showOptionBottomSheet(
         title: 'Do you have any Work Experience?',
@@ -32,9 +33,9 @@ class _DiplomaDieteticsAcademicStatusState
       );
 
       if (workExperience == 'Work Experience-Yes') {
-        Navigator.pushNamed(context, '/nurse_work_experience');
+        NavigationHelper.pushNamed(context, '/nurse_work_experience');
       } else if (workExperience == 'Work Experience-No') {
-        Navigator.pushNamed(context, '/County_that_you_preferred_page');
+        NavigationHelper.pushNamed(context, '/County_that_you_preferred_page');
       }
     }
   }
@@ -52,7 +53,7 @@ class _DiplomaDieteticsAcademicStatusState
       builder: (_) => _RadioSelectionSheet(
         title: title,
         options: options,
-        onSave: (value) => Navigator.pop(context, value),
+        onSave: (value) => NavigationHelper.pop(context, value),
       ),
     );
   }
@@ -110,7 +111,7 @@ class _DiplomaDieteticsAcademicStatusState
               AcademicOption(
                 icon: Icons.menu_book,
                 label: 'Diploma Ongoing',
-                onTap: () => Navigator.pushNamed(
+                onTap: () => NavigationHelper.pushNamed(
                     context, '/diploma_dietetics_diploma_ongoing'),
               ),
               AcademicOption(

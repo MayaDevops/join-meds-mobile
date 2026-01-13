@@ -4,10 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
 import '../../constants/constant.dart';
 import '../../constants/images.dart';
 import '../../widgets/main_button.dart';
-import '../../widgets/selection_of_professions.dart';
 
 class ResumeUpload extends StatefulWidget {
   const ResumeUpload({super.key});
@@ -129,10 +129,7 @@ class _ResumeUploadState extends State<ResumeUpload> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (!mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const SelectionProfession()),
-        );
+        context.push('/profession-selection');
       } else {
         _showSnackBar("Upload failed: $respStr", Colors.red);
       }
@@ -243,11 +240,7 @@ class _ResumeUploadState extends State<ResumeUpload> {
               ? null
               : () {
             if (_resumeUrl != null && _pickedFile == null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => const SelectionProfession()),
-              );
+              context.push('/profession-selection');
             } else {
               uploadResume();
             }
@@ -263,11 +256,7 @@ class _ResumeUploadState extends State<ResumeUpload> {
             ),
           ),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (_) => const SelectionProfession()),
-            );
+            context.push('/profession-selection');
           },
           child: const Text('Skip for now',
               style: TextStyle(fontSize: 20.0, color: mainBlue)),

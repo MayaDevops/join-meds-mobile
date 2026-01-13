@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -69,7 +70,7 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       if (status == 'Degree Ongoing') {
-        Navigator.pushNamed(context, '/nurse_degree_ongoing');
+        NavigationHelper.pushNamed(context, '/nurse_degree_ongoing');
       } else if (status == 'Degree Completed') {
         _openPostGraduationSheet();
       }
@@ -102,7 +103,7 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
     }
 
     if (postGraduation == 'PG-Holder') {
-      Navigator.pushNamed(context, '/nurse_pg_holder_speciality');
+      NavigationHelper.pushNamed(context, '/nurse_pg_holder_speciality');
     } else {
       final workExpStatus = await _showOptionBottomSheet(
         title: 'Do you have any Work Experience?',
@@ -115,9 +116,9 @@ class _NurseAcademicStatusState extends State<NurseAcademicStatus> {
       if (workExpStatus == null) return;
 
       if (workExpStatus == 'Work Experience-No') {
-        Navigator.pushNamed(context, '/County_that_you_preferred_page');
+        NavigationHelper.pushNamed(context, '/County_that_you_preferred_page');
       } else if(workExpStatus == 'Work Experience-Yes') {
-        Navigator.pushNamed(context, '/work_experience');
+        NavigationHelper.pushNamed(context, '/work_experience');
       }
     }
   }
@@ -439,7 +440,7 @@ class _OptionBottomSheet extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 if (selectedValue != null) {
-                  Navigator.pop(context, selectedValue);
+                  NavigationHelper.pop(context, selectedValue);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(

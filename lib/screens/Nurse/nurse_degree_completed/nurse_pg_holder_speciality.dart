@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -115,7 +116,7 @@ class _SelectingNurseSpecialityState extends State<SelectingNurseSpeciality> {
 
     if (workExpStatus == null) return;
 
-    Navigator.pushNamed(
+    NavigationHelper.pushNamed(
       context,
       workExpStatus == 'Work Experience-No'
           ? '/County_that_you_preferred_page'
@@ -238,7 +239,7 @@ class _OptionBottomSheetState extends State<OptionBottomSheet> {
           child: ElevatedButton(
             onPressed: () {
               if (_selectedOption != null) {
-                Navigator.pop(context, _selectedOption);
+                NavigationHelper.pop(context, _selectedOption);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(

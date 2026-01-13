@@ -1,7 +1,7 @@
 import 'dart:io';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -48,45 +48,7 @@ class _UserProfileSectionState extends State<UserProfileSection> {
     }
   }
 
-  Future<bool> _checkAndRequestPermission(Permission permission) async {
-    if (await permission.isGranted) return true;
-
-    final status = await permission.request();
-    if (status.isGranted) return true;
-
-    if (status.isPermanentlyDenied) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Permission permanently denied. Enable it in Settings.")),
-        );
-      }
-      await openAppSettings();
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Permission denied")),
-        );
-      }
-    }
-    return false;
-  }
-
   Future<void> _pickImage(ImageSource source) async {
-    Permission permission;
-
-    if (source == ImageSource.camera) {
-      permission = Permission.camera;
-    } else {
-      if (Platform.isAndroid) {
-        final androidInfo = await DeviceInfoPlugin().androidInfo;
-        permission = (androidInfo.version.sdkInt >= 33) ? Permission.photos : Permission.storage;
-      } else {
-        permission = Permission.photos;
-      }
-    }
-
-    if (!await _checkAndRequestPermission(permission)) return;
-
     try {
       final pickedFile = await _picker.pickImage(source: source, imageQuality: 80);
       if (pickedFile == null) return;
@@ -105,10 +67,6 @@ class _UserProfileSectionState extends State<UserProfileSection> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Profile picture updated successfully!")),
         );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Failed to upload profile picture.")),
-        );
       }
     } catch (e) {
       if (mounted) {
@@ -118,6 +76,7 @@ class _UserProfileSectionState extends State<UserProfileSection> {
       }
     }
   }
+
 
   Future<String?> _uploadProfileImage(File imageFile) async {
     if (_userId == null || !imageFile.existsSync()) return null;
@@ -215,8 +174,8 @@ class _UserProfileSectionState extends State<UserProfileSection> {
         padding: EdgeInsets.zero,
         children: [
           _drawerHeader(),
-          _drawerItem(Icons.edit, 'Edit Profile', () => Navigator.pushNamed(context, '/personal_data')),
-          _drawerItem(Icons.settings, 'Settings', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UserProfileSettings()))),
+          _drawerItem(Icons.edit, 'Edit Profile', () => NavigationHelper.pushNamed(context, '/personal_data')),
+          _drawerItem(Icons.settings, 'Settings', () => NavigationHelper.push(context, MaterialPageRoute(builder: (_) => const UserProfileSettings()))),
           const Divider(),
           _drawerItem(Icons.logout, 'Logout', _logoutConfirmation),
         ],
@@ -265,7 +224,7 @@ class _UserProfileSectionState extends State<UserProfileSection> {
     leading: Icon(icon),
     title: Text(title),
     onTap: () {
-      Navigator.pop(context);
+      NavigationHelper.pop(context);
       onTap();
     },
   );
@@ -277,12 +236,12 @@ class _UserProfileSectionState extends State<UserProfileSection> {
         title: const Text("Logout"),
         content: const Text("Are you sure you want to logout?"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(onPressed: () => NavigationHelper.pop(context), child: const Text("Cancel")),
           TextButton(
             onPressed: () async {
               final prefs = await SharedPreferences.getInstance();
               await prefs.clear();
-              if (mounted) Navigator.of(context).pushNamedAndRemoveUntil('/logOut_loading', (_) => false);
+              if (mounted) NavigationHelper.pushNamedAndRemoveUntil(context, '/logOut_loading', (_) => false);
             },
             child: const Text("Yes"),
           ),
@@ -321,8 +280,8 @@ class _UserProfileSectionState extends State<UserProfileSection> {
                     icon: const Icon(Icons.edit),
                     label: const Text("Edit Profile"),
                     onPressed: () {
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/personal_data');
+                      NavigationHelper.pop(context);
+                      NavigationHelper.pushNamed(context, '/personal_data');
                     },
                   ),
                 ),
@@ -336,7 +295,7 @@ class _UserProfileSectionState extends State<UserProfileSection> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text("Cancel"),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => NavigationHelper.pop(context),
                   ),
                 ),
               ],

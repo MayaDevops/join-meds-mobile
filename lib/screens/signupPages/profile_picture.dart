@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -205,7 +206,7 @@ class _ProfilePictureState extends State<ProfilePicture> {
                         } else if (_imageFile != null) {
                           final success = await _uploadProfileImage();
                           if (success) {
-                            Navigator.pushNamed(context, '/resume_upload');
+                            NavigationHelper.pushNamed(context, '/resume_upload');
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -215,7 +216,7 @@ class _ProfilePictureState extends State<ProfilePicture> {
                             );
                           }
                         } else {
-                          Navigator.pushNamed(context, '/resume_upload');
+                          NavigationHelper.pushNamed(context, '/resume_upload');
                         }
                       },
                     ),
@@ -226,7 +227,7 @@ class _ProfilePictureState extends State<ProfilePicture> {
                         side: const BorderSide(color: mainBlue, width: 3),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      onPressed: () => Navigator.pushNamed(context, '/resume_upload'),
+                      onPressed: () => NavigationHelper.pushNamed(context, '/resume_upload'),
                       child: const Text('Skip for now', style: TextStyle(fontSize: 20.0, color: mainBlue)),
                     ),
                   ],

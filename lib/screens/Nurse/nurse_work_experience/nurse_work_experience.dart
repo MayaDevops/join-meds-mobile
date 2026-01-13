@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:untitled/src/core/router/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -272,7 +273,7 @@ class _NurseWorkExperienceState extends State<NurseWorkExperience> {
             onPressed: () async {
               if (_workExpKey.currentState!.validate()) {
                 await _saveExperienceData();
-                Navigator.pushNamed(context, '/County_that_you_preferred_page');
+                NavigationHelper.pushNamed(context, '/County_that_you_preferred_page');
               }
             },
             style: ElevatedButton.styleFrom(
