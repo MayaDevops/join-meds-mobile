@@ -3,11 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../shared/widgets/headers/headers.dart';
-import '../../domain/repositories/form_repository.dart';
+import '../../domain/repositories/v2_form_repository.dart';
 import '../../../../shared/services/api/form_api_service.dart';
 
-/// Profession selection screen
-/// Grid of 12 professions loaded dynamically from Firebase
+/// V2 Profession selection screen
+/// Lists professions from v2/forms/professions/ path
 class ProfessionSelectionScreen extends StatefulWidget {
   final String? flowContext;
 
@@ -34,7 +34,7 @@ class _ProfessionSelectionScreenState extends State<ProfessionSelectionScreen> {
     _loadProfessions();
   }
 
-  /// Load professions from Firebase
+  /// Load professions from V2 Firebase path
   Future<void> _loadProfessions() async {
     setState(() {
       _isLoadingProfessions = true;
@@ -42,20 +42,25 @@ class _ProfessionSelectionScreenState extends State<ProfessionSelectionScreen> {
     });
 
     try {
-      final repository = context.read<FormRepository>();
-      final professionIds = await repository.getAvailableProfessions();
+      final repository = context.read<V2FormRepository>();
+      final professionIds = await repository.getAllProfessionIds();
+
+      // Load display names from each profession config
+      final professionsList = <Map<String, String>>[];
+      for (final id in professionIds) {
+        final config = await repository.getProfessionConfig(id);
+        professionsList.add({
+          'id': id,
+          'name': config?.profession.displayName ?? _formatProfessionName(id),
+        });
+      }
 
       setState(() {
-        _professions = professionIds.map((id) {
-          return {
-            'id': id,
-            'name': _formatProfessionName(id),
-          };
-        }).toList();
+        _professions = professionsList;
         _isLoadingProfessions = false;
       });
 
-      // Pre-select profession if already saved in SharedPreferences
+      // Pre-select profession if already saved
       await _loadSavedProfession();
     } catch (e) {
       setState(() {
@@ -74,7 +79,7 @@ class _ProfessionSelectionScreenState extends State<ProfessionSelectionScreen> {
       if (savedProfession != null && savedProfession.isNotEmpty) {
         // Find the profession ID that matches the saved profession name
         final matchingProfession = _professions.firstWhere(
-          (p) => p['name'] == savedProfession,
+          (p) => p['name'] == savedProfession || p['id'] == savedProfession,
           orElse: () => {},
         );
 
@@ -85,13 +90,11 @@ class _ProfessionSelectionScreenState extends State<ProfessionSelectionScreen> {
         }
       }
     } catch (e) {
-      // Silently fail - pre-selection is optional
       print('Error loading saved profession: $e');
     }
   }
 
   /// Convert profession ID to display name
-  /// Example: "lab_technician" → "Lab Technician"
   String _formatProfessionName(String id) {
     return id
         .split('_')
@@ -138,6 +141,7 @@ class _ProfessionSelectionScreenState extends State<ProfessionSelectionScreen> {
 
       // Save profession to SharedPreferences
       await prefs.setString('profession', professionName);
+      await prefs.setString('professionId', _selectedProfession!);
       await prefs.setBool('profession_selected', true);
 
       // Navigate based on flow context
@@ -145,10 +149,10 @@ class _ProfessionSelectionScreenState extends State<ProfessionSelectionScreen> {
         final flow = widget.flowContext ?? 'signup';
 
         if (flow == 'profile') {
-          // Profile flow: go to dynamic forms
-          context.push('/dynamic-form/$_selectedProfession?flow=profile');
+          // Profile flow: go to flow selection (will auto-skip if only 1 flow)
+          context.push('/v2-flow-selection/$_selectedProfession?flow=profile');
         } else {
-          // Signup flow: go to resume upload
+          // Signup flow: go to resume upload first, then flow selection
           context.push('/profile/resume?flow=signup');
         }
       }
@@ -204,70 +208,88 @@ class _ProfessionSelectionScreenState extends State<ProfessionSelectionScreen> {
                           ],
                         ),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(20),
-                        itemCount: _professions.length,
-                        itemBuilder: (context, index) {
-                          final profession = _professions[index];
-                          final isSelected =
-                              _selectedProfession == profession['id'];
+                    : _professions.isEmpty
+                        ? const Center(
+                            child: Text('No professions available'),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(20),
+                            itemCount: _professions.length,
+                            itemBuilder: (context, index) {
+                              final profession = _professions[index];
+                              final isSelected =
+                                  _selectedProfession == profession['id'];
 
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.grey.shade300,
-                                width: 1,
-                              ),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: () {
-                                  setState(() {
-                                    _selectedProfession = profession['id'];
-                                  });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 16,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        height: 24,
-                                        width: 24,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: isSelected
-                                                ? const Color(0xff00A4E1)
-                                                : Colors.grey.shade400,
-                                            width: isSelected ? 6 : 1.5,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Text(
-                                        profession['name']!,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.black87,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? const Color(0xff00A4E1)
+                                        : Colors.grey.shade300,
+                                    width: isSelected ? 2 : 1,
                                   ),
                                 ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedProfession = profession['id'];
+                                      });
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 16,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            height: 24,
+                                            width: 24,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: isSelected
+                                                    ? const Color(0xff00A4E1)
+                                                    : Colors.grey.shade400,
+                                                width: isSelected ? 6 : 1.5,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Text(
+                                              profession['name']!,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: isSelected
+                                                    ? const Color(0xff00A4E1)
+                                                    : Colors.black87,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                          if (isSelected)
+                                            const Icon(
+                                              Icons.check_circle,
+                                              color: Color(0xff00A4E1),
+                                              size: 20,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
           ),
 
           // Next Button

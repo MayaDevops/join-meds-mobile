@@ -144,6 +144,8 @@ import '../../../screens/country_preferred_pages/after_country_preferred_page.da
 // Import Dynamic Forms
 import '../../features/dynamic_forms/presentation/screens/profession_selection_screen.dart';
 import '../../features/dynamic_forms/presentation/screens/dynamic_form_screen.dart';
+import '../../features/dynamic_forms/presentation/screens/v2_dynamic_form_screen.dart';
+import '../../features/dynamic_forms/presentation/screens/v2_flow_selection_screen.dart';
 
 // Import V2 Home Feature
 import '../../features/home/presentation/screens/home_shell_screen.dart';
@@ -220,7 +222,8 @@ class AppRouter {
                 GoRoute(
                   path: 'search',
                   name: 'job_search',
-                  pageBuilder: (context, state) => RouteTransitions.slideFromRight(
+                  pageBuilder: (context, state) =>
+                      RouteTransitions.slideFromRight(
                     state: state,
                     child: const JobSearchScreen(),
                   ),
@@ -228,7 +231,8 @@ class AppRouter {
                 GoRoute(
                   path: 'filters',
                   name: 'job_filters',
-                  pageBuilder: (context, state) => RouteTransitions.slideFromBottom(
+                  pageBuilder: (context, state) =>
+                      RouteTransitions.slideFromBottom(
                     state: state,
                     child: const JobFiltersScreen(),
                   ),
@@ -595,6 +599,42 @@ class AppRouter {
             return RouteTransitions.slideFromRight(
               state: state,
               child: DynamicFormScreen(
+                professionId: professionId,
+                courseType: courseType,
+                flowContext: flow,
+              ),
+            );
+          },
+        ),
+        // V2 Flow Selection (B.Pharm, M.Pharm, etc.)
+        GoRoute(
+          path: '/v2-flow-selection/:professionId',
+          name: 'v2_flow_selection',
+          pageBuilder: (context, state) {
+            final professionId = state.pathParameters['professionId']!;
+            final flow = state.uri.queryParameters['flow'];
+
+            return RouteTransitions.slideFromRight(
+              state: state,
+              child: V2FlowSelectionScreen(
+                professionId: professionId,
+                flowContext: flow,
+              ),
+            );
+          },
+        ),
+        // V2 Dynamic Form (graph-based navigation)
+        GoRoute(
+          path: '/v2-dynamic-form/:professionId',
+          name: 'v2_dynamic_form',
+          pageBuilder: (context, state) {
+            final professionId = state.pathParameters['professionId']!;
+            final courseType = state.uri.queryParameters['courseType'];
+            final flow = state.uri.queryParameters['flow'];
+
+            return RouteTransitions.slideFromRight(
+              state: state,
+              child: V2DynamicFormScreen(
                 professionId: professionId,
                 courseType: courseType,
                 flowContext: flow,

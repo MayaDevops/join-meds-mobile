@@ -14,6 +14,7 @@ import '../../features/dynamic_forms/data/repositories/form_repository_impl.dart
 import '../../features/dynamic_forms/data/datasources/firebase_form_datasource.dart';
 import '../../features/dynamic_forms/data/datasources/local_form_datasource.dart';
 import '../../features/dynamic_forms/presentation/providers/form_state_provider.dart';
+import '../../features/dynamic_forms/domain/repositories/v2_form_repository.dart';
 import '../../features/home/domain/repositories/home_repository.dart';
 import '../../features/home/data/repositories/home_repository_impl.dart';
 import '../../features/home/presentation/providers/home_provider.dart';
@@ -28,6 +29,7 @@ class AppProvider {
   static late ApiClient _apiClient;
   static late FormApiService _formApiService;
   static late FormRepository _formRepository;
+  static late V2FormRepository _v2FormRepository;
   static late IHomeRepository _homeRepository;
   static late IJobRepo _jobRepo;
   static late SharedPreferences _prefs;
@@ -37,6 +39,7 @@ class AppProvider {
   static ApiClient get apiClient => _apiClient;
   static FormApiService get formApiService => _formApiService;
   static FormRepository get formRepository => _formRepository;
+  static V2FormRepository get v2FormRepository => _v2FormRepository;
   static IHomeRepository get homeRepository => _homeRepository;
   static IJobRepo get jobRepo => _jobRepo;
 
@@ -64,6 +67,9 @@ class AppProvider {
       localDatasource: localDatasource,
     );
 
+    // Initialize V2 Form Repository
+    _v2FormRepository = V2FormRepository();
+
     // Initialize Home Repository
     _homeRepository = HomeRepositoryImpl(_apiClient);
 
@@ -79,6 +85,7 @@ class AppProvider {
         Provider<ApiClient>.value(value: _apiClient),
         Provider<FormApiService>.value(value: _formApiService),
         Provider<FormRepository>.value(value: _formRepository),
+        Provider<V2FormRepository>.value(value: _v2FormRepository),
         Provider<IHomeRepository>.value(value: _homeRepository),
         Provider<IJobRepo>.value(value: _jobRepo),
 
@@ -126,9 +133,12 @@ class AppProvider {
 
         // Home Provider
         ChangeNotifierProxyProvider<UserProvider, HomeProvider>(
-          create: (_) => HomeProvider(_homeRepository, _jobRepo, UserProvider(_storageService, _apiClient), _storageService),
+          create: (_) => HomeProvider(_homeRepository, _jobRepo,
+              UserProvider(_storageService, _apiClient), _storageService),
           update: (_, userProvider, homeProvider) =>
-              homeProvider ?? HomeProvider(_homeRepository, _jobRepo, userProvider, _storageService),
+              homeProvider ??
+              HomeProvider(
+                  _homeRepository, _jobRepo, userProvider, _storageService),
         ),
 
         // Jobs Tab Provider
