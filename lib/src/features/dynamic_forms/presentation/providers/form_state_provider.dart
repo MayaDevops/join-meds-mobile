@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:untitled/src/core/utils/api_date_formatter.dart';
 import '../../domain/models/form_config.dart';
 import '../../domain/models/step_config.dart';
-import '../../domain/models/navigation_config.dart';
 import '../../domain/repositories/form_repository.dart';
 import '../../../../shared/services/api/form_api_service.dart';
 import '../utils/validation_engine.dart';
@@ -76,11 +76,13 @@ class FormStateProvider extends ChangeNotifier {
 
       if (_config == null) {
         print('❌ DEBUG: Config is NULL for $professionId');
-        throw Exception('Configuration not found for profession: $professionId');
+        throw Exception(
+            'Configuration not found for profession: $professionId');
       }
 
       // Debug: Log loaded config
-      print('✅ DEBUG: Config loaded - profession displayName: ${_config!.profession.displayName}');
+      print(
+          '✅ DEBUG: Config loaded - profession displayName: ${_config!.profession.displayName}');
       print('✅ DEBUG: Available flows: ${_config!.flows.keys.toList()}');
 
       // Select flow (course type)
@@ -374,11 +376,42 @@ class FormStateProvider extends ChangeNotifier {
 
       // Map form data to API fields using complete mapping
       final mappedData = _apiService.mapFormDataToApi(
-        formData: filteredFormData,  // ✅ Use filtered data
+        formData: filteredFormData, // ✅ Use filtered data
         fieldMapping: completeFieldMapping,
       );
 
       print('🔧 DEBUG: Final mapped data for API: $mappedData');
+
+      if (mappedData.containsKey('experiences') &&
+          mappedData['experiences'] is List) {
+        final List experiences = mappedData['experiences'];
+
+        for (final exp in experiences) {
+          final singleExperiencePayload = {
+            'userId': userId.toString(),
+            'clinicalNonclinical': exp['experienceType'].toString(),
+            'workedHospName': exp['organisation'].toString(),
+            'workSpecialisation': 'General',
+            'fromDate': ApiDateFormatter.toApiDateString(exp['fromDate']),
+            'toDate': ApiDateFormatter.toApiDateString(exp['toDate']),
+          };
+
+          final result = await _apiService.submitFormData(
+            endpoint: apiConfig.endpoint, // /api/work-experience/save
+            method: apiConfig.method, // POST
+            data: singleExperiencePayload,
+            headers: apiConfig.headers,
+            pathParams: {'userId': userId},
+          );
+          if (result['success'] != true) {
+            _errorMessage =
+                apiConfig.errorMessage ?? result['error']?.toString();
+            return false;
+          }
+        }
+
+        return true;
+      }
 
       // Add static params
       if (apiConfig.staticParams != null) {
@@ -437,7 +470,7 @@ class FormStateProvider extends ChangeNotifier {
           // Keep popping until we reach a route that's not dynamic-form or profession-selection
           final routeName = route.settings.name;
           return routeName == null ||
-                 (!routeName.contains('dynamic-form') &&
+              (!routeName.contains('dynamic-form') &&
                   !routeName.contains('profession-selection'));
         });
       }
