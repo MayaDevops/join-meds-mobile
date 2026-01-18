@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../domain/repositories/v2_form_repository.dart';
 import '../../domain/models/v2_models.dart';
 import '../../../../shared/widgets/headers/headers.dart';
@@ -7,7 +8,11 @@ import '../../../../shared/services/api/form_api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 
-/// V2 Dynamic Form Screen - Renders forms using graph-based V2 config
+// V1 color constants
+const Color mainBlue = Color(0xff00A4E1);
+const Color inputBorderClr = Color(0xff6B7280);
+
+/// V2 Dynamic Form Screen - V1 Style UI
 class V2DynamicFormScreen extends StatefulWidget {
   final String professionId;
   final String? courseType;
@@ -38,6 +43,9 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
   // Form data
   final Map<String, dynamic> _formData = {};
   final Map<String, String?> _errors = {};
+
+  // List entries for list-type steps
+  List<Map<String, dynamic>> _listEntries = [];
 
   @override
   void initState() {
@@ -71,6 +79,7 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
 
       // Start at first step
       _currentStep = _currentFlow!.firstStep;
+      _initializeListEntries();
 
       setState(() => _isLoading = false);
     } catch (e) {
@@ -81,6 +90,12 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     }
   }
 
+  void _initializeListEntries() {
+    if (_currentStep?.type == 'list') {
+      _listEntries = [{}];
+    }
+  }
+
   void _updateField(String fieldId, dynamic value) {
     setState(() {
       _formData[fieldId] = value;
@@ -88,8 +103,36 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     });
   }
 
+  void _updateListEntry(int index, String fieldId, dynamic value) {
+    setState(() {
+      _listEntries[index][fieldId] = value;
+    });
+  }
+
+  void _addListEntry() {
+    setState(() {
+      _listEntries.add({});
+    });
+  }
+
+  void _removeListEntry(int index) {
+    if (_listEntries.length > 1) {
+      setState(() {
+        _listEntries.removeAt(index);
+      });
+    }
+  }
+
   bool _validateCurrentStep() {
     _errors.clear();
+
+    if (_currentStep?.type == 'list') {
+      // List validation - at least one entry or skippable
+      if (_listEntries.isEmpty && !(_currentStep?.skippable ?? false)) {
+        return false;
+      }
+      return true;
+    }
 
     final allFields = _currentStep?.getAllFields() ?? [];
     for (final field in allFields) {
@@ -129,14 +172,18 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     try {
       // Submit step data if API config exists
       if (_currentStep!.api != null) {
-        await _submitStepData(_currentStep!.api!);
+        if (_currentStep!.type == 'list') {
+          // Submit each list entry in a loop
+          await _submitListData(_currentStep!.api!);
+        } else {
+          await _submitStepData(_currentStep!.api!);
+        }
       }
 
       // Find next step using edges
       final nextStepId = _currentStep!.getNextStepId(_formData);
 
       if (nextStepId == null) {
-        // Flow completed
         _onFormCompleted();
         return;
       }
@@ -147,6 +194,7 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
         setState(() {
           _stepHistory.add(_currentStep!.id);
           _currentStep = nextStep;
+          _initializeListEntries();
         });
       } else {
         _onFormCompleted();
@@ -181,6 +229,40 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     }
   }
 
+  Future<void> _submitListData(V2ApiConfig api) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId');
+
+    if (userId == null) throw Exception('User ID not found');
+
+    final apiService = context.read<FormApiService>();
+
+    // Submit each entry in a loop
+    for (final entry in _listEntries) {
+      if (entry.isEmpty) continue;
+
+      final requestBody = <String, dynamic>{'userId': userId};
+
+      // Build request body from entry using API mapping
+      api.mapping.forEach((formField, apiField) {
+        if (entry.containsKey(formField)) {
+          requestBody[apiField] = entry[formField];
+        }
+      });
+
+      final result = await apiService.submitFormData(
+        endpoint: api.endpoint,
+        method: api.method,
+        data: requestBody,
+        pathParams: {'userId': userId},
+      );
+
+      if (result['success'] != true) {
+        throw Exception(result['error'] ?? 'Failed to save entry');
+      }
+    }
+  }
+
   void _navigateBack() {
     if (_stepHistory.isEmpty) {
       Navigator.of(context).pop();
@@ -191,7 +273,10 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     final previousStep = _currentFlow!.getStep(previousStepId);
 
     if (previousStep != null) {
-      setState(() => _currentStep = previousStep);
+      setState(() {
+        _currentStep = previousStep;
+        _initializeListEntries();
+      });
     }
   }
 
@@ -209,10 +294,23 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
         final routeName = route.settings.name;
         return routeName == null ||
             (!routeName.contains('dynamic-form') &&
-                !routeName.contains('profession-selection'));
+                !routeName.contains('flow-selection'));
       });
     } else {
       context.go('/signup-completion');
+    }
+  }
+
+  Future<void> _pickDate(int entryIndex, String fieldId) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1965),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      final formatted = DateFormat('dd-MM-yyyy').format(picked);
+      _updateListEntry(entryIndex, fieldId, formatted);
     }
   }
 
@@ -226,7 +324,10 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
 
     if (_errorMessage != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Error')),
+        appBar: AppBar(
+          title: const Text('Error'),
+          backgroundColor: mainBlue,
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -245,78 +346,83 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          _currentStep?.title ?? '',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        backgroundColor: mainBlue,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: _navigateBack,
+        ),
+      ),
       body: Column(
         children: [
-          // Header
-          CustomHeaderContainer(
-            title: _currentStep?.title ?? '',
-            subtitle: _currentStep?.subtitle ?? '',
-            backgroundImage: 'assets/v2/Star.png',
-            showBackButton: true,
-            onBackPressed: _navigateBack,
-          ),
-
           // Content
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(20),
-              child: _buildStepContent(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Subtitle
+                  if (_currentStep?.subtitle != null) ...[
+                    const SizedBox(height: 20),
+                    Text(
+                      _currentStep!.subtitle!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: inputBorderClr,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                  _buildStepContent(),
+                ],
+              ),
             ),
           ),
 
-          // Navigation
+          // Save Button
           SafeArea(
             top: false,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  if (_stepHistory.isNotEmpty) ...[
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _navigateBack,
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(0, 56),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text('Back'),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                  ],
-                  Expanded(
-                    flex: _stepHistory.isEmpty ? 1 : 2,
-                    child: ElevatedButton(
-                      onPressed: _isSubmitting ? null : _navigateNext,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff00A4E1),
-                        minimumSize: const Size(0, 56),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
-                              ),
-                            )
-                          : const Text(
-                              'Next',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
+            minimum: const EdgeInsets.all(20),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isSubmitting ? null : _navigateNext,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: mainBlue,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ],
+                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : const Text(
+                        'Save',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ),
           ),
@@ -336,7 +442,7 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
       case 'form':
         return _buildFormFields();
       case 'modal':
-        return _buildModalOptions();
+        return _buildRadioSelection();
       case 'grid':
         return _buildGridSelection();
       case 'list':
@@ -346,67 +452,95 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     }
   }
 
+  /// V1 Style: Side-by-side card selection
   Widget _buildCardSelection() {
     final field = _currentStep!.field;
     if (field == null) return const SizedBox();
 
     final options = field.options ?? [];
     final selectedValue = _formData[field.id];
+    final screenWidth = MediaQuery.of(context).size.width;
 
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: options.map((option) {
         final isSelected = selectedValue == option.value;
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _updateField(field.id, option.value),
+        return InkWell(
+          onTap: () => _updateField(field.id, option.value),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: screenWidth * 0.42,
+            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 10),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? mainBlue.withOpacity(0.1)
+                  : const Color(0xffD9D9D9),
               borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xff00A4E1).withOpacity(0.1)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xff00A4E1)
-                        : Colors.grey.shade300,
-                    width: isSelected ? 2 : 1,
+              border: isSelected ? Border.all(color: mainBlue, width: 2) : null,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  offset: const Offset(2, 4),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  _getIconData(option.icon ?? 'help'),
+                  size: screenWidth * 0.12,
+                  color: mainBlue,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  option.label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.04,
+                    color: mainBlue,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                child: Row(
-                  children: [
-                    if (option.icon != null) ...[
-                      Icon(
-                        _getIconData(option.icon!),
-                        color:
-                            isSelected ? const Color(0xff00A4E1) : Colors.grey,
-                        size: 32,
-                      ),
-                      const SizedBox(width: 16),
-                    ],
-                    Expanded(
-                      child: Text(
-                        option.label,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                          color: isSelected
-                              ? const Color(0xff00A4E1)
-                              : Colors.black87,
-                        ),
-                      ),
-                    ),
-                    if (isSelected)
-                      const Icon(Icons.check_circle, color: Color(0xff00A4E1)),
-                  ],
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  /// V1 Style: Radio selection (for modal type)
+  Widget _buildRadioSelection() {
+    final field = _currentStep!.field;
+    if (field == null) return const SizedBox();
+
+    final options = field.options ?? [];
+    final selectedValue = _formData[field.id];
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: options.map((option) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Text(
+                option.label,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: inputBorderClr,
                 ),
               ),
-            ),
+              Radio<String>(
+                value: option.value,
+                groupValue: selectedValue,
+                activeColor: mainBlue,
+                onChanged: (value) => _updateField(field.id, value),
+              ),
+            ],
           ),
         );
       }).toList(),
@@ -430,14 +564,43 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
   Widget _buildField(V2FieldConfig field) {
     switch (field.type) {
       case 'text':
-        return TextField(
-          onChanged: (value) => _updateField(field.id, value),
-          decoration: InputDecoration(
-            labelText: field.label,
-            hintText: field.hint,
-            errorText: _errors[field.id],
-            border: const OutlineInputBorder(),
-          ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (field.label != null) ...[
+              Text(
+                field.label!,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: inputBorderClr,
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+            TextFormField(
+              initialValue: _formData[field.id]?.toString(),
+              onChanged: (value) => _updateField(field.id, value),
+              decoration: InputDecoration(
+                hintText: field.hint ?? 'Enter ${field.label ?? field.id}',
+                errorText: _errors[field.id],
+                filled: true,
+                fillColor: Colors.white,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: inputBorderClr),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: mainBlue, width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Colors.red),
+                ),
+              ),
+            ),
+          ],
         );
       case 'radio':
         return _buildRadioField(field);
@@ -455,27 +618,47 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (field.label != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              field.label!,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+        if (field.label != null) ...[
+          Text(
+            field.label!,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: inputBorderClr,
             ),
           ),
-        ...options.map((option) {
-          return RadioListTile<String>(
-            title: Text(option.label),
-            value: option.value,
-            groupValue: selectedValue,
-            onChanged: (value) => _updateField(field.id, value),
-            contentPadding: EdgeInsets.zero,
-          );
-        }),
+          const SizedBox(height: 8),
+        ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: options.map((option) {
+            return Row(
+              children: [
+                Text(
+                  option.label,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: inputBorderClr,
+                  ),
+                ),
+                Radio<String>(
+                  value: option.value,
+                  groupValue: selectedValue,
+                  activeColor: mainBlue,
+                  onChanged: (value) => _updateField(field.id, value),
+                ),
+              ],
+            );
+          }).toList(),
+        ),
         if (_errors[field.id] != null)
-          Text(
-            _errors[field.id]!,
-            style: const TextStyle(color: Colors.red, fontSize: 12),
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              _errors[field.id]!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
           ),
       ],
     );
@@ -485,25 +668,45 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     final options = field.options ?? [];
     final selectedValue = _formData[field.id];
 
-    return DropdownButtonFormField<String>(
-      value: selectedValue,
-      decoration: InputDecoration(
-        labelText: field.label,
-        errorText: _errors[field.id],
-        border: const OutlineInputBorder(),
-      ),
-      items: options.map((option) {
-        return DropdownMenuItem(
-          value: option.value,
-          child: Text(option.label),
-        );
-      }).toList(),
-      onChanged: (value) => _updateField(field.id, value),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (field.label != null) ...[
+          Text(
+            field.label!,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: inputBorderClr,
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        DropdownButtonFormField<String>(
+          value: selectedValue,
+          decoration: InputDecoration(
+            errorText: _errors[field.id],
+            filled: true,
+            fillColor: Colors.white,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: inputBorderClr),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: mainBlue, width: 2),
+            ),
+          ),
+          items: options.map((option) {
+            return DropdownMenuItem(
+              value: option.value,
+              child: Text(option.label),
+            );
+          }).toList(),
+          onChanged: (value) => _updateField(field.id, value),
+        ),
+      ],
     );
-  }
-
-  Widget _buildModalOptions() {
-    return _buildCardSelection(); // Same as card selection for now
   }
 
   Widget _buildGridSelection() {
@@ -535,20 +738,15 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
             child: Container(
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xff00A4E1) : Colors.white,
+                color: isSelected ? mainBlue : const Color(0xffD9D9D9),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isSelected
-                      ? const Color(0xff00A4E1)
-                      : Colors.grey.shade300,
-                ),
               ),
               child: Text(
                 option.label,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: isSelected ? Colors.white : Colors.black87,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -558,31 +756,219 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     );
   }
 
+  /// V1 Style: Multi-entry list with Add button
   Widget _buildListEntry() {
-    // Simplified list entry - shows template fields
     final template = _currentStep!.template ?? [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Add your details:',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        // List of entries
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _listEntries.length,
+          itemBuilder: (context, index) {
+            return _buildListEntryCard(index, template);
+          },
         ),
+
+        // Add button
         const SizedBox(height: 16),
-        ...template.map((field) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: _buildField(field),
-          );
-        }),
-        if (_currentStep!.skippable)
+        InkWell(
+          onTap: _addListEntry,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Text(
+                'Add',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: mainBlue,
+                ),
+              ),
+              SizedBox(width: 4),
+              Icon(Icons.add, color: mainBlue),
+            ],
+          ),
+        ),
+
+        // Skip button if skippable
+        if (_currentStep!.skippable) ...[
+          const SizedBox(height: 16),
           TextButton(
             onPressed: _navigateNext,
             child: const Text('Skip this step'),
           ),
+        ],
       ],
     );
+  }
+
+  Widget _buildListEntryCard(int index, List<V2FieldConfig> template) {
+    final entry = _listEntries[index];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Entry header with delete button
+          if (_listEntries.length > 1)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Experience ${index + 1}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: mainBlue,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.red),
+                  onPressed: () => _removeListEntry(index),
+                ),
+              ],
+            ),
+
+          // Template fields
+          ...template.map((field) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _buildListField(index, field, entry),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListField(
+      int entryIndex, V2FieldConfig field, Map<String, dynamic> entry) {
+    switch (field.type) {
+      case 'radio':
+        final options = field.options ?? [];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (field.label != null)
+              Text(
+                field.label!,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: inputBorderClr,
+                ),
+              ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: options.map((option) {
+                return Row(
+                  children: [
+                    Text(option.label,
+                        style: const TextStyle(color: inputBorderClr)),
+                    Radio<String>(
+                      value: option.value,
+                      groupValue: entry[field.id],
+                      activeColor: mainBlue,
+                      onChanged: (value) =>
+                          _updateListEntry(entryIndex, field.id, value),
+                    ),
+                  ],
+                );
+              }).toList(),
+            ),
+          ],
+        );
+
+      case 'text':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (field.label != null)
+              Text(
+                field.label!,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: inputBorderClr,
+                ),
+              ),
+            const SizedBox(height: 8),
+            TextFormField(
+              initialValue: entry[field.id]?.toString(),
+              onChanged: (value) =>
+                  _updateListEntry(entryIndex, field.id, value),
+              decoration: InputDecoration(
+                hintText: field.hint ?? 'Enter ${field.label ?? field.id}',
+                filled: true,
+                fillColor: Colors.white,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: inputBorderClr),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: mainBlue, width: 2),
+                ),
+              ),
+            ),
+          ],
+        );
+
+      case 'date':
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (field.label != null)
+              Text(
+                field.label!,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: inputBorderClr,
+                ),
+              ),
+            const SizedBox(height: 8),
+            TextFormField(
+              readOnly: true,
+              controller: TextEditingController(
+                  text: entry[field.id]?.toString() ?? ''),
+              decoration: InputDecoration(
+                hintText: 'Select Date',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.calendar_month,
+                      color: mainBlue, size: 28),
+                  onPressed: () => _pickDate(entryIndex, field.id),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: inputBorderClr),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: mainBlue, width: 2),
+                ),
+              ),
+              onTap: () => _pickDate(entryIndex, field.id),
+            ),
+          ],
+        );
+
+      default:
+        return Text('Unknown field type: ${field.type}');
+    }
   }
 
   IconData _getIconData(String iconName) {
