@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
+import '../../features/job_details/presentation/screens/job_details_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/screens/signup_completion_screen.dart';
 import '../../features/profile/presentation/screens/personal_data_screen.dart';
@@ -261,6 +262,17 @@ class AppRouter {
               ),
             ),
           ],
+        ),
+        GoRoute(
+          path: '/job-details/:jobId',
+          name: 'job_details',
+          pageBuilder: (context, state) {
+            final jobId = state.pathParameters['jobId']!;
+            return RouteTransitions.slideFromRight(
+              state: state,
+              child: JobDetailsScreen(jobId: jobId),
+            );
+          },
         ),
 
         // Settings Screen (accessible from profile)

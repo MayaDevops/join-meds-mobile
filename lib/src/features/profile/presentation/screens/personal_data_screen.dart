@@ -104,9 +104,12 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
       final responseBody = await response.stream.bytesToString();
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final jsonResponse = jsonDecode(responseBody);
-        final photoId = jsonResponse['photoId'] ?? jsonResponse['id'];
+        // final jsonResponse = json.decode(responseBody);
 
+        String? photoId;
+        if (responseBody.contains(':')) {
+          photoId = responseBody.split(':').last.trim();
+        }
         if (photoId != null) {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('photoId', photoId.toString());

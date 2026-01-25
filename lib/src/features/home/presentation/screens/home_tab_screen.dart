@@ -283,7 +283,10 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                 job: job,
                 isApplied: jobId != null ? homeProvider.isJobApplied(jobId) : false,
                 isApplying: jobId != null ? homeProvider.isApplyingToJob(jobId) : false,
-                onTap: null, // Disabled - no navigation on card tap
+                onTap: (){
+                  if (jobId == null) return;
+                  context.push('/job-details/$jobId');
+                }, // Disabled - no navigation on card tap
                 onApplyTap: () async {
                   final error = await homeProvider.applyToJob(job);
                   if (!context.mounted) return;

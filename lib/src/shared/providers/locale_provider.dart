@@ -72,5 +72,5 @@ class LocaleProvider extends ChangeNotifier {
   String get currentLocaleName => getLocaleName(_locale.languageCode);
 
   /// Check if current locale is RTL
-  bool get isRTL => _locale.languageCode == 'ar';
+  bool get isRTL => _locale.languageCode == 'en';
 }

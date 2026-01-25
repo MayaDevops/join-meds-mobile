@@ -34,6 +34,10 @@ class V2FieldConfig {
   final int? minEntries;
   final int? maxEntries;
 
+  /// 🔥 NEW: Conditional visibility rule
+  /// Example: { "hasForeignExam": "yes" }
+  final Map<String, dynamic>? visibleWhen;
+
   const V2FieldConfig({
     required this.id,
     required this.type,
@@ -47,7 +51,12 @@ class V2FieldConfig {
     this.template,
     this.minEntries,
     this.maxEntries,
-  });
+    this.visibleWhen, // 🔥 NEW
+  }) : assert(
+  options == null || source == null,
+  'V2FieldConfig "$id" cannot have both "options" and "source". '
+      'Use one or the other.',
+  );
 
   factory V2FieldConfig.fromJson(Map<String, dynamic> json) {
     // Handle simple string options (e.g., ["1st Year", "2nd Year"])
@@ -56,7 +65,7 @@ class V2FieldConfig {
       final optionsList = json['options'] as List;
       options = optionsList.map((opt) {
         if (opt is String) {
-          return V2FieldOption(value: opt, label: opt);
+          return V2FieldOption(value: opt.toLowerCase(), label: opt);
         } else if (opt is Map<String, dynamic>) {
           return V2FieldOption.fromJson(opt);
         }
@@ -85,6 +94,11 @@ class V2FieldConfig {
       template: template,
       minEntries: json['minEntries'] as int?,
       maxEntries: json['maxEntries'] as int?,
+
+      // 🔥 NEW
+      visibleWhen: json['visibleWhen'] != null
+          ? Map<String, dynamic>.from(json['visibleWhen'])
+          : null,
     );
   }
 
@@ -103,9 +117,13 @@ class V2FieldConfig {
         'template': template!.map((t) => t.toJson()).toList(),
       if (minEntries != null) 'minEntries': minEntries,
       if (maxEntries != null) 'maxEntries': maxEntries,
+
+      // 🔥 NEW
+      if (visibleWhen != null) 'visibleWhen': visibleWhen,
     };
   }
 }
+
 
 /// Option for selection fields
 class V2FieldOption {

@@ -41,6 +41,7 @@ class V2ApiConstants {
   static const String applyToJob = '/job-applied/save';
   static String fetchUserApplications(String userId) => '/job-applied/user/$userId';
   static const String searchApplications = '/job-applied/search';
+  static String fetchJobDetails(String jobId) => '/org-job/fetch/$jobId';
 
   // Job Bookmarks endpoints
   static String bookmarkJob(String jobId) => '/job-bookmarks/save/$jobId';

@@ -26,6 +26,7 @@ class TextFormWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      textDirection: TextDirection.rtl,
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,

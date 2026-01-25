@@ -25,6 +25,7 @@ class TextFormWidget2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      textDirection: TextDirection.ltr,
       controller: controller,
       obscureText: obscureText, // ✅ Ensure obscureText is correctly applied
       validator: validator,

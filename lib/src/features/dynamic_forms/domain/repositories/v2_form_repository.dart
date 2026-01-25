@@ -5,7 +5,7 @@ import '../models/v2_models.dart';
 class V2FormRepository {
   final DatabaseReference _db = FirebaseDatabase.instance.ref();
 
-  static const String _basePath = 'v2/forms/professions';
+  static const String _basePath = 'v2';
 
   /// Convert Firebase data to Map<String, dynamic>
   Map<String, dynamic> _convertToMap(dynamic data) {
@@ -43,7 +43,7 @@ class V2FormRepository {
   /// Get all profession IDs
   Future<List<String>> getAllProfessionIds() async {
     try {
-      final snapshot = await _db.child(_basePath).get();
+      final snapshot = await _db.child("$_basePath/forms/professions").get();
 
       if (snapshot.exists && snapshot.value != null) {
         final data = _convertToMap(snapshot.value);
@@ -59,7 +59,7 @@ class V2FormRepository {
   /// Get profession config by ID
   Future<V2FormConfig?> getProfessionConfig(String professionId) async {
     try {
-      final snapshot = await _db.child('$_basePath/$professionId').get();
+      final snapshot = await _db.child('$_basePath/forms/professions/$professionId').get();
 
       if (snapshot.exists && snapshot.value != null) {
         final data = _convertToMap(snapshot.value);
@@ -78,7 +78,7 @@ class V2FormRepository {
     V2FormConfig config,
   ) async {
     try {
-      await _db.child('$_basePath/$professionId').set(config.toJson());
+      await _db.child('$_basePath/forms/professions/$professionId').set(config.toJson());
       return true;
     } catch (e) {
       print('V2 Error saving profession config: $e');
@@ -89,7 +89,7 @@ class V2FormRepository {
   /// Delete profession config
   Future<bool> deleteProfessionConfig(String professionId) async {
     try {
-      await _db.child('$_basePath/$professionId').remove();
+      await _db.child('$_basePath/forms/professions/$professionId').remove();
       return true;
     } catch (e) {
       print('V2 Error deleting profession config: $e');
@@ -111,7 +111,7 @@ class V2FormRepository {
   /// Get shared data (universities, etc.)
   Future<List<String>> getSharedData(String path) async {
     try {
-      final snapshot = await _db.child('v2/shared/$path').get();
+      final snapshot = await _db.child('$_basePath/shared/$path').get();
 
       if (snapshot.exists && snapshot.value != null) {
         if (snapshot.value is List) {
@@ -128,4 +128,52 @@ class V2FormRepository {
       return [];
     }
   }
+  /// Get shared dropdown options (countries, exams, etc.)
+  Future<List<V2FieldOption>> getSharedOptions(String path) async {
+    try {
+      final snapshot = await _db.child('$_basePath/shared/$path').get();
+
+      if (!snapshot.exists || snapshot.value == null) {
+        return [];
+      }
+
+      final data = snapshot.value;
+
+      // ✅ CASE 1: List of strings (your universities case)
+      if (data is List) {
+        return data
+            .whereType<String>()
+            .map((e) => V2FieldOption(
+          value: e.toLowerCase().toString(),
+          label: e,
+        ))
+            .toList();
+      }
+
+      // ✅ CASE 2: Map<String, dynamic> of objects
+      if (data is Map) {
+        return data.values.map((e) {
+          if (e is String) {
+            return V2FieldOption(value: e, label: e);
+          }
+
+          if (e is Map) {
+            return V2FieldOption.fromJson(
+              Map<String, dynamic>.from(e),
+            );
+          }
+
+          return null;
+        }).whereType<V2FieldOption>().toList();
+      }
+
+      return [];
+    } catch (e, stackTrace) {
+      print('V2 Error getting shared options ($path): $e');
+      print(stackTrace);
+      return [];
+    }
+  }
+
+
 }

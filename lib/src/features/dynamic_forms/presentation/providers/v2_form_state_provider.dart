@@ -62,7 +62,6 @@ class V2FormStateProvider extends ChangeNotifier {
 
     try {
       print('🔍 V2: Initializing form for profession: $professionId');
-
       _config = await _repository.getProfessionConfig(professionId);
 
       if (_config == null) {
@@ -70,7 +69,6 @@ class V2FormStateProvider extends ChangeNotifier {
           'Configuration not found for profession: $professionId',
         );
       }
-
       print('✅ V2: Config loaded - ${_config!.profession.displayName}');
       print('✅ V2: Available flows: ${_config!.flows.keys.toList()}');
 

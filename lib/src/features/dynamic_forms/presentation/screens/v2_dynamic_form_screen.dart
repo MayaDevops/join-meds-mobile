@@ -30,12 +30,15 @@ class V2DynamicFormScreen extends StatefulWidget {
 }
 
 class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
+  V2FormRepository get _formRepository =>
+      context.read<V2FormRepository>();
   V2FormConfig? _config;
   V2FlowConfig? _currentFlow;
   V2StepConfig? _currentStep;
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _errorMessage;
+  final Map<String, List<V2FieldOption>> _fieldOptions = {};
 
   // Navigation history for back button
   final List<String> _stepHistory = [];
@@ -103,6 +106,22 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     });
   }
 
+  bool _isFieldVisible(V2FieldConfig field) {
+    final condition = field.visibleWhen;
+    if (condition == null || condition.isEmpty) return true;
+
+    for (final entry in condition.entries) {
+      final dependentFieldId = entry.key;
+      final expectedValue = entry.value;
+      final actualValue = _formData[dependentFieldId];
+
+      if (actualValue != expectedValue) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   void _updateListEntry(int index, String fieldId, dynamic value) {
     setState(() {
       _listEntries[index][fieldId] = value;
@@ -136,6 +155,8 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
 
     final allFields = _currentStep?.getAllFields() ?? [];
     for (final field in allFields) {
+      if (!_isFieldVisible(field)) continue;
+
       if (field.required && !_hasValue(field.id)) {
         _errors[field.id] = '${field.label ?? field.id} is required';
       }
@@ -217,8 +238,12 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     final requestBody = api.buildRequestBody(_formData, userId);
 
     final apiService = context.read<FormApiService>();
+    String endpoint = api.endpoint;
+    if (endpoint == '/api/user-details/update') {
+      endpoint = '/api/user-details/update/$userId?userId=$userId';
+    }
     final result = await apiService.submitFormData(
-      endpoint: api.endpoint,
+      endpoint: endpoint,
       method: api.method,
       data: requestBody,
       pathParams: {'userId': userId},
@@ -519,26 +544,30 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     final options = field.options ?? [];
     final selectedValue = _formData[field.id];
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
       children: options.map((option) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
             children: [
-              Text(
-                option.label,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: inputBorderClr,
-                ),
-              ),
+
               Radio<String>(
                 value: option.value,
                 groupValue: selectedValue,
                 activeColor: mainBlue,
                 onChanged: (value) => _updateField(field.id, value),
+              ),
+              Expanded(
+                child: Text(
+                  option.label,
+                  overflow: TextOverflow.visible,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: inputBorderClr,
+                  ),
+                ),
               ),
             ],
           ),
@@ -552,16 +581,43 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: fields.map((field) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: _buildField(field),
-        );
-      }).toList(),
+      children: fields
+          .where(_isFieldVisible)
+          .map((field) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: _buildField(field),
+      ))
+          .toList(),
     );
   }
 
+  Future<void> _loadFieldOptions(V2FieldConfig field) async {
+    if (field.source == null) return;
+
+    // Prevent duplicate calls AND mark as loading
+    if (_fieldOptions.containsKey(field.id)) return;
+
+    // Mark loading state
+    _fieldOptions[field.id] = [];
+
+    final options = await _formRepository.getSharedOptions(field.source!);
+
+    if (!mounted) return;
+
+    setState(() {
+      _fieldOptions[field.id] = options;
+    });
+  }
+
+
+
   Widget _buildField(V2FieldConfig field) {
+    if (field.source != null) {
+      _loadFieldOptions(field);
+    }
+
+
+    final options = field.options ?? _fieldOptions[field.id] ?? [];
     switch (field.type) {
       case 'text':
         return Column(
@@ -605,7 +661,7 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
       case 'radio':
         return _buildRadioField(field);
       case 'dropdown':
-        return _buildDropdownField(field);
+        return _buildDropdownField(field,options);
       default:
         return Text('Unknown field type: ${field.type}');
     }
@@ -629,7 +685,7 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
           ),
           const SizedBox(height: 8),
         ],
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: options.map((option) {
             return Row(
@@ -664,50 +720,53 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
     );
   }
 
-  Widget _buildDropdownField(V2FieldConfig field) {
-    final options = field.options ?? [];
-    final selectedValue = _formData[field.id];
+  Widget _buildDropdownField(
+      V2FieldConfig field,
+      List<V2FieldOption> options,
+      ) {
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (field.label != null) ...[
-          Text(
-            field.label!,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: inputBorderClr,
+    if (options.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (field.label != null)
+            Text(
+              field.label!,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: inputBorderClr,
+              ),
             ),
-          ),
           const SizedBox(height: 8),
+          const Text('No Data found'),
         ],
-        DropdownButtonFormField<String>(
-          value: selectedValue,
-          decoration: InputDecoration(
-            errorText: _errors[field.id],
-            filled: true,
-            fillColor: Colors.white,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: inputBorderClr),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: mainBlue, width: 2),
-            ),
+      );
+    }
+
+    return DropdownButtonFormField<String>(
+      value: _formData[field.id],
+      isExpanded: true,
+      decoration: InputDecoration(
+        labelText: field.label,
+        hintText: field.hint,
+      ),
+      items: options.map((opt) {
+        return DropdownMenuItem<String>(
+          value: opt.value,
+          child: Text(
+            opt.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          items: options.map((option) {
-            return DropdownMenuItem(
-              value: option.value,
-              child: Text(option.label),
-            );
-          }).toList(),
-          onChanged: (value) => _updateField(field.id, value),
-        ),
-      ],
+        );
+      }).toList(),
+      onChanged: (value) {
+        _updateField(field.id, value);
+      },
     );
   }
+
 
   Widget _buildGridSelection() {
     final field = _currentStep!.field;

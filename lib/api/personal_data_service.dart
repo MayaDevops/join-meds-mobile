@@ -68,6 +68,8 @@ class PersonalDataService {
 
     debugPrint('PUT status: ${response.statusCode}');
     debugPrint('PUT response body: ${response.body}');
+    debugPrint('PUT API: $url}');
+
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final json = jsonDecode(response.body);

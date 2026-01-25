@@ -1,6 +1,9 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/job_details/data/repositories/job_details_repositories_impl.dart';
+import '../../features/job_details/domain/repository/jon_details_repository.dart';
+import '../../features/job_details/presentation/providers/job_details_providers.dart';
 import '../services/storage/local_storage_service.dart';
 import '../services/api/api_client.dart';
 import '../services/api/form_api_service.dart';
@@ -33,6 +36,7 @@ class AppProvider {
   static late IHomeRepository _homeRepository;
   static late IJobRepo _jobRepo;
   static late SharedPreferences _prefs;
+  static late IJobDetailsRepository _jobDetailsRepository;
 
   // Expose services for direct access if needed
   static LocalStorageService get storageService => _storageService;
@@ -42,6 +46,9 @@ class AppProvider {
   static V2FormRepository get v2FormRepository => _v2FormRepository;
   static IHomeRepository get homeRepository => _homeRepository;
   static IJobRepo get jobRepo => _jobRepo;
+  static SharedPreferences get prefs => _prefs;
+  static IJobDetailsRepository get jobDetailsRepository =>
+      _jobDetailsRepository;
 
   /// Initialize all services before app starts
   /// Call this in main() before runApp()
@@ -75,6 +82,7 @@ class AppProvider {
 
     // Initialize Job Repository
     _jobRepo = JobRepo(_apiClient);
+    _jobDetailsRepository = JobDetailsRepositoryImpl(_apiClient);
   }
 
   /// All providers for MultiProvider
@@ -88,6 +96,9 @@ class AppProvider {
         Provider<V2FormRepository>.value(value: _v2FormRepository),
         Provider<IHomeRepository>.value(value: _homeRepository),
         Provider<IJobRepo>.value(value: _jobRepo),
+        Provider<IJobDetailsRepository>.value(
+          value: _jobDetailsRepository,
+        ),
 
         // Theme Provider
         ChangeNotifierProvider<ThemeProvider>(
@@ -149,6 +160,11 @@ class AppProvider {
         // Notifications Provider
         ChangeNotifierProvider<NotificationsProvider>(
           create: (_) => NotificationsProvider(),
+        ),
+        ChangeNotifierProvider<JobDetailsProvider>(
+          create: (context) => JobDetailsProvider(
+            context.read<IJobDetailsRepository>(),
+          ),
         ),
       ];
 

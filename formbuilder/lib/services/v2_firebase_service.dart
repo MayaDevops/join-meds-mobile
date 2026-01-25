@@ -78,6 +78,53 @@ class V2FirebaseService {
     }
   }
 
+  /// Resolve shared dropdown data (universities, countries, etc.)
+  Future<List<Map<String, String>>> getSharedDropdownData(String rawPath) async {
+    try {
+      // Normalize path
+      final normalizedPath = rawPath.startsWith('v2/')
+          ? rawPath
+          : 'v2/$rawPath';
+
+      final snapshot = await _db.child(normalizedPath).get();
+
+      if (!snapshot.exists || snapshot.value == null) {
+        print('Shared data not found at $normalizedPath');
+        return [];
+      }
+
+      final data = snapshot.value;
+
+      // Case 1: List of strings
+      if (data is List) {
+        return data
+            .whereType<String>()
+            .map((e) => {'label': e, 'value': e})
+            .toList();
+      }
+
+      // Case 2: Nested map (your universities case)
+      if (data is Map) {
+        final map = _convertToMap(data);
+
+        // Handle: universities -> india -> [list]
+        if (map.values.first is List) {
+          final list = map.values.first as List;
+          return list
+              .whereType<String>()
+              .map((e) => {'label': e, 'value': e})
+              .toList();
+        }
+      }
+
+      return [];
+    } catch (e) {
+      print('Error loading shared dropdown data: $e');
+      return [];
+    }
+  }
+
+
   /// Save profession config
   Future<bool> saveProfessionConfig(
     String professionId,
