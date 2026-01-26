@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:untitled/src/core/router/app_router.dart';
 import '../../domain/repositories/v2_form_repository.dart';
 import '../../domain/models/v2_models.dart';
 import '../../../../shared/widgets/headers/headers.dart';
@@ -306,12 +307,14 @@ class _V2DynamicFormScreenState extends State<V2DynamicFormScreen> {
   }
 
   void _onFormCompleted() {
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Form completed successfully!'),
+        content: Text('Form completed !'),
         backgroundColor: Colors.green,
       ),
     );
+    context.go('/home');
 
     final flow = widget.flowContext ?? 'signup';
     if (flow == 'profile') {

@@ -82,7 +82,7 @@ class JobDetailsRepositoryImpl implements IJobDetailsRepository {
 
         return ApiResponse<JobDetailsDTO>(
           success: false,
-          message: apiResponse.message ?? 'Failed to load job details',
+          message: apiResponse.message,
           data: null,
         );
       }
@@ -111,4 +111,64 @@ class JobDetailsRepositoryImpl implements IJobDetailsRepository {
       );
     }
   }
+
+
+  @override
+  Future<ApiResponse<void>> applyForJob(
+      String jobId, {
+        required String userId,
+        required String orgId,
+        required String applicantName,
+        required String resumeId,
+        CancelToken? cancelToken,
+      }) async {
+    try {
+      final response = await _apiClient.post(
+        V2ApiConstants.applyToJob,
+        data: {
+          'userId': userId,
+          'orgId': orgId,
+          'jobId': jobId,
+          'applicantName': applicantName,
+          'resumeId': resumeId,
+          'status': 'active',
+        },
+        cancelToken: cancelToken,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse<void>(
+          success: true,
+          message: 'Job applied successfully',
+          data: null,
+        );
+      }
+
+      return ApiResponse<void>(
+        success: false,
+        message: 'Failed to apply for the job',
+        data: null,
+      );
+    } on DioException catch (e) {
+      return ApiResponse<void>(
+        success: false,
+        message: e.response?.data?['message'] ??
+            e.message ??
+            'Network error occurred',
+        data: null,
+        error: {
+          'dio_error': e.type.toString(),
+          'status_code': e.response?.statusCode,
+        },
+      );
+    } catch (e) {
+      return ApiResponse<void>(
+        success: false,
+        message: 'An unexpected error occurred',
+        data: null,
+        error: {'error': e.toString()},
+      );
+    }
+  }
+
 }

@@ -288,28 +288,28 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                   context.push('/job-details/$jobId');
                 }, // Disabled - no navigation on card tap
                 onApplyTap: () async {
-                  final error = await homeProvider.applyToJob(job);
-                  if (!context.mounted) return;
-
-                  if (error == null) {
-                    // Success - show success message
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Successfully applied to job!'),
-                        backgroundColor: Colors.green,
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  } else {
-                    // Error - show error message
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(error),
-                        backgroundColor: Colors.red,
-                        duration: const Duration(seconds: 3),
-                      ),
-                    );
-                  }
+                  // final error = await homeProvider.applyToJob(job);
+                  // if (!context.mounted) return;
+                  //
+                  // if (error == null) {
+                  //   // Success - show success message
+                  //   ScaffoldMessenger.of(context).showSnackBar(
+                  //     const SnackBar(
+                  //       content: Text('Successfully applied to job!'),
+                  //       backgroundColor: Colors.green,
+                  //       duration: Duration(seconds: 2),
+                  //     ),
+                  //   );
+                  // } else {
+                  //   // Error - show error message
+                  //   ScaffoldMessenger.of(context).showSnackBar(
+                  //     SnackBar(
+                  //       content: Text(error),
+                  //       backgroundColor: Colors.red,
+                  //       duration: const Duration(seconds: 3),
+                  //     ),
+                  //   );
+                  // }
                 },
               ),
             );

@@ -40,6 +40,9 @@ class PersonalDataService {
           'resumeUrl': result.resumeId,
         };
         await prefs.setString('user_profile', jsonEncode(userProfile));
+        await prefs.setString('user_name', result.fullname.toString());
+        await prefs.setString('user_id', result.userId.toString());
+        await prefs.setString('resume_id', result.resumeId.toString());
         debugPrint('PersonalDataService: Saved user profile from getPersonalData: $userProfile');
 
         return result;

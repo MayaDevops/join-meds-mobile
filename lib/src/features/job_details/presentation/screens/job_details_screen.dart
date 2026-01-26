@@ -163,8 +163,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                         children: [
                           InfoCard(
                             icon: Icons.work,
-                            title: "Job Type",
-                            value: job.natureJob ?? '-',
+                            title: "Experience needed",
+                            value: job.yearExp ?? '-',
                           ),
                           InfoCard(
                             icon: Icons.currency_rupee,
@@ -174,12 +174,12 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                           InfoCard(
                             icon: Icons.access_time,
                             title: "Working Hours",
-                            value: job.payFrom ?? '-',
+                            value: job.natureJob ?? '-',
                           ),
                           InfoCard(
                             icon: Icons.group,
-                            title: "Preferred Category",
-                            value: job.natureJob ?? 'All',
+                            title: "Pay range",
+                            value: job.payRange ?? 'All',
                           ),
                         ],
                       ),
@@ -215,21 +215,47 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         padding: const EdgeInsets.all(16),
         width: double.infinity,
         color: Colors.white,
-        child: ElevatedButton(
-          onPressed: () {
-            // integrate apply later
+        child: Consumer<JobDetailsProvider>(
+          builder: (context, provider, _) {
+            return ElevatedButton(
+              onPressed: provider.isApplying
+                  ? null
+                  : () async {
+                      final success = await provider.applyForJob();
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            success
+                                ? 'Job applied successfully'
+                                : provider.applyError ?? 'Apply failed',
+                          ),
+                        ),
+                      );
+                    },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: const Color(0xff00AEEF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: provider.isApplying
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      "Apply",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+            );
           },
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            backgroundColor: const Color(0xff00AEEF),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: const Text(
-            "Apply",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../shared/models/v2/job/job_details_dto.dart';
 import '../../domain/repository/jon_details_repository.dart';
@@ -9,6 +10,7 @@ class JobDetailsProvider extends ChangeNotifier {
   final IJobDetailsRepository _jobDetailsRepository;
 
   JobDetailsProvider(this._jobDetailsRepository);
+
 
   // Job details
   JobDetailsDTO? _jobDetails;
@@ -23,6 +25,12 @@ class JobDetailsProvider extends ChangeNotifier {
   JobDetailsDTO? get jobDetails => _jobDetails;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  // Apply job state
+  bool _isApplying = false;
+  String? _applyError;
+
+  bool get isApplying => _isApplying;
+  String? get applyError => _applyError;
 
   /// Fetch job details by job ID
   Future<void> fetchJobDetails(
@@ -51,7 +59,7 @@ class JobDetailsProvider extends ChangeNotifier {
         _lastFetchTime = DateTime.now();
         _error = null;
       } else {
-        _error = response.message ?? 'Failed to load job details';
+        _error = response.message ;
       }
     } on DioException catch (e) {
       _error = e.message ?? 'Network error occurred';
@@ -64,6 +72,55 @@ class JobDetailsProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> applyForJob({CancelToken? cancelToken}) async {
+    if (_jobDetails == null) {
+      _applyError = 'Job details not loaded';
+      notifyListeners();
+      return false;
+    }
+    final prefs = await SharedPreferences.getInstance();
+
+    final userId = prefs.getString('user_id');
+    final resumeId = prefs.getString('resume_id');
+    final applicantName = prefs.getString('user_name');
+    final orgId = _jobDetails!.orgId; // usually from job details
+
+    if (userId == null || resumeId == null || applicantName == null) {
+      _applyError = 'Required user data missing';
+      notifyListeners();
+      return false;
+    }
+
+    _isApplying = true;
+    _applyError = null;
+    notifyListeners();
+
+    try {
+      final response = await _jobDetailsRepository.applyForJob(
+        _jobDetails!.id!,
+        userId: userId,
+        orgId: orgId!,
+        applicantName: applicantName,
+        resumeId: resumeId,
+        cancelToken: cancelToken,
+      );
+
+      if (response.success) {
+        return true;
+      } else {
+        _applyError = response.message ;
+        return false;
+      }
+    } catch (e) {
+      _applyError = 'An unexpected error occurred';
+      return false;
+    } finally {
+      _isApplying = false;
+      notifyListeners();
+    }
+  }
+
 
   /// Clear job details state
   void clear() {

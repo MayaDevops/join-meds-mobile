@@ -115,7 +115,9 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
       _simulateProgress();
 
       final response = await request.send();
+      /// ------------------- response verifying
       await response.stream.bytesToString();
+      print("========= Data response $response");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (!mounted) return;
