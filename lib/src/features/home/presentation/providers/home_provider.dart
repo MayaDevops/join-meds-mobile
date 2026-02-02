@@ -26,7 +26,9 @@ class HomeProvider extends ChangeNotifier {
   // Recommended jobs
   List<JobDetailsDTO> _recommendedJobs = [];
   bool _isLoadingJobs = false;
+  bool _isLoadingSearchedJobs = false;
   String? _jobsError;
+  String? _searchedJobsError;
 
   // Promotional banner
   bool _isLoadingBanner = false;
@@ -44,11 +46,12 @@ class HomeProvider extends ChangeNotifier {
 
   // Cache
   DateTime? _lastJobsFetch;
-  DateTime? _lastBannerFetch;
 
   // Getters
   List<JobDetailsDTO> get recommendedJobs => _recommendedJobs;
   String? get searchQuery => _searchQuery;
+  bool get isSearching => _isLoadingSearchedJobs;
+  String? get searchError => _searchedJobsError;
   bool get isLoading => _isLoadingJobs || _isLoadingBanner;
   bool get isLoadingJobs => _isLoadingJobs;
   bool get isLoadingBanner => _isLoadingBanner;
@@ -123,7 +126,8 @@ class HomeProvider extends ChangeNotifier {
         // Revert on failure
         _bookmarkedJobIds.remove(jobId);
         notifyListeners();
-        debugPrint('HomeProvider: Failed to bookmark job - ${response.message}');
+        debugPrint(
+            'HomeProvider: Failed to bookmark job - ${response.message}');
       }
     } on DioException catch (e) {
       // Revert on error
@@ -151,7 +155,8 @@ class HomeProvider extends ChangeNotifier {
         // Revert on failure
         _bookmarkedJobIds.add(jobId);
         notifyListeners();
-        debugPrint('HomeProvider: Failed to remove bookmark - ${response.message}');
+        debugPrint(
+            'HomeProvider: Failed to remove bookmark - ${response.message}');
       }
     } on DioException catch (e) {
       // Revert on error
@@ -232,7 +237,7 @@ class HomeProvider extends ChangeNotifier {
         fullname: personalData.fullname,
         email: personalData.email,
         emailMobile: personalData.email ?? personalData.emailOrPhone,
-        resumeId: resumeId,  // Now using actual resumeId without .pdf extension!
+        resumeId: resumeId, // Now using actual resumeId without .pdf extension!
         status: 'pending',
       );
 
@@ -245,7 +250,7 @@ class HomeProvider extends ChangeNotifier {
         return null; // Success - no error message
       } else {
         debugPrint('HomeProvider: Failed to apply - ${response.message}');
-        return response.message ?? 'Failed to apply to job';
+        return response.message;
       }
     } on DioException catch (e) {
       debugPrint('HomeProvider: Error applying to job - $e');
@@ -291,7 +296,6 @@ class HomeProvider extends ChangeNotifier {
     _appliedJobIds.clear();
     _applyingJobs.clear();
     _lastJobsFetch = null;
-    _lastBannerFetch = null;
     clearErrors();
   }
 
@@ -302,5 +306,48 @@ class HomeProvider extends ChangeNotifier {
     _appliedJobIds.clear();
     _applyingJobs.clear();
     super.dispose();
+  }
+
+  List<JobDetailsDTO> searchedJobs = [];
+
+  Future<void> searchJobs({String? searchKey}) async {
+    final query = searchKey?.trim() ?? '';
+
+    // Avoid unnecessary calls
+    if (query.isEmpty) {
+      searchedJobs = [];
+      _searchedJobsError = null;
+      notifyListeners();
+      return;
+    }
+
+    if (_isLoadingSearchedJobs) return;
+
+    _isLoadingSearchedJobs = true;
+    _searchedJobsError = null;
+    notifyListeners();
+
+    try {
+      final response = await _homeRepository.fetchJobsByKeyword(query);
+
+      if (response.success && response.data != null) {
+        searchedJobs = response.data!;
+        _searchedJobsError = null;
+      } else {
+        searchedJobs = [];
+        _searchedJobsError = response.message;
+      }
+    } on DioException catch (e) {
+      searchedJobs = [];
+      _searchedJobsError = e.message ?? 'Search failed';
+      debugPrint('HomeProvider: Search error - $e');
+    } catch (e) {
+      searchedJobs = [];
+      _searchedJobsError = 'Unexpected error occurred';
+      debugPrint('HomeProvider: Unexpected search error - $e');
+    } finally {
+      _isLoadingSearchedJobs = false;
+      notifyListeners();
+    }
   }
 }

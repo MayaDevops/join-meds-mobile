@@ -27,7 +27,6 @@ class UserProvider extends ChangeNotifier {
     _loadUserFromStorage();
   }
 
-  // Getters
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isInitialized => _isInitialized;
@@ -41,27 +40,44 @@ class UserProvider extends ChangeNotifier {
   Map<String, dynamic>? get personalData => _personalData;
 
   bool get hasProfile => _fullName != null && _fullName!.isNotEmpty;
-  bool get hasProfileImage => _profileImageUrl != null && _profileImageUrl!.isNotEmpty;
-  bool get hasResume => _resumeUrl != null && _resumeUrl!.isNotEmpty;
+  bool get hasProfileImage =>
+      _profileImageUrl != null && _profileImageUrl!.isNotEmpty;
+  bool get hasResume =>
+      _resumeUrl != null && _resumeUrl!.isNotEmpty;
 
-  // Load user data from storage
+  /// Ensures user name & profile image are available
+  Future<void> ensureUserLoadedForHome() async {
+    debugPrint('UserProvider: ensureUserLoadedForHome called');
+
+    // Wait for constructor async init to finish
+    if (!_isInitialized) {
+      while (!_isInitialized) {
+        await Future.delayed(const Duration(milliseconds: 50));
+      }
+    }
+
+    if (_fullName == null || _profileImageUrl == null) {
+      debugPrint('UserProvider: Missing data, refreshing');
+      await refreshUserData();
+    }
+  }
+
   Future<void> _loadUserFromStorage() async {
     _userId = _storageService.getString(StorageKeys.userId);
     _personalData = _storageService.getObject(StorageKeys.userProfile);
 
-    debugPrint('UserProvider: Loading user data - userId=$_userId, hasPersonalData=${_personalData != null}');
+    debugPrint(
+      'UserProvider: Loading user data - userId=$_userId, hasPersonalData=${_personalData != null}',
+    );
 
-    // If no data in storage, fetch from API
-    if (_personalData == null && _userId != null && _userId!.isNotEmpty) {
-      debugPrint('UserProvider: No profile data in storage, fetching from API for userId: $_userId');
-
+    if (_personalData == null &&
+        _userId != null &&
+        _userId!.isNotEmpty) {
       try {
-        final apiData = await PersonalDataService.getPersonalData(_userId!);
+        final apiData =
+        await PersonalDataService.getPersonalData(_userId!);
 
         if (apiData != null) {
-          debugPrint('UserProvider: API returned data - fullname: ${apiData.fullname}, email: ${apiData.email}');
-
-          // Map API data to UserProvider format
           _personalData = {
             'fullName': apiData.fullname,
             'email': apiData.email,
@@ -71,87 +87,39 @@ class UserProvider extends ChangeNotifier {
             'resumeUrl': apiData.resumeId,
           };
 
-          // Save to storage for future use
-          await _storageService.setObject(StorageKeys.userProfile, _personalData!);
-          debugPrint('UserProvider: Successfully fetched and saved profile data from API');
-        } else {
-          debugPrint('UserProvider: API returned null for userId: $_userId');
+          await _storageService.setObject(
+              StorageKeys.userProfile, _personalData!);
         }
       } catch (e) {
-        debugPrint('UserProvider: Error fetching profile from API - $e');
-        debugPrint('UserProvider: Stack trace: ${StackTrace.current}');
-      }
-    } else {
-      if (_userId == null || _userId!.isEmpty) {
-        debugPrint('UserProvider: No userId found in storage');
-      } else {
-        debugPrint('UserProvider: Using existing profile data from storage');
+        debugPrint('UserProvider: Error fetching profile - $e');
       }
     }
 
-    // Extract fields from _personalData
     if (_personalData != null) {
       _fullName = _personalData!['fullName'] as String?;
       _email = _personalData!['email'] as String?;
       _phone = _personalData!['phone'] as String?;
       _profession = _personalData!['profession'] as String?;
-      _profileImageUrl = _personalData!['profileImageUrl'] as String?;
+      _profileImageUrl =
+      _personalData!['profileImageUrl'] as String?;
       _resumeUrl = _personalData!['resumeUrl'] as String?;
     }
 
     _isInitialized = true;
-    debugPrint('UserProvider: Initialized. hasProfile=$hasProfile, fullName=$_fullName, userId=$_userId');
     notifyListeners();
   }
 
-  // Update from auth provider
+  Future<void> refreshUserData() async {
+    debugPrint('UserProvider: Refreshing user data...');
+    await _loadUserFromStorage();
+  }
+
   void updateAuth(AuthProvider authProvider) {
     if (!authProvider.isAuthenticated) {
       _clearUserData();
     }
   }
 
-  // Refresh user data from storage
-  Future<void> refreshUserData() async {
-    debugPrint('UserProvider: Refreshing user data...');
-    await _loadUserFromStorage();
-  }
-
-  // Fetch user profile from API
-  Future<bool> fetchUserProfile() async {
-    if (_userId == null) return false;
-
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      // TODO: Implement actual API call
-      // final response = await _apiClient.get(ApiConstants.userProfile);
-      // final data = response.data;
-      //
-      // _fullName = data['fullName'];
-      // _email = data['email'];
-      // _phone = data['phone'];
-      // _profession = data['profession'];
-      // _profileImageUrl = data['profileImageUrl'];
-      // _resumeUrl = data['resumeUrl'];
-      // _personalData = data;
-      //
-      // await _saveToStorage();
-
-      _isLoading = false;
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _isLoading = false;
-      _error = e.toString();
-      notifyListeners();
-      return false;
-    }
-  }
-
-  // Update user profile
   Future<bool> updateProfile({
     String? fullName,
     String? email,
@@ -163,17 +131,6 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // TODO: Implement actual API call
-      // final response = await _apiClient.put(
-      //   ApiConstants.updateProfile,
-      //   data: {
-      //     if (fullName != null) 'fullName': fullName,
-      //     if (email != null) 'email': email,
-      //     if (phone != null) 'phone': phone,
-      //     if (profession != null) 'profession': profession,
-      //   },
-      // );
-
       if (fullName != null) _fullName = fullName;
       if (email != null) _email = email;
       if (phone != null) _phone = phone;
@@ -192,25 +149,13 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  // Update profile image
   Future<bool> updateProfileImage(String imagePath) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      // TODO: Implement actual API call with file upload
-      // final formData = FormData.fromMap({
-      //   'image': await MultipartFile.fromFile(imagePath),
-      // });
-      // final response = await _apiClient.postFormData(
-      //   ApiConstants.uploadProfilePicture,
-      //   data: formData,
-      // );
-      // _profileImageUrl = response.data['imageUrl'];
-
       await _saveToStorage();
-
       _isLoading = false;
       notifyListeners();
       return true;
@@ -222,16 +167,13 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  // Update resume
   Future<bool> updateResume(String resumePath) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      // TODO: Implement actual API call with file upload
       await _saveToStorage();
-
       _isLoading = false;
       notifyListeners();
       return true;
@@ -243,7 +185,6 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  // Save to storage
   Future<void> _saveToStorage() async {
     final userData = {
       'fullName': _fullName,
@@ -254,10 +195,10 @@ class UserProvider extends ChangeNotifier {
       'resumeUrl': _resumeUrl,
     };
 
-    await _storageService.setObject(StorageKeys.userProfile, userData);
+    await _storageService.setObject(
+        StorageKeys.userProfile, userData);
   }
 
-  // Clear user data
   void _clearUserData() {
     _userId = null;
     _fullName = null;
@@ -270,28 +211,26 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Clear error
   void clearError() {
     _error = null;
     notifyListeners();
   }
 
-  // Profile completion status
-  bool get isPersonalDataComplete {
-    return _storageService.getBoolOrDefault(StorageKeys.personalDataComplete);
-  }
+  bool get isPersonalDataComplete =>
+      _storageService.getBoolOrDefault(
+          StorageKeys.personalDataComplete);
 
-  bool get isAcademicStatusComplete {
-    return _storageService.getBoolOrDefault(StorageKeys.academicStatusComplete);
-  }
+  bool get isAcademicStatusComplete =>
+      _storageService.getBoolOrDefault(
+          StorageKeys.academicStatusComplete);
 
-  bool get isWorkExperienceComplete {
-    return _storageService.getBoolOrDefault(StorageKeys.workExperienceComplete);
-  }
+  bool get isWorkExperienceComplete =>
+      _storageService.getBoolOrDefault(
+          StorageKeys.workExperienceComplete);
 
-  bool get isProfessionSelected {
-    return _storageService.getBoolOrDefault(StorageKeys.professionSelected);
-  }
+  bool get isProfessionSelected =>
+      _storageService.getBoolOrDefault(
+          StorageKeys.professionSelected);
 
   double get profileCompletionPercentage {
     int completed = 0;
@@ -306,23 +245,27 @@ class UserProvider extends ChangeNotifier {
   }
 
   Future<void> setPersonalDataComplete() async {
-    await _storageService.setBool(StorageKeys.personalDataComplete, true);
+    await _storageService.setBool(
+        StorageKeys.personalDataComplete, true);
     notifyListeners();
   }
 
   Future<void> setAcademicStatusComplete() async {
-    await _storageService.setBool(StorageKeys.academicStatusComplete, true);
+    await _storageService.setBool(
+        StorageKeys.academicStatusComplete, true);
     notifyListeners();
   }
 
   Future<void> setWorkExperienceComplete() async {
-    await _storageService.setBool(StorageKeys.workExperienceComplete, true);
+    await _storageService.setBool(
+        StorageKeys.workExperienceComplete, true);
     notifyListeners();
   }
 
   Future<void> setProfessionSelected(String profession) async {
     _profession = profession;
-    await _storageService.setBool(StorageKeys.professionSelected, true);
+    await _storageService.setBool(
+        StorageKeys.professionSelected, true);
     await _saveToStorage();
     notifyListeners();
   }

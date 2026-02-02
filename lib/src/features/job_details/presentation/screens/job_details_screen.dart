@@ -106,7 +106,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            job.jobDesc ?? '',
+                            job.orgName ?? '',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 14,
@@ -262,4 +262,3 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   }
 }
 
-/// ================= EXPANDABLE TILE =================

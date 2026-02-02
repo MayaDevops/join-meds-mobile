@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../shared/models/v2/common/api_response.dart';
 import '../../../../shared/models/v2/job/job_details_dto.dart';
 import '../../../../shared/services/api/api_client.dart';
@@ -123,18 +124,21 @@ class JobDetailsRepositoryImpl implements IJobDetailsRepository {
         CancelToken? cancelToken,
       }) async {
     try {
+      final payload = {
+        'userId': userId,
+        'orgId': orgId,
+        'jobId': jobId,
+        'applicantName': applicantName,
+        'resumeId': resumeId,
+        'status': 'active',
+      };
       final response = await _apiClient.post(
         V2ApiConstants.applyToJob,
-        data: {
-          'userId': userId,
-          'orgId': orgId,
-          'jobId': jobId,
-          'applicantName': applicantName,
-          'resumeId': resumeId,
-          'status': 'active',
-        },
+        data: payload,
         cancelToken: cancelToken,
       );
+
+      debugPrint('JOB APPLIED : Request URL: $response');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return ApiResponse<void>(
@@ -146,7 +150,7 @@ class JobDetailsRepositoryImpl implements IJobDetailsRepository {
 
       return ApiResponse<void>(
         success: false,
-        message: 'Failed to apply for the job',
+        message: 'Failed to apply for the job $response',
         data: null,
       );
     } on DioException catch (e) {

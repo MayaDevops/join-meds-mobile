@@ -90,6 +90,80 @@ class HomeRepositoryImpl implements IHomeRepository {
   }
 
   @override
+  Future<ApiResponse<List<JobDetailsDTO>>> fetchJobsByKeyword(
+      String keyword, {
+        CancelToken? cancelToken,
+      }) async {
+    try {
+      final response = await _apiClient.get(
+        V2ApiConstants.searchJobsByHiringFor(keyword),
+        cancelToken: cancelToken,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        // API returns a direct list
+        if (response.data is List) {
+          final jobs = (response.data as List<dynamic>)
+              .map((json) =>
+              JobDetailsDTO.fromJson(json as Map<String, dynamic>))
+              .toList();
+
+          return ApiResponse<List<JobDetailsDTO>>(
+            success: true,
+            message: 'Search results fetched successfully',
+            data: jobs,
+          );
+        }
+
+        // Fallback: wrapped response
+        final apiResponse = ApiResponse<List<dynamic>>.fromJson(
+          response.data as Map<String, dynamic>,
+              (data) => data as List<dynamic>,
+        );
+
+        if (apiResponse.success && apiResponse.data != null) {
+          final jobs = (apiResponse.data as List<dynamic>)
+              .map((json) =>
+              JobDetailsDTO.fromJson(json as Map<String, dynamic>))
+              .toList();
+
+          return ApiResponse<List<JobDetailsDTO>>(
+            success: true,
+            message: apiResponse.message,
+            data: jobs,
+          );
+        }
+
+        return ApiResponse<List<JobDetailsDTO>>(
+          success: false,
+          message: apiResponse.message,
+          data: null,
+        );
+      }
+
+      return ApiResponse<List<JobDetailsDTO>>(
+        success: false,
+        message: 'Failed to fetch search results',
+        data: null,
+      );
+    } on DioException catch (e) {
+      return ApiResponse<List<JobDetailsDTO>>(
+        success: false,
+        message: e.message ?? 'Network error occurred',
+        data: null,
+        error: {'dio_error': e.type.toString()},
+      );
+    } catch (e) {
+      return ApiResponse<List<JobDetailsDTO>>(
+        success: false,
+        message: 'Unexpected error occurred',
+        data: null,
+        error: {'error': e.toString()},
+      );
+    }
+  }
+
+  @override
   Future<ApiResponse<void>> bookmarkJob(
     String jobId, {
     CancelToken? cancelToken,

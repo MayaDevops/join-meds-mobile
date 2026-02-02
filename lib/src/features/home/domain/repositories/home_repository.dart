@@ -45,4 +45,16 @@ abstract class IHomeRepository {
   Future<ApiResponse<List<JobDetailsDTO>>> fetchBookmarkedJobs({
     CancelToken? cancelToken,
   });
+
+
+  /// Fetch jobs based on search keyword
+  ///
+  /// [keyword] - Search keyword entered by the user
+  /// [cancelToken] - Token to cancel the request (optional)
+  ///
+  /// Returns [ApiResponse] containing list of [JobDetailsDTO]
+  Future<ApiResponse<List<JobDetailsDTO>>> fetchJobsByKeyword(
+      String keyword, {
+        CancelToken? cancelToken,
+      });
 }

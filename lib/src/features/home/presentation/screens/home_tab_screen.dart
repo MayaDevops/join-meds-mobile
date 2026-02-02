@@ -23,8 +23,12 @@ class _HomeTabScreenState extends State<HomeTabScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadHomeData();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 🔑 ENSURE USER DATA IS READY FOR HOME HEADER
+      await context.read<UserProvider>().ensureUserLoadedForHome();
+
+      // Existing home logic (UNCHANGED)
+      await _loadHomeData();
     });
   }
 
@@ -38,57 +42,90 @@ class _HomeTabScreenState extends State<HomeTabScreen>
     await homeProvider.refreshHome();
   }
 
+  /// ===== PROFILE IMAGE BUILDER =====
+  ImageProvider? _buildHomeProfileImage(UserProvider userProvider) {
+    final photoId = userProvider.profileImageUrl;
+
+    if (photoId != null && photoId.isNotEmpty) {
+      if (photoId.startsWith('http')) {
+        return NetworkImage(photoId);
+      }
+      return NetworkImage('https://api.joinmeds.in/api/images/$photoId');
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
 
-    // Light blue background color from the design
     final Color kLightBlueBg = const Color(0xFFD6F3FF);
 
     return Scaffold(
       backgroundColor: Colors.white,
-      // The "Complete Your Profile" bubble
       floatingActionButton: _buildCompleteProfileFab(),
       body: RefreshIndicator(
         onRefresh: _refreshData,
         color: AppColors.primaryBlue,
         child: Consumer2<HomeProvider, UserProvider>(
           builder: (context, homeProvider, userProvider, child) {
+            final imageProvider =
+            _buildHomeProfileImage(userProvider);
+
             return CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
-                // 1. Header Section (User Info + Banner)
-                // We use SliverToBoxAdapter with a specific background container
+                // ================= USER INFO HEADER =================
                 SliverToBoxAdapter(
                   child: Container(
                     color: kLightBlueBg,
                     child: Column(
                       children: [
-                        const SizedBox(height: 50), // SafeArea top padding
+                        const SizedBox(height: 50),
 
-                        // User Info Header
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          padding:
+                          const EdgeInsets.symmetric(horizontal: 20),
                           child: Row(
                             children: [
-                              // Avatar
+                              // ===== AVATAR =====
                               Container(
                                 width: 50,
                                 height: 50,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
-                                  image: const DecorationImage(
-                                    image: NetworkImage('https://i.pravatar.cc/150?img=11'), // Placeholder
+                                  border: Border.all(
+                                      color: Colors.white, width: 2),
+                                  color: Colors.grey.shade200,
+                                ),
+                                child: ClipOval(
+                                  child: imageProvider != null
+                                      ? Image(
+                                    image: imageProvider,
                                     fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) {
+                                      return const Icon(
+                                        Icons.person,
+                                        color: Colors.grey,
+                                        size: 28,
+                                      );
+                                    },
+                                  )
+                                      : const Icon(
+                                    Icons.person,
+                                    color: Colors.grey,
+                                    size: 28,
                                   ),
                                 ),
                               ),
+
                               const SizedBox(width: 12),
-                              // Name
+
+                              // ===== USER NAME =====
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
                                   children: [
                                     const Text(
                                       'Hello',
@@ -99,11 +136,12 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                                       ),
                                     ),
                                     Text(
-                                      userProvider.fullName?.isNotEmpty == true
-                                        ? userProvider.fullName!
-                                        : userProvider.isLoading
-                                          ? 'Loading...' // Show loading text while data is being fetched
-                                          : 'User', // Fallback to 'User' if name is not available
+                                      userProvider.fullName?.isNotEmpty ==
+                                          true
+                                          ? userProvider.fullName!
+                                          : userProvider.isLoading
+                                          ? 'Loading...'
+                                          : 'User',
                                       style: const TextStyle(
                                         fontSize: 18,
                                         color: Colors.black,
@@ -113,15 +151,19 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                                   ],
                                 ),
                               ),
+
                               // Notification Bell
                               Container(
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.black12),
-                                  color: Colors.transparent,
+                                  border: Border.all(
+                                      color: Colors.black12),
                                 ),
                                 child: IconButton(
-                                  icon: const Icon(Icons.notifications_outlined, color: Colors.black87),
+                                  icon: const Icon(
+                                    Icons.notifications_outlined,
+                                    color: Colors.black87,
+                                  ),
                                   onPressed: () {},
                                 ),
                               ),
@@ -141,8 +183,6 @@ class _HomeTabScreenState extends State<HomeTabScreen>
 
                         const SizedBox(height: 24),
 
-                        // Decorative bottom curve for the blue section could go here
-                        // For now, we just end the container and switch to white
                         Container(
                           height: 20,
                           decoration: const BoxDecoration(
@@ -158,17 +198,18 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                   ),
                 ),
 
-                // 2. Search Bar
-                // Sits on the white background
+                // ================= SEARCH BAR =================
                 SliverToBoxAdapter(
                   child: Container(
                     color: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: [
                         SearchBarWithFilter(
                           onTap: () => context.push('/home/search'),
-                          onFilterTap: () => context.push('/home/filters'),
+                          onFilterTap: () =>
+                              context.push('/home/filters'),
                         ),
                         const SizedBox(height: 24),
                       ],
@@ -176,10 +217,11 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                   ),
                 ),
 
-                // 3. Section Heading
+                // ================= JOB LIST =================
                 const SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    padding:
+                    EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       'Job recommendations for you',
                       style: TextStyle(
@@ -191,13 +233,13 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                   ),
                 ),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                const SliverToBoxAdapter(
+                    child: SizedBox(height: 16)),
 
-                // 4. Job List
                 _buildJobList(homeProvider),
 
-                // Bottom padding for FAB
-                const SliverToBoxAdapter(child: SizedBox(height: 80)),
+                const SliverToBoxAdapter(
+                    child: SizedBox(height: 80)),
               ],
             );
           },
@@ -228,13 +270,13 @@ class _HomeTabScreenState extends State<HomeTabScreen>
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: () {
-            // Navigate to profession selection (same as Change Profession)
             context.push('/profession-selection?flow=profile');
           },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
-              Icon(Icons.sentiment_dissatisfied, color: Colors.red, size: 28),
+              Icon(Icons.sentiment_dissatisfied,
+                  color: Colors.red, size: 28),
               SizedBox(height: 2),
               Text(
                 'Complete\nYour Profile',
@@ -254,10 +296,13 @@ class _HomeTabScreenState extends State<HomeTabScreen>
   }
 
   Widget _buildJobList(HomeProvider homeProvider) {
-    if (homeProvider.isLoadingJobs && homeProvider.recommendedJobs.isEmpty) {
-      return SliverToBoxAdapter(
+    if (homeProvider.isLoadingJobs &&
+        homeProvider.recommendedJobs.isEmpty) {
+      return const SliverToBoxAdapter(
         child: Center(
-            child: CircularProgressIndicator(color: AppColors.primaryBlue)),
+          child: CircularProgressIndicator(
+              color: AppColors.primaryBlue),
+        ),
       );
     }
 
@@ -277,40 +322,22 @@ class _HomeTabScreenState extends State<HomeTabScreen>
               (context, index) {
             final job = homeProvider.recommendedJobs[index];
             final jobId = job.id;
+
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: JobCardWidget(
                 job: job,
-                isApplied: jobId != null ? homeProvider.isJobApplied(jobId) : false,
-                isApplying: jobId != null ? homeProvider.isApplyingToJob(jobId) : false,
-                onTap: (){
+                isApplied: jobId != null
+                    ? homeProvider.isJobApplied(jobId)
+                    : false,
+                isApplying: jobId != null
+                    ? homeProvider.isApplyingToJob(jobId)
+                    : false,
+                onTap: () {
                   if (jobId == null) return;
                   context.push('/job-details/$jobId');
-                }, // Disabled - no navigation on card tap
-                onApplyTap: () async {
-                  // final error = await homeProvider.applyToJob(job);
-                  // if (!context.mounted) return;
-                  //
-                  // if (error == null) {
-                  //   // Success - show success message
-                  //   ScaffoldMessenger.of(context).showSnackBar(
-                  //     const SnackBar(
-                  //       content: Text('Successfully applied to job!'),
-                  //       backgroundColor: Colors.green,
-                  //       duration: Duration(seconds: 2),
-                  //     ),
-                  //   );
-                  // } else {
-                  //   // Error - show error message
-                  //   ScaffoldMessenger.of(context).showSnackBar(
-                  //     SnackBar(
-                  //       content: Text(error),
-                  //       backgroundColor: Colors.red,
-                  //       duration: const Duration(seconds: 3),
-                  //     ),
-                  //   );
-                  // }
                 },
+                onApplyTap: () {},
               ),
             );
           },
