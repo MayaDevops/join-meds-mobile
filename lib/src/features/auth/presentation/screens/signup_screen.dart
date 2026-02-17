@@ -26,6 +26,11 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _isOtpStage = false;
+  bool _isOtpLoading = false;
+
+  final TextEditingController _otpController = TextEditingController();
+
 
   bool _isLoading = false;
   bool _isPhoneNumber = false;
@@ -38,6 +43,84 @@ class _SignupScreenState extends State<SignupScreen> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
+
+  Future<void> _sendOtp() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (!_isPhoneNumber) {
+      _showErrorDialog("Invalid", "OTP can be sent only to mobile number");
+      return;
+    }
+
+    setState(() => _isOtpLoading = true);
+
+    try {
+      final response = await UserApiService().sendOtp(
+        mobile: _emailPhoneController.text.trim(),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("OTP send failed");
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _isOtpStage = true; // ✅ show OTP field
+      });
+
+    } catch (e) {
+      _showErrorDialog("OTP Error", "Failed to send OTP");
+    } finally {
+      if (mounted) setState(() => _isOtpLoading = false);
+    }
+  }
+
+
+  Future<void> _verifyOtp() async {
+    if (_otpController.text.trim().length != 6) {
+      _showErrorDialog("Invalid OTP", "Enter 6 digit OTP");
+      return;
+    }
+
+    setState(() => _isOtpLoading = true);
+
+    try {
+      final response = await UserApiService().verifyOtp(
+        mobile: _emailPhoneController.text.trim(),
+        otp: _otpController.text.trim(),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception("OTP verification failed");
+      }
+
+      final data = jsonDecode(response.body);
+
+      final bool success = data['success'] == true;
+      final String message =
+          data['message'] ?? 'OTP verification failed';
+
+      if (!success) {
+        // ❌ OTP invalid → STOP here
+        _showErrorDialog("OTP Failed", message);
+        return;
+      }
+
+      // ✅ OTP VERIFIED → NOW signup
+      await _onSignUp();
+
+    } catch (e) {
+      _showErrorDialog(
+        "Error",
+        "Unable to verify OTP. Please try again.",
+      );
+    } finally {
+      if (mounted) setState(() => _isOtpLoading = false);
+    }
+  }
+
+
+
 
   void _onEmailPhoneChanged(String value) {
     final trimmed = value.trim();
@@ -204,7 +287,14 @@ class _SignupScreenState extends State<SignupScreen> {
         actions: [
           TextButton(
             child: const Text("OK"),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              Navigator.of(context).pop(); // close dialog first
+
+              if (message.toLowerCase().contains('user already exists')) {
+                context.go(RouteNames.login); // or context.pop() if login is previous
+              }
+            }
+            ,
           ),
         ],
       ),
@@ -344,6 +434,21 @@ class _SignupScreenState extends State<SignupScreen> {
                                             hintText: 'Confirm Password',
                                             validator: _validateConfirmPassword,
                                           ).animate().fadeIn(duration: 400.ms, delay: 500.ms).slideY(begin: 0.3, end: 0, duration: 400.ms, delay: 500.ms),
+                                          if (_isOtpStage) ...[
+                                            const SizedBox(height: 8),
+
+                                            TextFormField(
+                                              controller: _otpController,
+                                              keyboardType: TextInputType.number,
+                                              maxLength: 6,
+                                              decoration: const InputDecoration(
+                                                hintText: 'Enter OTP',
+                                                counterText: '',
+                                              ),
+                                            ).animate()
+                                                .fadeIn(duration: 400.ms)
+                                                .slideY(begin: 0.3, end: 0),
+                                          ],
                                         ],
                                       ),
                                     ),
@@ -422,8 +527,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                     // Sign Up Button
                                     PrimaryButton(
                                       text: 'Sign Up',
-                                      onPressed: _onSignUp,
-                                      isLoading: _isLoading,
+                                      onPressed: _isOtpStage ? _verifyOtp : _sendOtp,
+                                      isLoading: _isOtpStage ? _isOtpLoading : _isLoading,
                                       elevation: 0,
                                       animationType: 'scale',
                                       textStyle: GoogleFonts.outfit(

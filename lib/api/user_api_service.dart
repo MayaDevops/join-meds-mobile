@@ -27,4 +27,39 @@ class UserApiService {
     );
     return response;
   }
+  Future<http.Response> sendOtp({
+    required String mobile,
+  }) async {
+    final response = await http.post(
+      Uri.parse('https://api.joinmeds.in/api/sms/send'),
+      headers: {
+        'Content-Type': 'application/json',
+        'accept': '*/*',
+      },
+      body: jsonEncode({
+        "mobile": mobile,
+      }),
+    );
+
+    return response;
+  }
+
+  Future<http.Response> verifyOtp({
+    required String mobile,
+    required String otp,
+  }) async {
+    final response = await http.post(
+      Uri.parse('https://api.joinmeds.in/api/sms/verify'),
+      headers: {
+        'Content-Type': 'application/json',
+        'accept': '*/*',
+      },
+      body: jsonEncode({
+        "mobile": mobile,
+        "otp": otp,
+      }),
+    );
+
+    return response;
+  }
 }
