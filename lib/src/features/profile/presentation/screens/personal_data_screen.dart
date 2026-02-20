@@ -32,6 +32,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _aadhaarNumController = TextEditingController();
+  final TextEditingController _passportNumController = TextEditingController();
 
   String? userId;
   XFile? _imageFile;
@@ -69,6 +70,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
           _emailController.text = data.email ?? '';
           _addressController.text = data.address ?? '';
           _aadhaarNumController.text = data.aadhaarNo ?? '';
+          _passportNumController.text = data.passportNumber ?? '';
           _photoId = data.photoId;
         });
       }
@@ -180,6 +182,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
         email: _emailController.text.trim(),
         address: _addressController.text.trim(),
         aadhaarNo: _aadhaarNumController.text.trim(),
+        passportNumber: _passportNumController.text.trim(),
         userId: userId!,
         photoId: _photoId, // Include existing photoId if available
       );
@@ -220,6 +223,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     _emailController.dispose();
     _addressController.dispose();
     _aadhaarNumController.dispose();
+    _passportNumController.dispose();
     super.dispose();
   }
 
@@ -402,6 +406,11 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                     CustomTextField(
                       controller: _aadhaarNumController,
                       hintText: 'Aadhaar Number (Optional)',
+                      keyboardType: TextInputType.number,
+                    ),const SizedBox(height: 16),
+                    CustomTextField(
+                      controller: _aadhaarNumController,
+                      hintText: 'Passport Number (Optional)',
                       keyboardType: TextInputType.number,
                     ),
 

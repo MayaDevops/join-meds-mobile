@@ -8,6 +8,8 @@ import '../../../../shared/providers/auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../../api/personal_data_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 /// Profile details tab screen - Shows user profile with sectioned layout
 class ProfileDetailsTabScreen extends StatefulWidget {
@@ -448,45 +450,64 @@ class _ProfileDetailsTabScreenState extends State<ProfileDetailsTabScreen>
       title: 'Settings & Support',
       icon: Icons.settings_outlined,
       children: [
-        _buildMenuItem(
-          icon: Icons.privacy_tip_outlined,
-          title: 'Privacy Policy',
+        ListTile(
+          leading: const Icon(Icons.privacy_tip_outlined),
+          title: const Text('Privacy Policy'),
           onTap: () {
             context.push(RouteNames.userPrivacyPolicy);
           },
         ),
         const Divider(height: 1, indent: 56),
-        _buildMenuItem(
-          icon: Icons.description_outlined,
-          title: 'Terms & Conditions',
+
+        ListTile(
+          leading: const Icon(Icons.description_outlined),
+          title: const Text('Terms & Conditions'),
           onTap: () {
             context.push(RouteNames.userTermsAndConditions);
           },
         ),
         const Divider(height: 1, indent: 56),
-        _buildMenuItem(
-          icon: Icons.help_outline,
-          title: 'Help & Support',
-          onTap: () {
-            // TODO: Navigate to help & support
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Help & Support coming soon')),
-            );
-          },
+
+        /// 🔹 Help & Support (Expandable)
+        ExpansionTile(
+          leading: const Icon(Icons.help_outline),
+          title: const Text('Help & Support'),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+          childrenPadding: const EdgeInsets.only(left: 56),
+          children: [
+            ListTile(
+              leading: const Icon(Icons.email_outlined),
+              title: const Text('Email Support'),
+              onTap: _launchEmailSupport,
+            ),
+            ListTile(
+              leading: const Icon(Icons.call_outlined),
+              title: const Text('Call Support'),
+              onTap: _launchCallSupport,
+            ),
+          ],
         ),
+
         const Divider(height: 1, indent: 56),
-        _buildMenuItem(
-          icon: Icons.bookmark_outline,
-          title: 'Saved Jobs',
+
+        ListTile(
+          leading: const Icon(Icons.bookmark_outline),
+          title: const Text('Saved Jobs'),
           onTap: () {
             context.push(RouteNames.savedJobs);
           },
         ),
         const Divider(height: 1, indent: 56),
-        _buildMenuItem(
-          icon: Icons.logout,
-          title: 'Logout',
-          textColor: AppColors.error,
+
+        ListTile(
+          leading: const Icon(
+            Icons.logout,
+            color: AppColors.error,
+          ),
+          title: const Text(
+            'Logout',
+            style: TextStyle(color: AppColors.error),
+          ),
           onTap: () {
             _showLogoutDialog(context);
           },
@@ -494,6 +515,7 @@ class _ProfileDetailsTabScreenState extends State<ProfileDetailsTabScreen>
       ],
     );
   }
+
 
   // ========== HELPER WIDGETS ==========
 
@@ -717,5 +739,31 @@ class _ProfileDetailsTabScreenState extends State<ProfileDetailsTabScreen>
         ],
       ),
     );
+  }
+  Future<void> _launchEmailSupport() async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: 'joinmedsofficial@gmail.com',
+      queryParameters: {
+        'subject': 'Support Request',
+      },
+    );
+
+    await launchUrl(
+      emailUri,
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
+
+  Future<void> _launchCallSupport() async {
+    final Uri phoneUri = Uri(
+      scheme: 'tel',
+      path: '8086664415',
+    );
+
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    }
   }
 }

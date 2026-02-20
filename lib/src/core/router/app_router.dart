@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:untitled/src/features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
 import '../../features/job_details/presentation/screens/job_details_screen.dart';
@@ -533,6 +534,13 @@ class AppRouter {
           pageBuilder: (context, state) => RouteTransitions.slideFromRight(
             state: state,
             child: const SignupScreen(),
+          ),
+        ),GoRoute(
+          path: '/forgot_password',
+          name: 'forgot_password',
+          pageBuilder: (context, state) => RouteTransitions.slideFromRight(
+            state: state,
+            child: const ForgotPasswordScreen(),
           ),
         ),
         GoRoute(

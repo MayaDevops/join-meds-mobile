@@ -343,6 +343,34 @@ class _LoginScreenState extends State<LoginScreen> {
                                       padding: const EdgeInsets.only(bottom : 32),
                                       child: GestureDetector(
                                         onTap: () {
+                                          context.push('/forgot_password');
+                                        },
+                                        child: RichText(
+                                          text: TextSpan(
+                                            text: "Having trouble signing in?",
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFF666666),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                            children: [
+                                              TextSpan(
+                                                text: 'Forgot Password',
+                                                style: GoogleFonts.outfit(
+                                                  color: const Color(0xFF00A4E1),
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ).animate().fadeIn(delay: 800.ms, duration: 400.ms),
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom : 32),
+                                      child: GestureDetector(
+                                        onTap: () {
                                           context.push('/sign_up');
                                         },
                                         child: RichText(

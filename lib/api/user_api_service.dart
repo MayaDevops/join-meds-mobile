@@ -62,4 +62,27 @@ class UserApiService {
 
     return response;
   }
+
+
+  Future<http.Response> resetPassword({
+    required String mobile,
+    required String confirmPassword,
+    required String newPassword,
+  }) async {
+    final response = await http.post(
+      Uri.parse('https://api.joinmeds.in/api/user/reset-password'),
+      headers: {
+        'Content-Type': 'application/json',
+        'accept': '*/*',
+      },
+      body: jsonEncode({
+        "mobileNumber": mobile,
+        "newPassword": newPassword,
+        "confirmPassword": confirmPassword,
+      }),
+    );
+
+    return response;
+  }
+
 }

@@ -365,6 +365,7 @@ class AuthProvider extends ChangeNotifier {
     await _storageService.remove(StorageKeys.userId);
     await _storageService.remove(StorageKeys.userData);
     await _storageService.remove(StorageKeys.userType);
+    await _storageService.clear();
 
     _apiClient.clearAuthToken();
 
