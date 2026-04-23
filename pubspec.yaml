@@ -1,0 +1,91 @@
+name: untitled
+description: "A new Flutter project."
+
+publish_to: 'none'
+version: 1.0.8+24
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  # Existing dependencies
+  shared_preferences: ^2.2.2
+  fluttertoast: ^8.2.2
+  lottie: ^3.1.0
+  dio: ^5.4.0
+  http: ^1.2.0
+  http_parser: ^4.0.2
+  cupertino_icons: ^1.0.8
+  intl: ^0.20.2
+  intl_phone_field: ^3.2.0
+  image_picker: ^1.1.2
+  file_picker: ^10.0.0
+  device_info_plus: ^11.2.0
+
+  # V2 dependencies
+  provider: ^6.1.2
+  go_router: ^14.6.2
+  flutter_animate: ^4.5.0
+  google_fonts: ^6.2.1
+  flutter_secure_storage: ^9.2.2
+  flutter_svg: ^2.2.3
+  firebase_core: ^4.3.0
+  firebase_database: ^12.1.1
+  equatable: ^2.0.5
+  cached_network_image: ^3.3.1
+  timeago: ^3.6.1
+  url_launcher: ^6.3.2
+
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/logo/icon.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/logo/icon.png"
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    # Existing v1 assets
+    - images/
+    - assets/animations/
+    - assets/logo/
+    # V2 assets
+    - assets/v2/splash/
+    - assets/v2/
+    - assets/v2/auth/
+    - assets/v2/images/
+    - assets/v2/images/logo/
+    - assets/v2/images/icons/
+    - assets/v2/images/illustrations/
+    - assets/v2/animations/
+    # Dynamic forms configs (py/md/json tool files excluded intentionally)
+    - assets/configs/anesthesia_technician_config.json
+    - assets/configs/audiologist_config.json
+    - assets/configs/clinical_psychologist_config.json
+    - assets/configs/dentist_config.json
+    - assets/configs/dietitian_config.json
+    - assets/configs/doctor_config.json
+    - assets/configs/feature_flags_firebase.json
+    - assets/configs/hospital_administrator_config.json
+    - assets/configs/lab_technician_config.json
+    - assets/configs/nurse_config.json
+    - assets/configs/pharmacist_sample.json
+    - assets/configs/physiotherapy_config.json
+    - assets/configs/social_worker_config.json
+    - assets/configs/universities_sample.json

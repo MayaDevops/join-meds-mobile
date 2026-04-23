@@ -1,0 +1,400 @@
+{
+  "@@locale": "en",
+  "@@last_modified": "2025-01-01T00:00:00.000Z",
+
+  "appName": "JoinMeds",
+  "@appName": {
+    "description": "The name of the application"
+  },
+
+  "appTagline": "Your Healthcare Career Partner",
+  "@appTagline": {
+    "description": "App tagline shown on splash screen"
+  },
+
+  "welcomeBack": "Welcome Back!",
+  "@welcomeBack": {
+    "description": "Greeting on login screen"
+  },
+
+  "signInToContinue": "Sign in to continue your journey",
+  "@signInToContinue": {
+    "description": "Subtitle on login screen"
+  },
+
+  "email": "Email",
+  "@email": {
+    "description": "Email field label"
+  },
+
+  "enterYourEmail": "Enter your email",
+  "@enterYourEmail": {
+    "description": "Email field hint"
+  },
+
+  "password": "Password",
+  "@password": {
+    "description": "Password field label"
+  },
+
+  "enterYourPassword": "Enter your password",
+  "@enterYourPassword": {
+    "description": "Password field hint"
+  },
+
+  "confirmPassword": "Confirm Password",
+  "@confirmPassword": {
+    "description": "Confirm password field label"
+  },
+
+  "reenterYourPassword": "Re-enter your password",
+  "@reenterYourPassword": {
+    "description": "Confirm password field hint"
+  },
+
+  "forgotPassword": "Forgot Password?",
+  "@forgotPassword": {
+    "description": "Forgot password link text"
+  },
+
+  "signIn": "Sign In",
+  "@signIn": {
+    "description": "Sign in button text"
+  },
+
+  "signUp": "Sign Up",
+  "@signUp": {
+    "description": "Sign up button/link text"
+  },
+
+  "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "Create account button text"
+  },
+
+  "or": "OR",
+  "@or": {
+    "description": "Divider text between login options"
+  },
+
+  "dontHaveAccount": "Don't have an account?",
+  "@dontHaveAccount": {
+    "description": "Text before sign up link"
+  },
+
+  "alreadyHaveAccount": "Already have an account?",
+  "@alreadyHaveAccount": {
+    "description": "Text before sign in link"
+  },
+
+  "loginAsOrganisation": "Login as Organisation",
+  "@loginAsOrganisation": {
+    "description": "Organisation login button text"
+  },
+
+  "joinJoinMeds": "Join JoinMeds",
+  "@joinJoinMeds": {
+    "description": "Sign up page title"
+  },
+
+  "createAccountSubtitle": "Create an account to start your healthcare career journey",
+  "@createAccountSubtitle": {
+    "description": "Sign up page subtitle"
+  },
+
+  "fullName": "Full Name",
+  "@fullName": {
+    "description": "Full name field label"
+  },
+
+  "enterYourFullName": "Enter your full name",
+  "@enterYourFullName": {
+    "description": "Full name field hint"
+  },
+
+  "phoneNumber": "Phone Number",
+  "@phoneNumber": {
+    "description": "Phone number field label"
+  },
+
+  "enterYourPhoneNumber": "Enter your phone number",
+  "@enterYourPhoneNumber": {
+    "description": "Phone number field hint"
+  },
+
+  "agreeToTerms": "I agree to the ",
+  "@agreeToTerms": {
+    "description": "Terms agreement prefix"
+  },
+
+  "termsAndConditions": "Terms and Conditions",
+  "@termsAndConditions": {
+    "description": "Terms and conditions link text"
+  },
+
+  "and": " and ",
+  "@and": {
+    "description": "Conjunction between terms and privacy"
+  },
+
+  "privacyPolicy": "Privacy Policy",
+  "@privacyPolicy": {
+    "description": "Privacy policy link text"
+  },
+
+  "hello": "Hello, {name}!",
+  "@hello": {
+    "description": "Greeting with user name",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+
+  "findYourDreamJob": "Find your dream healthcare job",
+  "@findYourDreamJob": {
+    "description": "Home page subtitle"
+  },
+
+  "searchForJobs": "Search for jobs...",
+  "@searchForJobs": {
+    "description": "Search field placeholder"
+  },
+
+  "categories": "Categories",
+  "@categories": {
+    "description": "Categories section title"
+  },
+
+  "recentJobs": "Recent Jobs",
+  "@recentJobs": {
+    "description": "Recent jobs section title"
+  },
+
+  "viewAll": "View All",
+  "@viewAll": {
+    "description": "View all link text"
+  },
+
+  "doctor": "Doctor",
+  "@doctor": {
+    "description": "Doctor profession"
+  },
+
+  "nurse": "Nurse",
+  "@nurse": {
+    "description": "Nurse profession"
+  },
+
+  "pharmacist": "Pharmacist",
+  "@pharmacist": {
+    "description": "Pharmacist profession"
+  },
+
+  "therapist": "Therapist",
+  "@therapist": {
+    "description": "Therapist profession"
+  },
+
+  "labTech": "Lab Tech",
+  "@labTech": {
+    "description": "Lab Technician profession"
+  },
+
+  "onboardingTitle1": "Find Your Dream Job",
+  "@onboardingTitle1": {
+    "description": "First onboarding page title"
+  },
+
+  "onboardingDesc1": "Discover thousands of healthcare job opportunities tailored to your profession and preferences.",
+  "@onboardingDesc1": {
+    "description": "First onboarding page description"
+  },
+
+  "onboardingTitle2": "Connect with Employers",
+  "@onboardingTitle2": {
+    "description": "Second onboarding page title"
+  },
+
+  "onboardingDesc2": "Get noticed by top hospitals, clinics, and healthcare organizations looking for talented professionals like you.",
+  "@onboardingDesc2": {
+    "description": "Second onboarding page description"
+  },
+
+  "onboardingTitle3": "Launch Your Career",
+  "@onboardingTitle3": {
+    "description": "Third onboarding page title"
+  },
+
+  "onboardingDesc3": "Take the next step in your healthcare career with JoinMeds. Your journey to success starts here.",
+  "@onboardingDesc3": {
+    "description": "Third onboarding page description"
+  },
+
+  "skip": "Skip",
+  "@skip": {
+    "description": "Skip button text"
+  },
+
+  "next": "Next",
+  "@next": {
+    "description": "Next button text"
+  },
+
+  "back": "Back",
+  "@back": {
+    "description": "Back button text"
+  },
+
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Get started button text"
+  },
+
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings page title"
+  },
+
+  "jobDetails": "Job Details",
+  "@jobDetails": {
+    "description": "Job details page title"
+  },
+
+  "home": "Home",
+  "@home": {
+    "description": "Home navigation label"
+  },
+
+  "jobs": "Jobs",
+  "@jobs": {
+    "description": "Jobs navigation label"
+  },
+
+  "profile": "Profile",
+  "@profile": {
+    "description": "Profile navigation label"
+  },
+
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications page title"
+  },
+
+  "errorOccurred": "Oops! Something went wrong",
+  "@errorOccurred": {
+    "description": "Generic error message"
+  },
+
+  "goHome": "Go Home",
+  "@goHome": {
+    "description": "Go home button text"
+  },
+
+  "pleaseEnterEmail": "Please enter your email",
+  "@pleaseEnterEmail": {
+    "description": "Email validation error - empty"
+  },
+
+  "pleaseEnterValidEmail": "Please enter a valid email",
+  "@pleaseEnterValidEmail": {
+    "description": "Email validation error - invalid format"
+  },
+
+  "pleaseEnterPassword": "Please enter your password",
+  "@pleaseEnterPassword": {
+    "description": "Password validation error - empty"
+  },
+
+  "passwordMinLength": "Password must be at least 6 characters",
+  "@passwordMinLength": {
+    "description": "Password validation error - too short"
+  },
+
+  "pleaseConfirmPassword": "Please confirm your password",
+  "@pleaseConfirmPassword": {
+    "description": "Confirm password validation error - empty"
+  },
+
+  "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": {
+    "description": "Confirm password validation error - mismatch"
+  },
+
+  "pleaseEnterName": "Please enter your name",
+  "@pleaseEnterName": {
+    "description": "Name validation error - empty"
+  },
+
+  "nameMinLength": "Name must be at least 2 characters",
+  "@nameMinLength": {
+    "description": "Name validation error - too short"
+  },
+
+  "pleaseEnterPhoneNumber": "Please enter your phone number",
+  "@pleaseEnterPhoneNumber": {
+    "description": "Phone validation error - empty"
+  },
+
+  "pleaseEnterValidPhoneNumber": "Please enter a valid phone number",
+  "@pleaseEnterValidPhoneNumber": {
+    "description": "Phone validation error - invalid"
+  },
+
+  "pleaseAgreeToTerms": "Please agree to the Terms and Conditions",
+  "@pleaseAgreeToTerms": {
+    "description": "Terms agreement validation error"
+  },
+
+  "noInternetConnection": "No internet connection. Please check your network.",
+  "@noInternetConnection": {
+    "description": "Network error message"
+  },
+
+  "connectionTimedOut": "Connection timed out. Please try again.",
+  "@connectionTimedOut": {
+    "description": "Timeout error message"
+  },
+
+  "somethingWentWrong": "Something went wrong. Please try again.",
+  "@somethingWentWrong": {
+    "description": "Generic error message"
+  },
+
+  "logout": "Logout",
+  "@logout": {
+    "description": "Logout button text"
+  },
+
+  "darkMode": "Dark Mode",
+  "@darkMode": {
+    "description": "Dark mode toggle label"
+  },
+
+  "lightMode": "Light Mode",
+  "@lightMode": {
+    "description": "Light mode toggle label"
+  },
+
+  "language": "Language",
+  "@language": {
+    "description": "Language setting label"
+  },
+
+  "english": "English",
+  "@english": {
+    "description": "English language name"
+  },
+
+  "hindi": "Hindi",
+  "@hindi": {
+    "description": "Hindi language name"
+  },
+
+  "arabic": "Arabic",
+  "@arabic": {
+    "description": "Arabic language name"
+  }
+}

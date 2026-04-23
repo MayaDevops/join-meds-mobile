@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "660048172699",
+    "firebase_url": "https://join-meds-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "join-meds",
+    "storage_bucket": "join-meds.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:660048172699:android:9275edfb319758b522183e",
+        "android_client_info": {
+          "package_name": "com.joinmeds.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTD906JaSBE8tQwzXIMBigSO9OsPlaNRY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

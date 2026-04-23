@@ -1,0 +1,373 @@
+{
+  "version": "1.0.0",
+  "profession": {
+    "id": "doctor",
+    "displayName": "Doctor",
+    "courseTypes": [
+      "mbbs"
+    ],
+    "icon": "medical_services",
+    "description": "Medical professional"
+  },
+  "flows": {
+    "mbbs": {
+      "flowId": "mbbs",
+      "displayName": "MBBS",
+      "steps": [
+        {
+          "stepId": "academic_status",
+          "stepType": "cardSelection",
+          "title": "Academic Status",
+          "subtitle": "Please select your academic status 🎓",
+          "showProgress": true,
+          "validateBeforeNavigate": true,
+          "fields": [
+            {
+              "fieldId": "academicStatus",
+              "fieldType": "cardSelection",
+              "label": "Select Your Status",
+              "required": true,
+              "options": [
+                {
+                  "value": "ongoing",
+                  "label": "Degree Ongoing",
+                  "icon": "menu_book"
+                },
+                {
+                  "value": "completed",
+                  "label": "Degree Completed",
+                  "icon": "school"
+                }
+              ]
+            }
+          ],
+          "navigation": {
+            "type": "conditional",
+            "rules": [
+              {
+                "condition": {
+                  "field": "academicStatus",
+                  "operator": "equals",
+                  "value": "ongoing"
+                },
+                "actions": [
+                  {
+                    "type": "navigate",
+                    "nextStep": "degree_ongoing"
+                  }
+                ]
+              },
+              {
+                "condition": {
+                  "field": "academicStatus",
+                  "operator": "equals",
+                  "value": "completed"
+                },
+                "actions": [
+                  {
+                    "type": "showModal",
+                    "modalConfig": {
+                      "title": "Are you a Post Graduate?",
+                      "fieldId": "postGradStatus",
+                      "options": [
+                        {
+                          "value": "pg_holder",
+                          "label": "Yes (PG-Holder)"
+                        },
+                        {
+                          "value": "not_pg_holder",
+                          "label": "No (Not-PG-Holder)"
+                        }
+                      ],
+                      "dismissible": true
+                    }
+                  },
+                  {
+                    "type": "conditionalNavigate",
+                    "condition": {
+                      "field": "postGradStatus",
+                      "operator": "equals",
+                      "value": "pg_holder"
+                    },
+                    "nextStep": "pg_holder_speciality"
+                  },
+                  {
+                    "type": "conditionalNavigate",
+                    "condition": {
+                      "field": "postGradStatus",
+                      "operator": "equals",
+                      "value": "not_pg_holder"
+                    },
+                    "nextStep": "work_experience"
+                  }
+                ]
+              }
+            ],
+            "defaultNextStep": "degree_ongoing"
+          },
+          "apiConfig": {
+            "endpoint": "/api/user-details/update/{userId}",
+            "method": "PUT",
+            "fieldMapping": {
+              "academicStatus": "academic_status",
+              "postGradStatus": "post_grad_status"
+            },
+            "successMessage": "Academic status saved",
+            "showLoading": true
+          }
+        },
+        {
+          "stepId": "degree_ongoing",
+          "stepType": "form",
+          "title": "MBBS",
+          "subtitle": "Choose your current academic year and university",
+          "showProgress": true,
+          "validateBeforeNavigate": true,
+          "fields": [
+            {
+              "fieldId": "academicYear",
+              "fieldType": "radio",
+              "label": "Choose Your Current Year",
+              "required": true,
+              "layout": "wrap",
+              "options": [
+                {
+                  "value": "1st Year",
+                  "label": "1st Year"
+                },
+                {
+                  "value": "2nd Year",
+                  "label": "2nd Year"
+                },
+                {
+                  "value": "3rd Year",
+                  "label": "3rd Year"
+                },
+                {
+                  "value": "4th Year",
+                  "label": "4th Year"
+                },
+                {
+                  "value": "Internship",
+                  "label": "Internship"
+                }
+              ],
+              "apiMapping": "current_year",
+              "validation": {
+                "required": true,
+                "requiredMessage": "Please select your current year"
+              }
+            },
+            {
+              "fieldId": "university",
+              "fieldType": "dropdown",
+              "label": "University of Education",
+              "hint": "Select University of Education",
+              "required": true,
+              "searchable": true,
+              "dataSource": {
+                "type": "firebase",
+                "path": "universities/india"
+              },
+              "apiMapping": "university",
+              "validation": {
+                "required": true,
+                "requiredMessage": "Please select your university"
+              }
+            }
+          ],
+          "apiConfig": {
+            "endpoint": "/api/user-details/update/{userId}",
+            "method": "PUT",
+            "successMessage": "Academic details saved",
+            "showLoading": true
+          }
+        },
+        {
+          "stepId": "pg_holder_speciality",
+          "stepType": "form",
+          "title": "Specialization",
+          "subtitle": "Select your specialization",
+          "showProgress": true,
+          "validateBeforeNavigate": true,
+          "fields": [
+            {
+              "fieldId": "specialization",
+              "fieldType": "grid",
+              "label": "Choose Your Specialization",
+              "required": true,
+              "gridCount": 2,
+              "allowCustomInput": true,
+              "customInputHint": "Enter your specialization",
+              "options": [
+                {
+                  "value": "General Medicine",
+                  "label": "General Medicine"
+                },
+                {
+                  "value": "General Surgery",
+                  "label": "General Surgery"
+                },
+                {
+                  "value": "Pediatrics",
+                  "label": "Pediatrics"
+                },
+                {
+                  "value": "Obstetrics & Gynecology",
+                  "label": "Obstetrics & Gynecology"
+                },
+                {
+                  "value": "Orthopedics",
+                  "label": "Orthopedics"
+                },
+                {
+                  "value": "Anesthesiology",
+                  "label": "Anesthesiology"
+                },
+                {
+                  "value": "Radiology",
+                  "label": "Radiology"
+                },
+                {
+                  "value": "Cardiology",
+                  "label": "Cardiology"
+                },
+                {
+                  "value": "Dermatology",
+                  "label": "Dermatology"
+                },
+                {
+                  "value": "ENT",
+                  "label": "ENT"
+                },
+                {
+                  "value": "Ophthalmology",
+                  "label": "Ophthalmology"
+                },
+                {
+                  "value": "Psychiatry",
+                  "label": "Psychiatry"
+                },
+                {
+                  "value": "Neurology",
+                  "label": "Neurology"
+                },
+                {
+                  "value": "Nephrology",
+                  "label": "Nephrology"
+                },
+                {
+                  "value": "Gastroenterology",
+                  "label": "Gastroenterology"
+                },
+                {
+                  "value": "Pulmonology",
+                  "label": "Pulmonology"
+                }
+              ],
+              "apiMapping": "specialization",
+              "validation": {
+                "required": true,
+                "requiredMessage": "Please select your specialization"
+              }
+            }
+          ],
+          "navigation": {
+            "type": "direct",
+            "nextStep": "work_experience"
+          },
+          "apiConfig": {
+            "endpoint": "/api/user-details/update/{userId}",
+            "method": "PUT",
+            "successMessage": "Specialization saved",
+            "showLoading": true
+          }
+        },
+        {
+          "stepId": "work_experience",
+          "stepType": "form",
+          "title": "Work Experience",
+          "subtitle": "Please provide your work experience details",
+          "showProgress": true,
+          "skippable": true,
+          "skipMessage": "Work experience skipped",
+          "fields": [
+            {
+              "fieldId": "experiences",
+              "fieldType": "dynamicList",
+              "label": "Work Experience",
+              "minEntries": 1,
+              "maxEntries": 5,
+              "addButtonText": "Add More Experience",
+              "template": [
+                {
+                  "fieldId": "experienceType",
+                  "fieldType": "radio",
+                  "label": "Type of Experience",
+                  "required": true,
+                  "layout": "row",
+                  "options": [
+                    {
+                      "value": "Clinical",
+                      "label": "Clinical"
+                    },
+                    {
+                      "value": "Non Clinical",
+                      "label": "Non Clinical"
+                    }
+                  ]
+                },
+                {
+                  "fieldId": "organisation",
+                  "fieldType": "text",
+                  "label": "Organisation / Hospital",
+                  "hint": "Enter organisation name",
+                  "required": true,
+                  "keyboardType": "text",
+                  "validation": {
+                    "required": true,
+                    "minLength": 3,
+                    "pattern": "^[a-zA-Z\\s]+$",
+                    "requiredMessage": "Organisation name is required",
+                    "patternMessage": "Enter a valid name using letters and spaces only"
+                  }
+                },
+                {
+                  "fieldId": "fromDate",
+                  "fieldType": "date",
+                  "label": "From",
+                  "required": true,
+                  "validation": {
+                    "required": true,
+                    "minDate": "1965-01-01",
+                    "maxDate": "today"
+                  }
+                },
+                {
+                  "fieldId": "toDate",
+                  "fieldType": "date",
+                  "label": "To",
+                  "required": true,
+                  "validation": {
+                    "required": true,
+                    "minDate": "1965-01-01",
+                    "maxDate": "today"
+                  }
+                }
+              ]
+            }
+          ],
+          "apiConfig": {
+            "endpoint": "/api/work-experience/save",
+            "method": "POST",
+            "successMessage": "Work experience saved",
+            "showLoading": true
+          }
+        }
+      ]
+    }
+  },
+  "sharedDataPaths": {
+    "universities": "universities/india"
+  }
+}

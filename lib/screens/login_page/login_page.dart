@@ -1,0 +1,305 @@
+import 'package:flutter/material.dart';
+import 'package:untitled/src/core/router/navigation_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dio/dio.dart';
+
+import '../../constants/constant.dart';
+import '../../constants/images.dart';
+import '../../widgets/main_button.dart';
+import '../../widgets/text_form_widget2.dart';
+import '../../api/api_service.dart';
+import '../../api/personal_data_service.dart';
+import '../../models/login_request.dart';
+import '../../models/personal_data_model.dart';
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  bool _showPassword = true;
+  bool _isLoading = false;
+
+  final _loginKey = GlobalKey<FormState>();
+  final _emailPhoneController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailPhoneController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // ---------- Validators ----------
+  String? _validateEmailOrPhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Required Email/Phone Number';
+    }
+    final regex = RegExp(
+      r"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)|(^\+?\d{10,15}$)",
+    );
+    return regex.hasMatch(value.trim())
+        ? null
+        : 'Enter valid Email/Phone Number';
+  }
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) return 'Password is required';
+    if (value.length < 8) return 'Password must be at least 8 characters long';
+    return null;
+  }
+
+  // ---------- Reusable Text Field ----------
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    required String hintText,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 5),
+          TextFormWidget2(
+            controller: controller,
+            validator: validator,
+            hintText: hintText,
+            keyboardType: keyboardType,
+            obscureText: obscureText,
+            suffixIcon: suffixIcon,
+            readOnly: false,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------- Handle Login ----------
+  Future<void> _handleLogin() async {
+    if (!_loginKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    final loginRequest = LoginRequest(
+      username: _emailPhoneController.text.trim(),
+      password: _passwordController.text.trim(),
+    );
+
+    try {
+      final response = await ApiService().login(loginRequest);
+
+      if (response.statusCode == 200 && response.data != null) {
+        final responseBody = response.data;
+        final userId = responseBody['id']; // adjust based on backend
+
+        if (userId != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', userId.toString());
+          debugPrint('✅ userId stored: $userId');
+
+          // Fetch user details to check profile completion
+          await _checkProfileAndNavigate(userId.toString());
+        } else {
+          _showSnackBar('Login successful but userId not found.');
+        }
+      } else {
+        _showSnackBar('Login failed. Please check your credentials.');
+      }
+    } on DioException catch (dioError) {
+      final statusCode = dioError.response?.statusCode ?? 0;
+
+      if (statusCode == 401 || statusCode == 400) {
+        _showSnackBar("Invalid email or password. Please try again.");
+      } else if (statusCode >= 500) {
+        _showSnackBar("Server is unavailable. Please try later.");
+      } else if (dioError.type == DioExceptionType.connectionTimeout ||
+          dioError.type == DioExceptionType.receiveTimeout) {
+        _showSnackBar("Connection timeout. Please try again.");
+      } else {
+        _showSnackBar("Network error. Please check your connection.");
+      }
+
+      debugPrint("❌ Dio error [$statusCode]: ${dioError.response?.data}");
+    } catch (e, stack) {
+      debugPrint('❗ Unexpected error: $e');
+      debugPrint('StackTrace: $stack');
+      _showSnackBar("Unexpected error. Please try again.");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  // ---------- Profile Completion Check ----------
+  Future<void> _checkProfileAndNavigate(String userId) async {
+    try {
+      // Fetch user details
+      final userDetails = await PersonalDataService.getPersonalData(userId);
+
+      if (!mounted) return;
+
+      if (userDetails == null) {
+        // API call failed or user details not found
+        // Navigate to personal data to complete profile
+        debugPrint('⚠️ User details not found. Redirecting to profile completion.');
+        NavigationHelper.pushReplacementNamed(context, '/personal_data');
+        return;
+      }
+
+      // Check if profile is complete
+      bool isProfileComplete = _isProfileComplete(userDetails);
+
+      if (isProfileComplete) {
+        debugPrint('✅ Profile is complete. Navigating to home.');
+        NavigationHelper.pushReplacementNamed(context, '/home');
+      } else {
+        debugPrint('⚠️ Profile is incomplete. Redirecting to profile completion.');
+        NavigationHelper.pushReplacementNamed(context, '/personal_data');
+      }
+    } catch (e) {
+      debugPrint('❌ Error checking profile: $e');
+      // On error, default to profile completion screen for safety
+      if (!mounted) return;
+      NavigationHelper.pushReplacementNamed(context, '/personal_data');
+    }
+  }
+
+  bool _isProfileComplete(PersonalDataModel userDetails) {
+    // Define required fields for profile completion
+    // Basic required fields:
+    bool hasBasicInfo = userDetails.fullname != null &&
+                        userDetails.fullname!.isNotEmpty &&
+                        userDetails.dob != null &&
+                        userDetails.dob!.isNotEmpty &&
+                        userDetails.email != null &&
+                        userDetails.email!.isNotEmpty;
+
+    // Profession is critical for onboarding flow
+    bool hasProfession = userDetails.profession != null &&
+                         userDetails.profession!.isNotEmpty;
+
+    // Optional: Check if resume and photo are uploaded
+    bool hasDocuments = userDetails.resumeId != null &&
+                        userDetails.resumeId!.isNotEmpty;
+
+    // Profile is complete if user has:
+    // 1. Basic info (name, DOB, email)
+    // 2. Profession selected
+    // 3. Resume uploaded (optional - adjust based on requirements)
+    return hasBasicInfo && hasProfession && hasDocuments;
+  }
+
+  // ---------- UI ----------
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Image.asset(
+                    loginBanner,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
+                  Form(
+                    key: _loginKey,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 30),
+                        _buildTextField(
+                          label: 'Email / Phone Number',
+                          controller: _emailPhoneController,
+                          hintText: 'Enter Email/Phone Number',
+                          keyboardType: TextInputType.emailAddress,
+                          validator: _validateEmailOrPhone,
+                        ),
+                        _buildTextField(
+                          label: 'Password',
+                          controller: _passwordController,
+                          hintText: 'Enter Password',
+                          obscureText: _showPassword,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _showPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: mainBlue,
+                            ),
+                            onPressed: () {
+                              setState(() => _showPassword = !_showPassword);
+                            },
+                          ),
+                          validator: _validatePassword,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 50),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            MainButton(
+              text: _isLoading ? "Logging in..." : 'Login',
+              onPressed: _isLoading ? null : _handleLogin,
+            ),
+            const SizedBox(height: 15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'If you don’t have an account ',
+                  style: TextStyle(fontSize: 16),
+                ),
+                GestureDetector(
+                  onTap: () => NavigationHelper.pushNamed(context, '/sign_up'),
+                  child: Text(
+                    ' Sign Up',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: mainBlue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

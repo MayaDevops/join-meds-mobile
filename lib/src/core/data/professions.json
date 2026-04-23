@@ -1,0 +1,1101 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2025-12-13",
+  "professions": [
+    {
+      "id": 1,
+      "name": "Doctor",
+      "name_ar": "طبيب",
+      "name_hi": "डॉक्टर",
+      "icon": "doctor_icon",
+      "description": "Medical professionals who diagnose and treat illnesses",
+      "qualifications": [
+        {
+          "id": "doctor_mbbs",
+          "name": "MBBS",
+          "full_name": "Bachelor of Medicine, Bachelor of Surgery",
+          "type": "degree",
+          "duration_years": 5,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year", "House Surgency"],
+          "has_pg": true,
+          "has_phd": true,
+          "has_internship": false
+        },
+        {
+          "id": "doctor_md",
+          "name": "MD",
+          "full_name": "Doctor of Medicine",
+          "type": "postgraduate",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        },
+        {
+          "id": "doctor_ms",
+          "name": "MS",
+          "full_name": "Master of Surgery",
+          "type": "postgraduate",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        }
+      ],
+      "specializations": [
+        {"id": "obs_gyn", "name": "Obstetrics and Gynaecology"},
+        {"id": "pediatrics", "name": "Pediatrics"},
+        {"id": "radiology", "name": "Radiology"},
+        {"id": "cardiology", "name": "Cardiology"},
+        {"id": "neurology", "name": "Neurology"},
+        {"id": "oncology", "name": "Oncology"},
+        {"id": "psychiatry", "name": "Psychiatry"},
+        {"id": "emergency_med", "name": "Emergency Medicine"},
+        {"id": "cosmetology", "name": "Cosmetology"},
+        {"id": "ent", "name": "ENT (Ear, Nose, Throat)"},
+        {"id": "orthopedics", "name": "Orthopedics"},
+        {"id": "dermatology", "name": "Dermatology"},
+        {"id": "anesthesiology", "name": "Anesthesiology"},
+        {"id": "general_surgery", "name": "General Surgery"},
+        {"id": "internal_medicine", "name": "Internal Medicine"},
+        {"id": "ophthalmology", "name": "Ophthalmology"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Dentist",
+      "name_ar": "طبيب أسنان",
+      "name_hi": "दंत चिकित्सक",
+      "icon": "dentist_icon",
+      "description": "Dental professionals specializing in oral health",
+      "qualifications": [
+        {
+          "id": "dentist_bds",
+          "name": "BDS",
+          "full_name": "Bachelor of Dental Surgery",
+          "type": "degree",
+          "duration_years": 5,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year"],
+          "has_pg": true,
+          "has_phd": true,
+          "has_internship": true
+        },
+        {
+          "id": "dentist_mds",
+          "name": "MDS",
+          "full_name": "Master of Dental Surgery",
+          "type": "postgraduate",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        }
+      ],
+      "specializations": [
+        {"id": "orthodontics", "name": "Orthodontics"},
+        {"id": "periodontics", "name": "Periodontics"},
+        {"id": "prosthodontics", "name": "Prosthodontics"},
+        {"id": "oral_surgery", "name": "Oral and Maxillofacial Surgery"},
+        {"id": "endodontics", "name": "Endodontics"},
+        {"id": "pedodontics", "name": "Pedodontics"},
+        {"id": "oral_pathology", "name": "Oral Pathology"},
+        {"id": "public_health_dentistry", "name": "Public Health Dentistry"},
+        {"id": "conservative_dentistry", "name": "Conservative Dentistry"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Nurse",
+      "name_ar": "ممرض",
+      "name_hi": "नर्स",
+      "icon": "nurse_icon",
+      "description": "Healthcare professionals providing patient care",
+      "qualifications": [
+        {
+          "id": "nurse_bsc",
+          "name": "BSc Nursing",
+          "full_name": "Bachelor of Science in Nursing",
+          "type": "degree",
+          "duration_years": 4,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year", "4th Year"],
+          "has_pg": true,
+          "has_phd": false,
+          "has_internship": true
+        },
+        {
+          "id": "nurse_anm",
+          "name": "ANM",
+          "full_name": "Auxiliary Nurse Midwife",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": true
+        },
+        {
+          "id": "nurse_gnm",
+          "name": "GNM",
+          "full_name": "General Nursing and Midwifery",
+          "type": "diploma",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": true
+        },
+        {
+          "id": "nurse_msc",
+          "name": "MSc Nursing",
+          "full_name": "Master of Science in Nursing",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        }
+      ],
+      "specializations": [
+        {"id": "medical_surgical", "name": "Medical Surgical Nursing"},
+        {"id": "pediatric", "name": "Pediatric Nursing"},
+        {"id": "psychiatric", "name": "Psychiatric Nursing"},
+        {"id": "community_health", "name": "Community Health Nursing"},
+        {"id": "obstetric", "name": "Obstetric and Gynecological Nursing"},
+        {"id": "critical_care", "name": "Critical Care Nursing"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Pharmacist",
+      "name_ar": "صيدلي",
+      "name_hi": "फार्मासिस्ट",
+      "icon": "pharmacist_icon",
+      "description": "Experts in medication and pharmaceutical care",
+      "qualifications": [
+        {
+          "id": "pharmacist_bpharm",
+          "name": "B-Pharm",
+          "full_name": "Bachelor of Pharmacy",
+          "type": "degree",
+          "duration_years": 4,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year", "4th Year"],
+          "has_pg": true,
+          "has_phd": true,
+          "has_internship": true
+        },
+        {
+          "id": "pharmacist_dpharm",
+          "name": "D-Pharm",
+          "full_name": "Diploma in Pharmacy",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": true
+        },
+        {
+          "id": "pharmacist_pharmd",
+          "name": "Pharm-D",
+          "full_name": "Doctor of Pharmacy",
+          "type": "degree",
+          "duration_years": 6,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year", "4th Year", "5th Year", "6th Year (Internship)"],
+          "has_pg": true,
+          "has_phd": true,
+          "has_internship": true
+        },
+        {
+          "id": "pharmacist_mpharm",
+          "name": "M-Pharm",
+          "full_name": "Master of Pharmacy",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        }
+      ],
+      "specializations": [
+        {"id": "clinical_pharmacy", "name": "Clinical Pharmacy"},
+        {"id": "hospital_pharmacy", "name": "Hospital Pharmacy"},
+        {"id": "industrial_pharmacy", "name": "Industrial Pharmacy"},
+        {"id": "pharmaceutical_chemistry", "name": "Pharmaceutical Chemistry"},
+        {"id": "pharmacology", "name": "Pharmacology"},
+        {"id": "pharmaceutics", "name": "Pharmaceutics"},
+        {"id": "pharmacognosy", "name": "Pharmacognosy"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Lab Technologist",
+      "name_ar": "فني مختبر",
+      "name_hi": "लैब टेक्नोलॉजिस्ट",
+      "icon": "lab_tech_icon",
+      "description": "Medical laboratory professionals conducting diagnostic tests",
+      "qualifications": [
+        {
+          "id": "lab_dmlt",
+          "name": "DMLT",
+          "full_name": "Diploma in Medical Laboratory Technology",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "lab_bsc_mlt",
+          "name": "BSc MLT",
+          "full_name": "Bachelor of Science in Medical Laboratory Technology",
+          "type": "degree",
+          "duration_years": 4,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year", "4th Year"],
+          "has_pg": true,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "lab_msc_mlt",
+          "name": "MSc MLT",
+          "full_name": "Master of Science in Medical Laboratory Technology",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        }
+      ],
+      "specializations": [
+        {"id": "clinical_biochemistry", "name": "Clinical Biochemistry"},
+        {"id": "hematology", "name": "Hematology"},
+        {"id": "microbiology", "name": "Microbiology"},
+        {"id": "pathology", "name": "Pathology"},
+        {"id": "blood_bank", "name": "Blood Bank Technology"},
+        {"id": "cytology", "name": "Cytology"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Physiotherapist",
+      "name_ar": "أخصائي علاج طبيعي",
+      "name_hi": "फिजियोथेरेपिस्ट",
+      "icon": "physio_icon",
+      "description": "Rehabilitation specialists helping patients recover movement",
+      "qualifications": [
+        {
+          "id": "physio_bpt",
+          "name": "BPT",
+          "full_name": "Bachelor of Physiotherapy",
+          "type": "degree",
+          "duration_years": 4,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year", "4th Year"],
+          "has_pg": true,
+          "has_phd": true,
+          "has_internship": true
+        },
+        {
+          "id": "physio_mpt",
+          "name": "MPT",
+          "full_name": "Master of Physiotherapy",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        },
+        {
+          "id": "physio_diploma",
+          "name": "Diploma in Physiotherapy",
+          "full_name": "Diploma in Physiotherapy",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": true
+        }
+      ],
+      "specializations": [
+        {"id": "orthopedic", "name": "Orthopedic Physiotherapy"},
+        {"id": "neurological", "name": "Neurological Physiotherapy"},
+        {"id": "cardiopulmonary", "name": "Cardiopulmonary Physiotherapy"},
+        {"id": "sports", "name": "Sports Physiotherapy"},
+        {"id": "pediatric", "name": "Pediatric Physiotherapy"},
+        {"id": "geriatric", "name": "Geriatric Physiotherapy"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Radiographer",
+      "name_ar": "فني أشعة",
+      "name_hi": "रेडियोग्राफर",
+      "icon": "radiographer_icon",
+      "description": "Medical imaging specialists operating diagnostic equipment",
+      "qualifications": [
+        {
+          "id": "radio_diploma",
+          "name": "Diploma in Radiography",
+          "full_name": "Diploma in Radiography",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "radio_bsc",
+          "name": "BSc Radiography",
+          "full_name": "Bachelor of Science in Radiography",
+          "type": "degree",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": true,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "radio_msc",
+          "name": "MSc Radiography",
+          "full_name": "Master of Science in Radiography",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        }
+      ],
+      "specializations": [
+        {"id": "diagnostic", "name": "Diagnostic Radiography"},
+        {"id": "therapeutic", "name": "Therapeutic Radiography"},
+        {"id": "ct_scan", "name": "CT Scan"},
+        {"id": "mri", "name": "MRI"},
+        {"id": "ultrasound", "name": "Ultrasound"},
+        {"id": "nuclear_medicine", "name": "Nuclear Medicine"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Anesthesia Technician",
+      "name_ar": "فني تخدير",
+      "name_hi": "एनेस्थीसिया तकनीशियन",
+      "icon": "anesthesia_icon",
+      "description": "Specialists assisting anesthesiologists during procedures",
+      "qualifications": [
+        {
+          "id": "anesthesia_diploma",
+          "name": "Diploma in Anesthesia Technology",
+          "full_name": "Diploma in Anesthesia Technology",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "anesthesia_bsc",
+          "name": "BSc Anesthesia Technology",
+          "full_name": "Bachelor of Science in Anesthesia Technology",
+          "type": "degree",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": true,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "anesthesia_msc",
+          "name": "MSc Anesthesia Technology",
+          "full_name": "Master of Science in Anesthesia Technology",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        }
+      ],
+      "specializations": []
+    },
+    {
+      "id": 9,
+      "name": "Audiologist",
+      "name_ar": "أخصائي سمع",
+      "name_hi": "ऑडियोलॉजिस्ट",
+      "icon": "audiologist_icon",
+      "description": "Hearing and balance specialists",
+      "qualifications": [
+        {
+          "id": "audio_diploma",
+          "name": "Diploma in Audiology",
+          "full_name": "Diploma in Audiology and Speech Therapy",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "audio_baslp",
+          "name": "BASLP",
+          "full_name": "Bachelor in Audiology and Speech-Language Pathology",
+          "type": "degree",
+          "duration_years": 4,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year", "4th Year"],
+          "has_pg": true,
+          "has_phd": false,
+          "has_internship": true
+        },
+        {
+          "id": "audio_maslp",
+          "name": "MASLP",
+          "full_name": "Master in Audiology and Speech-Language Pathology",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        }
+      ],
+      "specializations": [
+        {"id": "pediatric_audiology", "name": "Pediatric Audiology"},
+        {"id": "diagnostic_audiology", "name": "Diagnostic Audiology"},
+        {"id": "hearing_aids", "name": "Hearing Aid Dispensing"},
+        {"id": "cochlear_implants", "name": "Cochlear Implants"},
+        {"id": "speech_therapy", "name": "Speech-Language Therapy"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Clinical Psychologist",
+      "name_ar": "أخصائي نفسي إكلينيكي",
+      "name_hi": "क्लीनिकल साइकोलॉजिस्ट",
+      "icon": "psychologist_icon",
+      "description": "Mental health professionals providing psychological assessment and therapy",
+      "qualifications": [
+        {
+          "id": "psych_diploma",
+          "name": "Diploma in Clinical Psychology",
+          "full_name": "Diploma in Clinical Psychology",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "psych_ba",
+          "name": "BA Psychology",
+          "full_name": "Bachelor of Arts in Psychology",
+          "type": "degree",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": true,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "psych_bsc",
+          "name": "BSc Psychology",
+          "full_name": "Bachelor of Science in Psychology",
+          "type": "degree",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": true,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "psych_ma",
+          "name": "MA Clinical Psychology",
+          "full_name": "Master of Arts in Clinical Psychology",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": true
+        },
+        {
+          "id": "psych_mphil",
+          "name": "MPhil Clinical Psychology",
+          "full_name": "Master of Philosophy in Clinical Psychology",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": true
+        }
+      ],
+      "specializations": [
+        {"id": "child_adolescent", "name": "Child and Adolescent Psychology"},
+        {"id": "neuropsychology", "name": "Neuropsychology"},
+        {"id": "health_psychology", "name": "Health Psychology"},
+        {"id": "counseling", "name": "Counseling Psychology"},
+        {"id": "rehabilitation", "name": "Rehabilitation Psychology"},
+        {"id": "forensic", "name": "Forensic Psychology"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Dietitian",
+      "name_ar": "أخصائي تغذية",
+      "name_hi": "आहार विशेषज्ञ",
+      "icon": "dietitian_icon",
+      "description": "Nutrition experts providing dietary guidance and meal planning",
+      "qualifications": [
+        {
+          "id": "diet_diploma",
+          "name": "Diploma in Nutrition & Dietetics",
+          "full_name": "Diploma in Nutrition and Dietetics",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "diet_bsc",
+          "name": "BSc Nutrition & Dietetics",
+          "full_name": "Bachelor of Science in Nutrition and Dietetics",
+          "type": "degree",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": true,
+          "has_phd": false,
+          "has_internship": true
+        },
+        {
+          "id": "diet_msc",
+          "name": "MSc Nutrition & Dietetics",
+          "full_name": "Master of Science in Nutrition and Dietetics",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": false
+        }
+      ],
+      "specializations": [
+        {"id": "clinical_nutrition", "name": "Clinical Nutrition"},
+        {"id": "sports_nutrition", "name": "Sports Nutrition"},
+        {"id": "pediatric_nutrition", "name": "Pediatric Nutrition"},
+        {"id": "community_nutrition", "name": "Community Nutrition"},
+        {"id": "food_service", "name": "Food Service Management"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Social Worker",
+      "name_ar": "أخصائي اجتماعي",
+      "name_hi": "सामाजिक कार्यकर्ता",
+      "icon": "social_worker_icon",
+      "description": "Professionals helping individuals and communities overcome challenges",
+      "qualifications": [
+        {
+          "id": "social_diploma",
+          "name": "Diploma in Social Work",
+          "full_name": "Diploma in Social Work",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "social_bsw",
+          "name": "BSW",
+          "full_name": "Bachelor of Social Work",
+          "type": "degree",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": true,
+          "has_phd": false,
+          "has_internship": true
+        },
+        {
+          "id": "social_msw",
+          "name": "MSW",
+          "full_name": "Master of Social Work",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": true
+        }
+      ],
+      "specializations": [
+        {"id": "medical_social_work", "name": "Medical Social Work"},
+        {"id": "psychiatric_social_work", "name": "Psychiatric Social Work"},
+        {"id": "community_development", "name": "Community Development"},
+        {"id": "family_child_welfare", "name": "Family and Child Welfare"},
+        {"id": "human_resource", "name": "Human Resource Management"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Hospital Administrator",
+      "name_ar": "مدير مستشفى",
+      "name_hi": "अस्पताल प्रशासक",
+      "icon": "admin_icon",
+      "description": "Healthcare management professionals overseeing hospital operations",
+      "qualifications": [
+        {
+          "id": "admin_diploma",
+          "name": "Diploma in Hospital Administration",
+          "full_name": "Diploma in Hospital Administration",
+          "type": "diploma",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": false
+        },
+        {
+          "id": "admin_bha",
+          "name": "BHA",
+          "full_name": "Bachelor of Hospital Administration",
+          "type": "degree",
+          "duration_years": 3,
+          "academic_years": ["1st Year", "2nd Year", "3rd Year"],
+          "has_pg": true,
+          "has_phd": false,
+          "has_internship": true
+        },
+        {
+          "id": "admin_mha",
+          "name": "MHA",
+          "full_name": "Master of Hospital Administration",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": true
+        },
+        {
+          "id": "admin_mba_hm",
+          "name": "MBA (Healthcare Management)",
+          "full_name": "Master of Business Administration in Healthcare Management",
+          "type": "postgraduate",
+          "duration_years": 2,
+          "academic_years": ["1st Year", "2nd Year"],
+          "has_pg": false,
+          "has_phd": true,
+          "has_internship": true
+        }
+      ],
+      "specializations": [
+        {"id": "operations", "name": "Hospital Operations"},
+        {"id": "quality", "name": "Quality Assurance"},
+        {"id": "finance", "name": "Healthcare Finance"},
+        {"id": "hr", "name": "Human Resources"},
+        {"id": "it", "name": "Healthcare IT"},
+        {"id": "supply_chain", "name": "Supply Chain Management"},
+        {"id": "others", "name": "Others", "allow_custom": true}
+      ]
+    },
+    {
+      "id": 14,
+      "name": "Others",
+      "name_ar": "أخرى",
+      "name_hi": "अन्य",
+      "icon": "others_icon",
+      "description": "Other healthcare professions not listed above",
+      "qualifications": [
+        {
+          "id": "others_custom",
+          "name": "Custom Qualification",
+          "full_name": "Custom Qualification",
+          "type": "custom",
+          "duration_years": 0,
+          "academic_years": [],
+          "has_pg": false,
+          "has_phd": false,
+          "has_internship": false,
+          "allow_custom_input": true
+        }
+      ],
+      "specializations": [],
+      "allow_custom_profession": true
+    }
+  ],
+  "questionnaire_template": {
+    "steps": [
+      {
+        "step": 1,
+        "id": "qualification_selection",
+        "title": "Select Qualification",
+        "title_ar": "اختر المؤهل",
+        "title_hi": "योग्यता चुनें",
+        "subtitle": "Choose your qualification type",
+        "fields": [
+          {
+            "id": "qualification_id",
+            "type": "radio_cards",
+            "label": "Qualification Type",
+            "required": true,
+            "options_from": "profession.qualifications"
+          }
+        ]
+      },
+      {
+        "step": 2,
+        "id": "academic_status",
+        "title": "Academic Status",
+        "title_ar": "الحالة الأكاديمية",
+        "title_hi": "शैक्षणिक स्थिति",
+        "subtitle": "Tell us about your current academic status",
+        "fields": [
+          {
+            "id": "degree_status",
+            "type": "radio",
+            "label": "Current Status",
+            "required": true,
+            "options": [
+              {"value": "ongoing", "label": "Degree Ongoing", "label_ar": "الدراسة مستمرة", "label_hi": "डिग्री जारी"},
+              {"value": "completed", "label": "Degree Completed", "label_ar": "الدراسة مكتملة", "label_hi": "डिग्री पूर्ण"}
+            ]
+          }
+        ]
+      },
+      {
+        "step": 3,
+        "id": "degree_ongoing_details",
+        "title": "Current Academic Year",
+        "title_ar": "السنة الأكاديمية الحالية",
+        "title_hi": "वर्तमान शैक्षणिक वर्ष",
+        "condition": {"field": "degree_status", "value": "ongoing"},
+        "fields": [
+          {
+            "id": "current_year",
+            "type": "radio",
+            "label": "Select your current year",
+            "required": true,
+            "options_from": "qualification.academic_years"
+          },
+          {
+            "id": "university_id",
+            "type": "searchable_dropdown",
+            "label": "University of Education",
+            "required": true,
+            "options_endpoint": "/api/universities",
+            "placeholder": "Search for your university"
+          }
+        ]
+      },
+      {
+        "step": 4,
+        "id": "pg_status",
+        "title": "Post Graduation Status",
+        "title_ar": "حالة الدراسات العليا",
+        "title_hi": "स्नातकोत्तर स्थिति",
+        "condition": {
+          "all": [
+            {"field": "degree_status", "value": "completed"},
+            {"field": "qualification.has_pg", "value": true}
+          ]
+        },
+        "fields": [
+          {
+            "id": "is_pg_holder",
+            "type": "radio",
+            "label": "Are you a PG Holder?",
+            "required": true,
+            "options": [
+              {"value": "yes", "label": "PG-Holder"},
+              {"value": "no", "label": "Not-PG-Holder"}
+            ]
+          }
+        ]
+      },
+      {
+        "step": 5,
+        "id": "specialization",
+        "title": "Specialization",
+        "title_ar": "التخصص",
+        "title_hi": "विशेषज्ञता",
+        "condition": {"field": "is_pg_holder", "value": "yes"},
+        "fields": [
+          {
+            "id": "specialization_id",
+            "type": "grid_selection",
+            "label": "Select your specialization",
+            "required": true,
+            "options_from": "profession.specializations",
+            "columns": 2
+          },
+          {
+            "id": "specialization_other",
+            "type": "text",
+            "label": "Please specify",
+            "required": true,
+            "condition": {"field": "specialization_id", "value": "others"},
+            "validation": {
+              "min_length": 3,
+              "max_length": 100
+            }
+          }
+        ]
+      },
+      {
+        "step": 6,
+        "id": "phd_status",
+        "title": "PhD Status",
+        "title_ar": "حالة الدكتوراه",
+        "title_hi": "पीएचडी स्थिति",
+        "condition": {
+          "all": [
+            {"field": "is_pg_holder", "value": "yes"},
+            {"field": "qualification.has_phd", "value": true}
+          ]
+        },
+        "fields": [
+          {
+            "id": "is_phd_holder",
+            "type": "radio",
+            "label": "PhD Holder Status",
+            "required": true,
+            "options": [
+              {"value": "yes", "label": "Yes"},
+              {"value": "no", "label": "No"},
+              {"value": "ongoing", "label": "Ongoing"}
+            ]
+          }
+        ]
+      },
+      {
+        "step": 7,
+        "id": "internship_status",
+        "title": "Internship Status",
+        "title_ar": "حالة التدريب",
+        "title_hi": "इंटर्नशिप स्थिति",
+        "condition": {
+          "all": [
+            {"field": "degree_status", "value": "completed"},
+            {"field": "qualification.has_internship", "value": true}
+          ]
+        },
+        "fields": [
+          {
+            "id": "internship_completed",
+            "type": "radio",
+            "label": "Have you completed your internship?",
+            "required": true,
+            "options": [
+              {"value": "yes", "label": "Yes"},
+              {"value": "no", "label": "No"}
+            ]
+          }
+        ]
+      },
+      {
+        "step": 8,
+        "id": "work_experience",
+        "title": "Work Experience",
+        "title_ar": "الخبرة العملية",
+        "title_hi": "कार्य अनुभव",
+        "condition": {"field": "degree_status", "value": "completed"},
+        "fields": [
+          {
+            "id": "has_work_experience",
+            "type": "radio",
+            "label": "Do you have work experience?",
+            "required": true,
+            "options": [
+              {"value": "yes", "label": "Yes"},
+              {"value": "no", "label": "No"}
+            ]
+          }
+        ]
+      },
+      {
+        "step": 9,
+        "id": "experience_details",
+        "title": "Experience Details",
+        "title_ar": "تفاصيل الخبرة",
+        "title_hi": "अनुभव विवरण",
+        "condition": {"field": "has_work_experience", "value": "yes"},
+        "repeatable": true,
+        "max_entries": 10,
+        "add_button_label": "Add Another Experience",
+        "fields": [
+          {
+            "id": "experience_type",
+            "type": "radio",
+            "label": "Type of Experience",
+            "required": true,
+            "options": [
+              {"value": "clinical", "label": "Clinical"},
+              {"value": "non_clinical", "label": "Non Clinical"}
+            ]
+          },
+          {
+            "id": "organisation_name",
+            "type": "text",
+            "label": "Organisation/Hospital Name",
+            "required": true,
+            "placeholder": "Enter organisation name",
+            "validation": {
+              "min_length": 3,
+              "max_length": 200,
+              "pattern": "^[a-zA-Z0-9\\s\\-\\.,'()&]+$"
+            }
+          },
+          {
+            "id": "work_specialization_id",
+            "type": "dropdown",
+            "label": "Work Specialization",
+            "required": false,
+            "options_from": "profession.specializations",
+            "condition": {"field": "profession.specializations.length", "operator": ">", "value": 0}
+          },
+          {
+            "id": "from_date",
+            "type": "date",
+            "label": "From Date",
+            "required": true,
+            "format": "yyyy-MM-dd",
+            "min_year": 1965,
+            "max_date": "today"
+          },
+          {
+            "id": "to_date",
+            "type": "date",
+            "label": "To Date",
+            "required": true,
+            "format": "yyyy-MM-dd",
+            "min_year": 1965,
+            "max_date": "today",
+            "allow_present": true,
+            "present_label": "Currently Working"
+          }
+        ]
+      },
+      {
+        "step": 10,
+        "id": "country_preference",
+        "title": "Country Preferences",
+        "title_ar": "تفضيلات البلد",
+        "title_hi": "देश की प्राथमिकताएं",
+        "subtitle": "Select countries where you'd like to work",
+        "fields": [
+          {
+            "id": "preferred_countries",
+            "type": "multi_select_chips",
+            "label": "Select preferred countries",
+            "required": true,
+            "min_selections": 1,
+            "max_selections": 10,
+            "options_endpoint": "/api/countries"
+          }
+        ]
+      },
+      {
+        "step": 11,
+        "id": "documents",
+        "title": "Upload Documents",
+        "title_ar": "تحميل المستندات",
+        "title_hi": "दस्तावेज़ अपलोड करें",
+        "subtitle": "Upload your certificates and documents",
+        "optional": true,
+        "fields": [
+          {
+            "id": "degree_certificate",
+            "type": "file_upload",
+            "label": "Degree Certificate",
+            "required": false,
+            "accepted_formats": ["pdf", "jpg", "jpeg", "png"],
+            "max_size_mb": 5
+          },
+          {
+            "id": "experience_certificate",
+            "type": "file_upload",
+            "label": "Experience Certificate",
+            "required": false,
+            "accepted_formats": ["pdf", "jpg", "jpeg", "png"],
+            "max_size_mb": 5,
+            "condition": {"field": "has_work_experience", "value": "yes"}
+          },
+          {
+            "id": "specialization_certificate",
+            "type": "file_upload",
+            "label": "Specialization Certificate",
+            "required": false,
+            "accepted_formats": ["pdf", "doc", "docx"],
+            "max_size_mb": 10,
+            "condition": {"field": "is_pg_holder", "value": "yes"}
+          }
+        ]
+      }
+    ]
+  },
+  "field_types": {
+    "radio": {
+      "description": "Single selection from options",
+      "flutter_widget": "RadioListTile"
+    },
+    "radio_cards": {
+      "description": "Card-style single selection",
+      "flutter_widget": "Custom RadioCard"
+    },
+    "dropdown": {
+      "description": "Dropdown select",
+      "flutter_widget": "DropdownButtonFormField"
+    },
+    "searchable_dropdown": {
+      "description": "Searchable/filterable dropdown",
+      "flutter_widget": "Custom SearchableDropdown"
+    },
+    "grid_selection": {
+      "description": "Grid of selectable options",
+      "flutter_widget": "Custom GridSelection"
+    },
+    "multi_select_chips": {
+      "description": "Multiple selection with chips",
+      "flutter_widget": "Wrap with FilterChip"
+    },
+    "text": {
+      "description": "Text input field",
+      "flutter_widget": "TextFormField"
+    },
+    "date": {
+      "description": "Date picker",
+      "flutter_widget": "showDatePicker"
+    },
+    "file_upload": {
+      "description": "File upload",
+      "flutter_widget": "Custom FileUploader"
+    }
+  }
+}

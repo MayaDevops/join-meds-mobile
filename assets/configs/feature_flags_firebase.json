@@ -1,0 +1,20 @@
+{
+  "feature_flags": {
+    "enableDynamicForms": true,
+    "rolloutPercentage": 0,
+    "professions": {
+      "doctor": false,
+      "nurse": false,
+      "pharmacist": true,
+      "lab_technician": false,
+      "anesthesia_technician": false,
+      "dentist": false,
+      "physiotherapy": false,
+      "audiologist": false,
+      "dietitian": false,
+      "clinical_psychologist": false,
+      "social_worker": false,
+      "hospital_administrator": false
+    }
+  }
+}

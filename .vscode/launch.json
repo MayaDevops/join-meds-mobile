@@ -1,0 +1,27 @@
+{
+  "configurations": [
+    {
+      "name": "Flutter Debug (PROD)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      
+      
+      // "toolArgs": [
+      //   // "--dart-define=GOOGLE_CLIENT_ID=697928178508-j0mdpkp0sab1ghql7u7os85e60jdp3ak.apps.googleusercontent.com",
+      //   // "--dart-define=GOOGLE_CLIENT_ID=697928178508-j0mdpkp0sab1ghql7u7os85e60jdp3ak.apps.googleusercontent.com",
+      //   // "--dart-define=MAPS_API_KEY=AIzaSyB4wofFbg3LxkBkI3GJlw1h1GzxOwm_7Y0",
+      //   "--dart-define=API_BASE_URL=https://api.dev.whenyou.in",
+      //   "--dart-define=APP_ENV=dev"
+      // ]
+      // "toolArgs": [
+      //   "--dart-define=GOOGLE_CLIENT_ID=697928178508-j0mdpkp0sab1ghql7u7os85e60jdp3ak.apps.googleusercontent.com",
+      //   "--dart-define=MAPS_API_KEY=AIzaSyB4wofFbg3LxkBkI3GJlw1h1GzxOwm_7Y0",
+      //   "--dart-define=API_BASE_URL=https://api.dev.whenyou.in",
+      //   "--dart-define=APP_ENV=dev"
+      // ]
+    }
+  ]
+}
+  

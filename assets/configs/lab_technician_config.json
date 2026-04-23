@@ -1,0 +1,436 @@
+{
+  "version": "1.0.0",
+  "profession": {
+    "id": "lab_technician",
+    "displayName": "Lab Technician",
+    "courseTypes": [
+      "bsc_mlt",
+      "dmlt"
+    ],
+    "icon": "biotech",
+    "description": "Lab Technician professional"
+  },
+  "flows": {
+    "bsc_mlt": {
+      "flowId": "bsc_mlt",
+      "displayName": "B.Sc MLT",
+      "steps": [
+        {
+          "stepId": "academic_status",
+          "stepType": "cardSelection",
+          "title": "Academic Status",
+          "subtitle": "Please select your academic status 🎓",
+          "showProgress": true,
+          "validateBeforeNavigate": true,
+          "fields": [
+            {
+              "fieldId": "academicStatus",
+              "fieldType": "cardSelection",
+              "label": "Select Your Status",
+              "required": true,
+              "options": [
+                {
+                  "value": "ongoing",
+                  "label": "Degree Ongoing",
+                  "icon": "menu_book"
+                },
+                {
+                  "value": "completed",
+                  "label": "Degree Completed",
+                  "icon": "school"
+                }
+              ]
+            }
+          ],
+          "navigation": {
+            "type": "conditional",
+            "rules": [
+              {
+                "condition": {
+                  "field": "academicStatus",
+                  "operator": "equals",
+                  "value": "ongoing"
+                },
+                "actions": [
+                  {
+                    "type": "navigate",
+                    "nextStep": "degree_ongoing"
+                  }
+                ]
+              },
+              {
+                "condition": {
+                  "field": "academicStatus",
+                  "operator": "equals",
+                  "value": "completed"
+                },
+                "actions": [
+                  {
+                    "type": "navigate",
+                    "nextStep": "work_experience"
+                  }
+                ]
+              }
+            ]
+          },
+          "apiConfig": {
+            "endpoint": "/api/user-details/update/{userId}",
+            "method": "PUT",
+            "fieldMapping": {
+              "academicStatus": "academic_status"
+            },
+            "successMessage": "Academic status saved",
+            "showLoading": true
+          }
+        },
+        {
+          "stepId": "degree_ongoing",
+          "stepType": "form",
+          "title": "B.Sc MLT",
+          "subtitle": "Choose your current academic year and university",
+          "showProgress": true,
+          "validateBeforeNavigate": true,
+          "fields": [
+            {
+              "fieldId": "academicYear",
+              "fieldType": "radio",
+              "label": "Choose Your Current Year",
+              "required": true,
+              "layout": "wrap",
+              "options": [
+                {
+                  "value": "1st Year",
+                  "label": "1st Year"
+                },
+                {
+                  "value": "2nd Year",
+                  "label": "2nd Year"
+                },
+                {
+                  "value": "3rd Year",
+                  "label": "3rd Year"
+                }
+              ],
+              "apiMapping": "current_year",
+              "validation": {
+                "required": true,
+                "requiredMessage": "Please select your current year"
+              }
+            },
+            {
+              "fieldId": "university",
+              "fieldType": "dropdown",
+              "label": "University of Education",
+              "hint": "Select University",
+              "required": true,
+              "searchable": true,
+              "dataSource": {
+                "type": "firebase",
+                "path": "universities/india"
+              },
+              "apiMapping": "university",
+              "validation": {
+                "required": true,
+                "requiredMessage": "Please select your university"
+              }
+            }
+          ],
+          "apiConfig": {
+            "endpoint": "/api/user-details/update/{userId}",
+            "method": "PUT",
+            "successMessage": "Academic details saved",
+            "showLoading": true
+          }
+        },
+        {
+          "stepId": "work_experience",
+          "stepType": "form",
+          "title": "Work Experience",
+          "subtitle": "Please provide your work experience details",
+          "showProgress": true,
+          "skippable": true,
+          "fields": [
+            {
+              "fieldId": "experiences",
+              "fieldType": "dynamicList",
+              "label": "Work Experience",
+              "minEntries": 1,
+              "maxEntries": 5,
+              "addButtonText": "Add More Experience",
+              "template": [
+                {
+                  "fieldId": "experienceType",
+                  "fieldType": "radio",
+                  "label": "Type of Experience",
+                  "required": true,
+                  "layout": "row",
+                  "options": [
+                    {
+                      "value": "Clinical",
+                      "label": "Clinical"
+                    },
+                    {
+                      "value": "Non Clinical",
+                      "label": "Non Clinical"
+                    }
+                  ]
+                },
+                {
+                  "fieldId": "organisation",
+                  "fieldType": "text",
+                  "label": "Organisation / Hospital",
+                  "hint": "Enter organisation name",
+                  "required": true,
+                  "validation": {
+                    "required": true,
+                    "minLength": 3,
+                    "pattern": "^[a-zA-Z\\s]+$",
+                    "patternMessage": "Enter a valid name using letters and spaces only"
+                  }
+                },
+                {
+                  "fieldId": "fromDate",
+                  "fieldType": "date",
+                  "label": "From",
+                  "required": true,
+                  "validation": {
+                    "required": true,
+                    "minDate": "1965-01-01",
+                    "maxDate": "today"
+                  }
+                },
+                {
+                  "fieldId": "toDate",
+                  "fieldType": "date",
+                  "label": "To",
+                  "required": true,
+                  "validation": {
+                    "required": true,
+                    "minDate": "1965-01-01",
+                    "maxDate": "today"
+                  }
+                }
+              ]
+            }
+          ],
+          "apiConfig": {
+            "endpoint": "/api/work-experience/save",
+            "method": "POST",
+            "successMessage": "Work experience saved",
+            "showLoading": true
+          }
+        }
+      ]
+    },
+    "dmlt": {
+      "flowId": "dmlt",
+      "displayName": "DMLT",
+      "steps": [
+        {
+          "stepId": "academic_status",
+          "stepType": "cardSelection",
+          "title": "Academic Status",
+          "subtitle": "Please select your academic status 🎓",
+          "showProgress": true,
+          "validateBeforeNavigate": true,
+          "fields": [
+            {
+              "fieldId": "academicStatus",
+              "fieldType": "cardSelection",
+              "label": "Select Your Status",
+              "required": true,
+              "options": [
+                {
+                  "value": "ongoing",
+                  "label": "Diploma Ongoing",
+                  "icon": "menu_book"
+                },
+                {
+                  "value": "completed",
+                  "label": "Diploma Completed",
+                  "icon": "school"
+                }
+              ]
+            }
+          ],
+          "navigation": {
+            "type": "conditional",
+            "rules": [
+              {
+                "condition": {
+                  "field": "academicStatus",
+                  "operator": "equals",
+                  "value": "ongoing"
+                },
+                "actions": [
+                  {
+                    "type": "navigate",
+                    "nextStep": "diploma_ongoing"
+                  }
+                ]
+              },
+              {
+                "condition": {
+                  "field": "academicStatus",
+                  "operator": "equals",
+                  "value": "completed"
+                },
+                "actions": [
+                  {
+                    "type": "navigate",
+                    "nextStep": "work_experience"
+                  }
+                ]
+              }
+            ]
+          },
+          "apiConfig": {
+            "endpoint": "/api/user-details/update/{userId}",
+            "method": "PUT",
+            "fieldMapping": {
+              "academicStatus": "academic_status"
+            },
+            "successMessage": "Academic status saved",
+            "showLoading": true
+          }
+        },
+        {
+          "stepId": "diploma_ongoing",
+          "stepType": "form",
+          "title": "DMLT",
+          "subtitle": "Choose your current academic year and university",
+          "showProgress": true,
+          "validateBeforeNavigate": true,
+          "fields": [
+            {
+              "fieldId": "academicYear",
+              "fieldType": "radio",
+              "label": "Choose Your Current Year",
+              "required": true,
+              "layout": "wrap",
+              "options": [
+                {
+                  "value": "1st Year",
+                  "label": "1st Year"
+                },
+                {
+                  "value": "2nd Year",
+                  "label": "2nd Year"
+                }
+              ],
+              "apiMapping": "current_year",
+              "validation": {
+                "required": true,
+                "requiredMessage": "Please select your current year"
+              }
+            },
+            {
+              "fieldId": "university",
+              "fieldType": "dropdown",
+              "label": "University of Education",
+              "hint": "Select University",
+              "required": true,
+              "searchable": true,
+              "dataSource": {
+                "type": "firebase",
+                "path": "universities/india"
+              },
+              "apiMapping": "university",
+              "validation": {
+                "required": true,
+                "requiredMessage": "Please select your university"
+              }
+            }
+          ],
+          "apiConfig": {
+            "endpoint": "/api/user-details/update/{userId}",
+            "method": "PUT",
+            "successMessage": "Academic details saved",
+            "showLoading": true
+          }
+        },
+        {
+          "stepId": "work_experience",
+          "stepType": "form",
+          "title": "Work Experience",
+          "subtitle": "Please provide your work experience details",
+          "showProgress": true,
+          "skippable": true,
+          "fields": [
+            {
+              "fieldId": "experiences",
+              "fieldType": "dynamicList",
+              "label": "Work Experience",
+              "minEntries": 1,
+              "maxEntries": 5,
+              "addButtonText": "Add More Experience",
+              "template": [
+                {
+                  "fieldId": "experienceType",
+                  "fieldType": "radio",
+                  "label": "Type of Experience",
+                  "required": true,
+                  "layout": "row",
+                  "options": [
+                    {
+                      "value": "Clinical",
+                      "label": "Clinical"
+                    },
+                    {
+                      "value": "Non Clinical",
+                      "label": "Non Clinical"
+                    }
+                  ]
+                },
+                {
+                  "fieldId": "organisation",
+                  "fieldType": "text",
+                  "label": "Organisation / Hospital",
+                  "hint": "Enter organisation name",
+                  "required": true,
+                  "validation": {
+                    "required": true,
+                    "minLength": 3,
+                    "pattern": "^[a-zA-Z\\s]+$",
+                    "patternMessage": "Enter a valid name using letters and spaces only"
+                  }
+                },
+                {
+                  "fieldId": "fromDate",
+                  "fieldType": "date",
+                  "label": "From",
+                  "required": true,
+                  "validation": {
+                    "required": true,
+                    "minDate": "1965-01-01",
+                    "maxDate": "today"
+                  }
+                },
+                {
+                  "fieldId": "toDate",
+                  "fieldType": "date",
+                  "label": "To",
+                  "required": true,
+                  "validation": {
+                    "required": true,
+                    "minDate": "1965-01-01",
+                    "maxDate": "today"
+                  }
+                }
+              ]
+            }
+          ],
+          "apiConfig": {
+            "endpoint": "/api/work-experience/save",
+            "method": "POST",
+            "successMessage": "Work experience saved",
+            "showLoading": true
+          }
+        }
+      ]
+    }
+  },
+  "sharedDataPaths": {
+    "universities": "universities/india"
+  }
+}
