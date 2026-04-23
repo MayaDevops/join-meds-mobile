@@ -19,7 +19,7 @@ class CompleteProfileFAB extends StatelessWidget {
       builder: (context, userProvider, child) {
         // TODO: Add profileCompletion percentage to UserProvider
         // For now, show if profile is incomplete (no name or no resume)
-        final shouldShow = !userProvider.hasProfile || !userProvider.hasResume;
+        final shouldShow = !userProvider.isProfileComplete;
 
         if (!shouldShow) {
           return const SizedBox.shrink();
@@ -69,7 +69,7 @@ class CompleteProfileFABCompact extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(
       builder: (context, userProvider, child) {
-        final shouldShow = !userProvider.hasProfile || !userProvider.hasResume;
+        final shouldShow = !userProvider.isProfileComplete;
 
         if (!shouldShow) {
           return const SizedBox.shrink();

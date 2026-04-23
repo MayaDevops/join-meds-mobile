@@ -21,6 +21,11 @@ class UserProvider extends ChangeNotifier {
   String? _profession;
   String? _profileImageUrl;
   String? _resumeUrl;
+  String? _dob;
+  String? _address;
+  String? _aadhaarNo;
+  String? _academicStatus;
+  String? _workExperience;
   Map<String, dynamic>? _personalData;
 
   UserProvider(this._storageService, this._apiClient) {
@@ -39,11 +44,30 @@ class UserProvider extends ChangeNotifier {
   String? get resumeUrl => _resumeUrl;
   Map<String, dynamic>? get personalData => _personalData;
 
+  String? get dob => _dob;
+  String? get address => _address;
+  String? get aadhaarNo => _aadhaarNo;
+  String? get academicStatus => _academicStatus;
+  String? get workExperience => _workExperience;
+
   bool get hasProfile => _fullName != null && _fullName!.isNotEmpty;
   bool get hasProfileImage =>
       _profileImageUrl != null && _profileImageUrl!.isNotEmpty;
-  bool get hasResume =>
-      _resumeUrl != null && _resumeUrl!.isNotEmpty;
+  bool get hasResume => _resumeUrl != null && _resumeUrl!.isNotEmpty;
+
+  bool get isProfileComplete {
+    bool filled(String? v) => v != null && v.trim().isNotEmpty;
+    return filled(_fullName) &&
+        filled(_dob) &&
+        filled(_email) &&
+        filled(_phone) &&
+        filled(_address) &&
+        filled(_aadhaarNo) &&
+        filled(_resumeUrl) &&
+        filled(_profession) &&
+        filled(_academicStatus) &&
+        filled(_workExperience);
+  }
 
   /// Ensures user name & profile image are available
   Future<void> ensureUserLoadedForHome() async {
@@ -70,7 +94,16 @@ class UserProvider extends ChangeNotifier {
       'UserProvider: Loading user data - userId=$_userId, hasPersonalData=${_personalData != null}',
     );
 
-    if (_personalData == null &&
+    // Re-fetch if cache is missing or was saved in the old 6-field format
+    // (i.e., newer required fields like dob/address/aadhaarNo are absent)
+    final cacheMissingNewFields = _personalData != null &&
+        (_personalData!['dob'] == null ||
+            _personalData!['address'] == null ||
+            _personalData!['aadhaarNo'] == null ||
+            _personalData!['academicStatus'] == null ||
+            _personalData!['workExperience'] == null);
+
+    if ((_personalData == null || cacheMissingNewFields) &&
         _userId != null &&
         _userId!.isNotEmpty) {
       try {
@@ -85,6 +118,11 @@ class UserProvider extends ChangeNotifier {
             'profession': apiData.profession,
             'profileImageUrl': apiData.photoId,
             'resumeUrl': apiData.resumeId,
+            'dob': apiData.dob,
+            'address': apiData.address,
+            'aadhaarNo': apiData.aadhaarNo,
+            'academicStatus': apiData.academicStatus,
+            'workExperience': apiData.workExperience,
           };
 
           await _storageService.setObject(
@@ -100,9 +138,13 @@ class UserProvider extends ChangeNotifier {
       _email = _personalData!['email'] as String?;
       _phone = _personalData!['phone'] as String?;
       _profession = _personalData!['profession'] as String?;
-      _profileImageUrl =
-      _personalData!['profileImageUrl'] as String?;
+      _profileImageUrl = _personalData!['profileImageUrl'] as String?;
       _resumeUrl = _personalData!['resumeUrl'] as String?;
+      _dob = _personalData!['dob'] as String?;
+      _address = _personalData!['address'] as String?;
+      _aadhaarNo = _personalData!['aadhaarNo'] as String?;
+      _academicStatus = _personalData!['academicStatus'] as String?;
+      _workExperience = _personalData!['workExperience'] as String?;
     }
 
     _isInitialized = true;
@@ -193,10 +235,14 @@ class UserProvider extends ChangeNotifier {
       'profession': _profession,
       'profileImageUrl': _profileImageUrl,
       'resumeUrl': _resumeUrl,
+      'dob': _dob,
+      'address': _address,
+      'aadhaarNo': _aadhaarNo,
+      'academicStatus': _academicStatus,
+      'workExperience': _workExperience,
     };
 
-    await _storageService.setObject(
-        StorageKeys.userProfile, userData);
+    await _storageService.setObject(StorageKeys.userProfile, userData);
   }
 
   void _clearUserData() {
@@ -207,6 +253,11 @@ class UserProvider extends ChangeNotifier {
     _profession = null;
     _profileImageUrl = null;
     _resumeUrl = null;
+    _dob = null;
+    _address = null;
+    _aadhaarNo = null;
+    _academicStatus = null;
+    _workExperience = null;
     _personalData = null;
     notifyListeners();
   }

@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:untitled/src/features/job_details/presentation/widgets/icon_card.dart';
 
 import '../../../../shared/models/v2/job/job_details_dto.dart';
+import '../../../../shared/providers/user_provider.dart';
+import '../../../../core/router/route_names.dart';
 import '../providers/job_details_providers.dart';
 import '../widgets/expandable_tile.dart';
 
@@ -24,6 +26,49 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<JobDetailsProvider>().fetchJobDetails(widget.jobId);
     });
+  }
+
+  void _showIncompleteProfileDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24),
+            SizedBox(width: 8),
+            Text('Profile Incomplete'),
+          ],
+        ),
+        content: const Text(
+          'Your profile is incomplete. Please fill in all required details '
+          '(full name, date of birth, email, phone, address, Aadhaar number, '
+          'profession, academic status, work experience, and resume) before applying for jobs.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Later'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              context.go(RouteNames.profile);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xff00AEEF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Complete Profile',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -221,9 +266,17 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
               onPressed: provider.isApplying
                   ? null
                   : () async {
+                      final userProvider = context.read<UserProvider>();
+                      if (!userProvider.isProfileComplete) {
+                        _showIncompleteProfileDialog();
+                        return;
+                      }
+
+                      final messenger = ScaffoldMessenger.of(context);
                       final success = await provider.applyForJob();
 
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      if (!mounted) return;
+                      messenger.showSnackBar(
                         SnackBar(
                           content: Text(
                             success

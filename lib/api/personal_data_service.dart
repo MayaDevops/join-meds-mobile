@@ -38,6 +38,11 @@ class PersonalDataService {
           'profession': result.profession,
           'profileImageUrl': result.photoId,
           'resumeUrl': result.resumeId,
+          'dob': result.dob,
+          'address': result.address,
+          'aadhaarNo': result.aadhaarNo,
+          'academicStatus': result.academicStatus,
+          'workExperience': result.workExperience,
         };
         await prefs.setString('user_profile', jsonEncode(userProfile));
         await prefs.setString('user_name', result.fullname.toString());
@@ -96,6 +101,11 @@ class PersonalDataService {
         'profession': data.profession,
         'profileImageUrl': json['photoId'],
         'resumeUrl': json['resumeId'],
+        'dob': data.dob,
+        'address': data.address,
+        'aadhaarNo': data.aadhaarNo,
+        'academicStatus': data.academicStatus,
+        'workExperience': data.workExperience,
       };
 
       await prefs.setString('user_profile', jsonEncode(userProfile));
