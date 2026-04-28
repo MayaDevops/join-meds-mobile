@@ -23,7 +23,7 @@ class EmailPhoneTextField extends StatelessWidget {
       controller: controller,
       hintText: isPhoneNumber
           ? 'Enter 10 digit phone number'
-          : 'Enter Email or Phone Number',
+          : 'Phone Number',
       keyboardType:
           isPhoneNumber ? TextInputType.phone : TextInputType.emailAddress,
       onChanged: onChanged,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/providers/user_provider.dart';
-import '../../../../core/router/route_names.dart';
 
 /// Floating action button for completing user profile
 class CompleteProfileFAB extends StatelessWidget {

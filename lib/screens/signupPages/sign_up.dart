@@ -187,9 +187,9 @@ class _SignUpState extends State<SignUp> {
                         children: [
                           const SizedBox(height: 30),
                           _buildTextField(
-                            label: 'Email / Phone Number',
+                            label: 'Phone Number',
                             controller: _emailPhoneController,
-                            hintText: 'Enter Email/Phone Number',
+                            hintText: 'EmPhone Number',
                             keyboardType: TextInputType.emailAddress,
                             validator: _validateEmailOrPhone,
                           ),
