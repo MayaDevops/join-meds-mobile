@@ -560,7 +560,9 @@ class AppRouter {
           name: 'personal_data',
           pageBuilder: (context, state) => RouteTransitions.slideFromRight(
             state: state,
-            child: const PersonalDataScreen(),
+            child: PersonalDataScreen(
+              isSignupFlow: state.uri.queryParameters['flow'] == 'signup',
+            ),
           ),
         ),
         GoRoute(

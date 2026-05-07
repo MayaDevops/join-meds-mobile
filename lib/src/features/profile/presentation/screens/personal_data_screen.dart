@@ -17,7 +17,9 @@ import '../../../../../api/personal_data_service.dart';
 import '../../../../../models/personal_data_model.dart';
 
 class PersonalDataScreen extends StatefulWidget {
-  const PersonalDataScreen({super.key});
+  final bool isSignupFlow;
+
+  const PersonalDataScreen({super.key, this.isSignupFlow = false});
 
   @override
   State<PersonalDataScreen> createState() => _PersonalDataScreenState();
@@ -105,6 +107,20 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
 
+      if (response.statusCode == 413) {
+        if (mounted) {
+          setState(() => _isUploadingImage = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Image size is too large. Please choose a smaller image.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+        return;
+      }
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         // final jsonResponse = json.decode(responseBody);
 
@@ -134,7 +150,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
         throw Exception('Upload failed: ${response.statusCode} - $responseBody');
       }
     } catch (e) {
-      debugPrint('Error uploading image: $e');
+      debugPrint('Error uploading image: - $e');
       if (mounted) {
         setState(() => _isUploadingImage = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -269,8 +285,10 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                               // Back Button Row
                               Row(
                                 children: [
-                                  BackButtonWidget(),
-                                  SizedBox(width: 16,),
+                                  if (!widget.isSignupFlow) ...[
+                                    BackButtonWidget(),
+                                    const SizedBox(width: 16),
+                                  ],
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.center,

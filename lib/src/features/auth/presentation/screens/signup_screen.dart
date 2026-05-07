@@ -247,7 +247,7 @@ class _SignupScreenState extends State<SignupScreen> {
         if (!mounted) return;
 
         // Navigate to personal data screen (V2 flow)
-        context.go('/personal_data');
+        context.go('/personal_data?flow=signup');
       } else {
         if (!mounted) return;
         // Parse error message from API response
