@@ -69,6 +69,15 @@ class UserProvider extends ChangeNotifier {
         filled(_workExperience);
   }
 
+  bool get canApplyForJob {
+    bool filled(String? v) => v != null && v.trim().isNotEmpty;
+    return filled(_fullName) &&
+        filled(_dob) &&
+        filled(_email) &&
+        filled(_phone) &&
+        filled(_resumeUrl);
+  }
+
   /// Ensures user name & profile image are available
   Future<void> ensureUserLoadedForHome() async {
     debugPrint('UserProvider: ensureUserLoadedForHome called');

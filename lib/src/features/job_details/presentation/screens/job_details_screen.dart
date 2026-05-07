@@ -41,9 +41,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
           ],
         ),
         content: const Text(
-          'Your profile is incomplete. Please fill in all required details '
-          '(full name, date of birth, email, phone, address, Aadhaar number, '
-          'profession, academic status, work experience, and resume) before applying for jobs.',
+          'To apply for jobs, please complete your basic profile details '
+          '(full name, date of birth, email, phone number) and upload your resume.',
         ),
         actions: [
           TextButton(
@@ -267,7 +266,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                   ? null
                   : () async {
                       final userProvider = context.read<UserProvider>();
-                      if (!userProvider.isProfileComplete) {
+                      if (!userProvider.canApplyForJob) {
                         _showIncompleteProfileDialog();
                         return;
                       }

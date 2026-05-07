@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -6,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'package:untitled/src/shared/widgets/buttons/back_button_widget.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -425,9 +423,10 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                       controller: _aadhaarNumController,
                       hintText: 'Aadhaar Number (Optional)',
                       keyboardType: TextInputType.number,
-                    ),const SizedBox(height: 16),
+                    ),
+                    const SizedBox(height: 16),
                     CustomTextField(
-                      controller: _aadhaarNumController,
+                      controller: _passportNumController,
                       hintText: 'Passport Number (Optional)',
                       keyboardType: TextInputType.number,
                     ),
