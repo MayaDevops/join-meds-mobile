@@ -56,7 +56,7 @@ class _JobsTabScreenState extends State<JobsTabScreen>
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'My Applications',
+          'Applied Jobs',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -69,62 +69,8 @@ class _JobsTabScreenState extends State<JobsTabScreen>
       ),
       body: Consumer<JobsTabProvider>(
         builder: (context, jobsProvider, child) {
-          return Column(
-            children: [
-              // Filter chips
-              _buildFilterChips(jobsProvider),
-              const Divider(height: 1),
-              // Job list
-              Expanded(
-                child: _buildJobList(jobsProvider),
-              ),
-            ],
-          );
+          return _buildJobList(jobsProvider);
         },
-      ),
-    );
-  }
-
-  Widget _buildFilterChips(JobsTabProvider jobsProvider) {
-    final filters = [
-      {'label': 'All', 'value': 'all', 'count': jobsProvider.totalCount},
-      {'label': 'Pending', 'value': 'pending', 'count': jobsProvider.pendingCount},
-      {'label': 'Accepted', 'value': 'accepted', 'count': jobsProvider.acceptedCount},
-      {'label': 'Rejected', 'value': 'rejected', 'count': jobsProvider.rejectedCount},
-    ];
-
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: filters.map((filter) {
-            final isSelected = jobsProvider.filterStatus == filter['value'];
-            final count = filter['count'] as int;
-
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: FilterChip(
-                label: Text(
-                  '${filter['label']} ($count)',
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black87,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                ),
-                selected: isSelected,
-                onSelected: (selected) {
-                  jobsProvider.filterByStatus(filter['value'] as String);
-                },
-                selectedColor: AppColors.primaryBlue,
-                backgroundColor: Colors.grey.shade200,
-                checkmarkColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-            );
-          }).toList(),
-        ),
       ),
     );
   }
@@ -219,11 +165,9 @@ class _JobsTabScreenState extends State<JobsTabScreen>
                 color: Colors.grey.shade400,
               ),
               const SizedBox(height: 16),
-              Text(
-                jobsProvider.filterStatus == 'all'
-                    ? 'No applications yet'
-                    : 'No ${jobsProvider.filterStatus} applications',
-                style: const TextStyle(
+              const Text(
+                'No applications yet',
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -258,7 +202,6 @@ class _JobsTabScreenState extends State<JobsTabScreen>
 
           return JobCardWidget(
             job: _mapApplicationToJob(application),
-            statusBadge: application.status,
             isApplied: true, // All jobs in this tab are already applied
             onTap: () {
               // Navigate to job details or application details

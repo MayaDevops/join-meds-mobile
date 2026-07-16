@@ -12,6 +12,7 @@ import 'route_names.dart';
 import 'route_transitions.dart';
 // import 'guards/auth_guard.dart';
 import '../../shared/services/storage/local_storage_service.dart';
+import '../constants/storage_keys.dart';
 
 // Import old screens - Splash & Onboarding
 
@@ -164,10 +165,12 @@ class AppRouter {
 
   // static late AuthGuard _authGuard;
   static late GoRouter _router;
+  static late LocalStorageService _storageService;
 
   /// Initialize the router with dependencies
   static void initialize(LocalStorageService storageService) {
     // _authGuard = AuthGuard(storageService);
+    _storageService = storageService;
     _router = _createRouter();
   }
 
@@ -184,6 +187,19 @@ class AppRouter {
       // redirect: _authGuard.redirect,
 
       routes: [
+        // ============ Deep Link Entry (Universal Links / App Links) ============
+        // Handles shared links like: https://www.joinmeds.in/app
+        // Logged in  -> Home  |  otherwise -> Login
+        GoRoute(
+          path: '/app',
+          name: 'deeplink_entry',
+          redirect: (context, state) {
+            final token = _storageService.getString(StorageKeys.authToken);
+            final isLoggedIn = token != null && token.isNotEmpty;
+            return isLoggedIn ? RouteNames.home : RouteNames.loginPage;
+          },
+        ),
+
         // ============ Splash & Onboarding (Old Flow) ============
         GoRoute(
           path: '/',
@@ -229,6 +245,9 @@ class AppRouter {
                 GoRoute(
                   path: 'filters',
                   name: 'job_filters',
+                  // Push above the shell so the bottom nav bar doesn't
+                  // overlap the "Apply Filters" button.
+                  parentNavigatorKey: _rootNavigatorKey,
                   pageBuilder: (context, state) =>
                       RouteTransitions.slideFromBottom(
                     state: state,
