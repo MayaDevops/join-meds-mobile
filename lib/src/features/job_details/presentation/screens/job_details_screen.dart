@@ -8,6 +8,7 @@ import '../../../../shared/providers/user_provider.dart';
 import '../../../../core/router/route_names.dart';
 import '../providers/job_details_providers.dart';
 import '../widgets/expandable_tile.dart';
+import '../widgets/expandable_text.dart';
 
 class JobDetailsScreen extends StatefulWidget {
   const JobDetailsScreen({super.key, required this.jobId});
@@ -26,6 +27,15 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<JobDetailsProvider>().fetchJobDetails(widget.jobId);
     });
+  }
+
+  /// Formats a posted date as e.g. "18 Jul 2026".
+  String _formatDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return "${date.day} ${months[date.month - 1]} ${date.year}";
   }
 
   void _showIncompleteProfileDialog() {
@@ -185,14 +195,37 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        "${job.jobDesc ?? ''} · ${job.createdAt ?? ''}",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 13,
+                      if (job.createdAt != null)
+                        Text(
+                          "Posted on ${_formatDate(job.createdAt!)}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
+
+                      /// JOB DESCRIPTION
+                      if ((job.jobDesc ?? '').trim().isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Job Description",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ExpandableText(text: job.jobDesc!),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: 20),
 
