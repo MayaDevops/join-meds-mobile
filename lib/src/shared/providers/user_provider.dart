@@ -56,6 +56,13 @@ class UserProvider extends ChangeNotifier {
   bool get hasResume => _resumeUrl != null && _resumeUrl!.isNotEmpty;
 
   bool get isProfileComplete {
+    // NOTE: workExperience is intentionally NOT checked here. It is stored on a
+    // separate resource (POST /api/work-experience/save) and is never returned
+    // by the user-details response, so _workExperience is always null. Including
+    // it kept the "Complete Your Profile" FAB visible even for users whose
+    // profile was fully filled. All other required fields (name, dob, email,
+    // phone, address, aadhaarNo, resume, profession, academicStatus) are
+    // present in the user-details payload and are validated below.
     bool filled(String? v) => v != null && v.trim().isNotEmpty;
     return filled(_fullName) &&
         filled(_dob) &&
@@ -65,8 +72,7 @@ class UserProvider extends ChangeNotifier {
         filled(_aadhaarNo) &&
         filled(_resumeUrl) &&
         filled(_profession) &&
-        filled(_academicStatus) &&
-        filled(_workExperience);
+        filled(_academicStatus);
   }
 
   bool get canApplyForJob {
@@ -105,12 +111,14 @@ class UserProvider extends ChangeNotifier {
 
     // Re-fetch if cache is missing or was saved in the old 6-field format
     // (i.e., newer required fields like dob/address/aadhaarNo are absent)
+    // workExperience is excluded here on purpose: it lives on a separate
+    // resource and never appears in the user-details payload, so treating its
+    // absence as a stale cache would force a re-fetch on every load.
     final cacheMissingNewFields = _personalData != null &&
         (_personalData!['dob'] == null ||
             _personalData!['address'] == null ||
             _personalData!['aadhaarNo'] == null ||
-            _personalData!['academicStatus'] == null ||
-            _personalData!['workExperience'] == null);
+            _personalData!['academicStatus'] == null);
 
     if ((_personalData == null || cacheMissingNewFields) &&
         _userId != null &&

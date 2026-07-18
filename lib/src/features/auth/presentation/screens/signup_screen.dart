@@ -228,21 +228,35 @@ class _SignupScreenState extends State<SignupScreen> {
         final responseData = jsonDecode(response.body);
 
         // Handle both 'userId' and 'id' fields from API
-        final userId = responseData['userId'] ?? responseData['id'];
+        final userId = responseData is Map<String, dynamic>
+            ? responseData['userId'] ?? responseData['id']
+            : null;
 
-        if (userId != null) {
-          final prefs = await SharedPreferences.getInstance();
-
-          // Save userId
-          await prefs.setString(sharedPrefUserIdKey, userId.toString());
-
-          // Initialize onboarding flags
-          await prefs.setBool('onboarding_complete', false);
-          await prefs.setBool('personal_data_complete', false);
-          await prefs.setBool('profession_selected', false);
-
-          debugPrint("✅ Saved userId to prefs: $userId");
+        // A 200 without a user id means no account was created, so signup did
+        // not actually succeed. Bail out instead of sending the user into
+        // onboarding with no userId saved.
+        if (userId == null) {
+          if (!mounted) return;
+          _showErrorDialog(
+            'Signup Failed',
+            _signupFailureMessage(responseData),
+            goToLoginOnDismiss: true,
+          );
+          debugPrint("❌ Signup returned no user id: ${response.body}");
+          return;
         }
+
+        final prefs = await SharedPreferences.getInstance();
+
+        // Save userId
+        await prefs.setString(sharedPrefUserIdKey, userId.toString());
+
+        // Initialize onboarding flags
+        await prefs.setBool('onboarding_complete', false);
+        await prefs.setBool('personal_data_complete', false);
+        await prefs.setBool('profession_selected', false);
+
+        debugPrint("✅ Saved userId to prefs: $userId");
 
         if (!mounted) return;
 
@@ -265,7 +279,12 @@ class _SignupScreenState extends State<SignupScreen> {
           }
           debugPrint("Using plain text error response: ${response.body}");
         }
-        _showErrorDialog("Signup Failed", errorMessage);
+        _showErrorDialog(
+          "Signup Failed",
+          errorMessage,
+          goToLoginOnDismiss:
+              errorMessage.toLowerCase().contains('already exist'),
+        );
         debugPrint("❌ Signup API Error: ${response.body}");
       }
     } catch (e) {
@@ -277,24 +296,52 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  void _showErrorDialog(String title, String message) {
+  /// Message to show when signup returns 200 but no user id.
+  ///
+  /// The body in this case is usually the SMS gateway's own payload
+  /// (`{"success":true,"message":"1 numbers accepted for delivery.",
+  /// "providerStatus":"AWAITING-DLR",...}`), whose `message` describes SMS
+  /// delivery, not signup — so it is never shown to the user.
+  String _signupFailureMessage(dynamic responseData) {
+    if (responseData is Map<String, dynamic>) {
+      final isGatewayPayload = responseData.containsKey('providerStatus') ||
+          responseData.containsKey('providerMessageId');
+      final message = responseData['message'] ?? responseData['error'];
+
+      if (!isGatewayPayload && message is String && message.trim().isNotEmpty) {
+        return message;
+      }
+    }
+
+    return 'We could not create your account. This number may already be '
+        'registered — try logging in, or request a new OTP and try again.';
+  }
+
+  /// Shows a signup error. When [goToLoginOnDismiss] is set, tapping OK sends
+  /// the user to the login page — used when the account already exists, so
+  /// logging in is the next useful action. Left off for failures the user can
+  /// retry in place (e.g. no connection).
+  void _showErrorDialog(
+    String title,
+    String message, {
+    bool goToLoginOnDismiss = false,
+  }) {
     if (!mounted) return;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(title),
         content: Text(message),
         actions: [
           TextButton(
             child: const Text("OK"),
             onPressed: () {
-              Navigator.of(context).pop(); // close dialog first
+              Navigator.of(dialogContext).pop(); // close dialog first
 
-              if (message.toLowerCase().contains('user already exists')) {
-                context.go(RouteNames.login); // or context.pop() if login is previous
+              if (goToLoginOnDismiss && mounted) {
+                context.go(RouteNames.login);
               }
-            }
-            ,
+            },
           ),
         ],
       ),
