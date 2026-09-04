@@ -373,7 +373,7 @@ class _ProfileDetailsTabScreenState extends State<ProfileDetailsTabScreen>
           text: hasResume ? 'View/Change Resume' : 'Upload Resume',
           icon: hasResume ? Icons.visibility_outlined : Icons.upload_file,
           onPressed: () {
-            context.push(RouteNames.profileResume);
+            context.push('${RouteNames.profileResume}?flow=profile');
           },
         ),
       ],

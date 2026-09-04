@@ -52,8 +52,10 @@ class V2ApiConstants {
   static const String fetchActiveBanner = '/home/banner/active';
 
   // File Management endpoints
-  static String uploadResume(int userId) => '/resume/upload/$userId';
-  static String uploadImage(int userId) => '/images/upload/$userId';
+  // NOTE: userId is a UUID string in the API contract (swagger: format uuid),
+  // never an int. See POST /api/resume/upload/{userId}.
+  static String uploadResume(String userId) => '/resume/upload/$userId';
+  static String uploadImage(String userId) => '/images/upload/$userId';
   static String downloadResume(String filename) => '/resume/$filename';
   static String downloadImage(String filename) => '/images/$filename';
 }

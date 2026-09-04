@@ -426,6 +426,22 @@ class ApiClient {
       onSendProgress: onSendProgress,
       cancelToken: cancelToken,
     );
-    return ApiResponse.fromJson(response.data, fromJson);
+
+    final body = response.data;
+
+    // The file endpoints answer with a bare string (the stored file id) rather
+    // than the usual {success, message, data} envelope, so wrap it before
+    // handing it to ApiResponse -- otherwise this throws a cast error.
+    if (body is! Map<String, dynamic>) {
+      final ok = (response.statusCode ?? 0) >= 200 &&
+          (response.statusCode ?? 0) < 300;
+      return ApiResponse<T>(
+        success: ok,
+        message: ok ? 'Upload successful' : 'Upload failed',
+        data: ok ? fromJson(body) : null,
+      );
+    }
+
+    return ApiResponse.fromJson(body, fromJson);
   }
 }

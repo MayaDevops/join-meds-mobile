@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../services/storage/local_storage_service.dart';
 import '../services/api/api_client.dart';
 import '../../core/constants/storage_keys.dart';
+import '../../core/constants/api_constants.dart';
 import 'auth_provider.dart';
 import '../../../api/personal_data_service.dart';
 
@@ -101,7 +102,7 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadUserFromStorage() async {
+  Future<void> _loadUserFromStorage({bool forceRefetch = false}) async {
     _userId = _storageService.getString(StorageKeys.userId);
     _personalData = _storageService.getObject(StorageKeys.userProfile);
 
@@ -120,7 +121,7 @@ class UserProvider extends ChangeNotifier {
             _personalData!['aadhaarNo'] == null ||
             _personalData!['academicStatus'] == null);
 
-    if ((_personalData == null || cacheMissingNewFields) &&
+    if ((forceRefetch || _personalData == null || cacheMissingNewFields) &&
         _userId != null &&
         _userId!.isNotEmpty) {
       try {
@@ -168,9 +169,13 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> refreshUserData() async {
-    debugPrint('UserProvider: Refreshing user data...');
-    await _loadUserFromStorage();
+  /// Reloads the profile. Pass [forceRefetch] after a write (such as a resume
+  /// upload) so the cached copy is bypassed and the server is asked again --
+  /// otherwise the stale cache short-circuits the fetch and the new value never
+  /// reaches the UI.
+  Future<void> refreshUserData({bool forceRefetch = false}) async {
+    debugPrint('UserProvider: Refreshing user data (force=$forceRefetch)...');
+    await _loadUserFromStorage(forceRefetch: forceRefetch);
   }
 
   void updateAuth(AuthProvider authProvider) {
@@ -226,12 +231,20 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> updateResume(String resumePath) async {
+  /// Records the resume id returned by POST /api/resume/upload/{userId}.
+  ///
+  /// This used to accept a path and then discard it, so `hasResume` stayed
+  /// false after a successful upload.
+  Future<bool> updateResume(String resumeId) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
+      _resumeUrl = resumeId;
+      _personalData ??= <String, dynamic>{};
+      _personalData!['resumeUrl'] = resumeId;
+
       await _saveToStorage();
       _isLoading = false;
       notifyListeners();
@@ -242,6 +255,13 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  /// Absolute URL of the stored resume, or null when none is on file.
+  /// Mirrors GET /api/resume/{filename}.
+  String? get resumeDownloadUrl {
+    if (!hasResume) return null;
+    return '${ApiConstants.baseUrl}/resume/$_resumeUrl';
   }
 
   Future<void> _saveToStorage() async {

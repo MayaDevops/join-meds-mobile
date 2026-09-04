@@ -70,8 +70,7 @@ class _SettingsTabScreenState extends State<SettingsTabScreen>
                 ? const Icon(Icons.check_circle, color: AppColors.success, size: 20)
                 : const Icon(Icons.upload_outlined, color: Colors.grey, size: 20),
             onTap: () {
-              // TODO: Navigate to resume upload
-              context.push('/profile/resume');
+              context.push('/profile/resume?flow=profile');
             },
           ),
           const Divider(height: 1),

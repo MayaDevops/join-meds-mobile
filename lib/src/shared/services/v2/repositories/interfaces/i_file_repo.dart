@@ -7,7 +7,7 @@ import '../../../../models/v2/common/file_upload_response.dart';
 abstract class IFileRepo {
   /// Upload resume file
   Future<ApiResponse<FileUploadResponse>> uploadResume(
-    int userId,
+    String userId,
     File file, {
     void Function(int, int)? onProgress,
     CancelToken? cancelToken,
@@ -15,7 +15,7 @@ abstract class IFileRepo {
 
   /// Upload profile image
   Future<ApiResponse<FileUploadResponse>> uploadImage(
-    int userId,
+    String userId,
     File file, {
     void Function(int, int)? onProgress,
     CancelToken? cancelToken,

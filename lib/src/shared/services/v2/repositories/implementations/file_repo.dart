@@ -15,7 +15,7 @@ class FileRepo implements IFileRepo {
 
   @override
   Future<ApiResponse<FileUploadResponse>> uploadResume(
-    int userId,
+    String userId,
     File file, {
     void Function(int, int)? onProgress,
     CancelToken? cancelToken,
@@ -39,7 +39,7 @@ class FileRepo implements IFileRepo {
 
   @override
   Future<ApiResponse<FileUploadResponse>> uploadImage(
-    int userId,
+    String userId,
     File file, {
     void Function(int, int)? onProgress,
     CancelToken? cancelToken,
