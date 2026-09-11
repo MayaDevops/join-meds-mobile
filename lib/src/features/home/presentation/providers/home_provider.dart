@@ -24,7 +24,17 @@ class HomeProvider extends ChangeNotifier {
   );
 
   // Recommended jobs
+  //
+  // GET /api/org-job/list has no page/size support (it ignores them and always
+  // returns every job), so the full list is fetched once into [_allJobs] and
+  // revealed [jobsPageSize] at a time as the user scrolls. When the backend
+  // adds paging, only [loadMoreJobs] needs to change -- the UI contract
+  // (recommendedJobs / hasMoreJobs / loadMoreJobs) stays the same.
+  static const int jobsPageSize = 10;
+  List<JobDetailsDTO> _allJobs = [];
   List<JobDetailsDTO> _recommendedJobs = [];
+  int _visibleJobCount = 0;
+  bool _isLoadingMoreJobs = false;
   bool _isLoadingJobs = false;
   bool _isLoadingSearchedJobs = false;
   String? _jobsError;
@@ -49,6 +59,9 @@ class HomeProvider extends ChangeNotifier {
 
   // Getters
   List<JobDetailsDTO> get recommendedJobs => _recommendedJobs;
+  bool get hasMoreJobs => _visibleJobCount < _allJobs.length;
+  bool get isLoadingMoreJobs => _isLoadingMoreJobs;
+  int get totalJobCount => _allJobs.length;
   String? get searchQuery => _searchQuery;
   bool get isSearching => _isLoadingSearchedJobs;
   String? get searchError => _searchedJobsError;
@@ -90,14 +103,22 @@ class HomeProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // No default limit: the previous `limit ?? 20` silently dropped every
+      // job past the 20th, so newly posted jobs never appeared.
       final response = await _homeRepository.fetchRecommendedJobs(
-        limit: limit ?? 20,
+        limit: limit,
       );
 
       if (response.success && response.data != null) {
-        _recommendedJobs = response.data!;
+        _allJobs = response.data!;
+        _visibleJobCount = jobsPageSize.clamp(0, _allJobs.length);
+        _syncVisibleJobs();
         _lastJobsFetch = DateTime.now();
         _jobsError = null;
+        debugPrint(
+          'HomeProvider: Fetched ${_allJobs.length} jobs, '
+          'showing $_visibleJobCount',
+        );
       } else {
         _jobsError = response.message;
       }
@@ -277,8 +298,36 @@ class HomeProvider extends ChangeNotifier {
   }
 
   /// Refresh all home data
+  /// Reveals the next page of jobs. Safe to call repeatedly from a scroll
+  /// listener: it is a no-op while a load is running or when nothing is left.
+  Future<void> loadMoreJobs() async {
+    if (_isLoadingMoreJobs || _isLoadingJobs || !hasMoreJobs) return;
+
+    _isLoadingMoreJobs = true;
+    notifyListeners();
+
+    try {
+      _visibleJobCount =
+          (_visibleJobCount + jobsPageSize).clamp(0, _allJobs.length);
+      _syncVisibleJobs();
+      debugPrint(
+        'HomeProvider: Loaded more jobs, showing '
+        '$_visibleJobCount of ${_allJobs.length}',
+      );
+    } finally {
+      _isLoadingMoreJobs = false;
+      notifyListeners();
+    }
+  }
+
+  void _syncVisibleJobs() {
+    _recommendedJobs = _allJobs.sublist(0, _visibleJobCount);
+  }
+
+  /// Pull-to-refresh. Forces a network fetch -- going through [initialize]
+  /// hit the 5-minute cache, so newly posted jobs did not appear on refresh.
   Future<void> refreshHome() async {
-    await initialize();
+    await fetchRecommendedJobs(forceRefresh: true);
   }
 
   /// Clear all errors
@@ -290,6 +339,8 @@ class HomeProvider extends ChangeNotifier {
 
   /// Clear all data
   void clear() {
+    _allJobs = [];
+    _visibleJobCount = 0;
     _recommendedJobs = [];
     _searchQuery = null;
     _bookmarkedJobIds.clear();

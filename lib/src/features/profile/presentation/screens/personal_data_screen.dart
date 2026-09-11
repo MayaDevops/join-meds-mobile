@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:untitled/src/shared/widgets/buttons/back_button_widget.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/inputs/custom_date_picker_field.dart';
 import '../../../../shared/widgets/inputs/custom_text_field.dart';
 import '../../../../shared/providers/user_provider.dart';
@@ -428,7 +430,17 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                     CustomTextField(
                       controller: _passportNumController,
                       hintText: 'Passport Number (Optional)',
-                      keyboardType: TextInputType.number,
+                      // Passport numbers mix letters and digits; the number
+                      // keypad made letters impossible to type.
+                      keyboardType: TextInputType.text,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'[a-zA-Z0-9]'),
+                        ),
+                        LengthLimitingTextInputFormatter(20),
+                      ],
+                      validator: Validators.passportNumber,
                     ),
 
                     const SizedBox(height: 40),
