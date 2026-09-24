@@ -55,6 +55,10 @@ class V2ApiConstants {
   // userId is a UUID string (swagger: format uuid).
   static String fetchUserNotifications(String userId) =>
       '/notifications/user/$userId';
+  static String markAllUserNotificationsRead(String userId) =>
+      '/notifications/user/$userId/read-all';
+  static String markNotificationRead(String notificationId) =>
+      '/notifications/$notificationId/read';
 
   // File Management endpoints
   // NOTE: userId is a UUID string in the API contract (swagger: format uuid),

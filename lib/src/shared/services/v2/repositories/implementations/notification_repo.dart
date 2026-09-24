@@ -62,4 +62,60 @@ class NotificationRepo implements INotificationRepo {
       );
     }
   }
+
+  @override
+  Future<ApiResponse<void>> markAllAsReadForUser(
+    String userId, {
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      final response = await _apiClient.put(
+        V2ApiConstants.markAllUserNotificationsRead(userId),
+        cancelToken: cancelToken,
+      );
+
+      final ok = response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300;
+      return ApiResponse<void>(
+        success: ok,
+        message: ok
+            ? 'All notifications marked as read'
+            : 'Failed to mark notifications as read',
+      );
+    } catch (e) {
+      return ApiResponse<void>(
+        success: false,
+        message: 'An error occurred: ${e.toString()}',
+      );
+    }
+  }
+
+  @override
+  Future<ApiResponse<void>> markAsRead(
+    String notificationId, {
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      final response = await _apiClient.put(
+        V2ApiConstants.markNotificationRead(notificationId),
+        cancelToken: cancelToken,
+      );
+
+      final ok = response.statusCode != null &&
+          response.statusCode! >= 200 &&
+          response.statusCode! < 300;
+      return ApiResponse<void>(
+        success: ok,
+        message: ok
+            ? 'Notification marked as read'
+            : 'Failed to mark notification as read',
+      );
+    } catch (e) {
+      return ApiResponse<void>(
+        success: false,
+        message: 'An error occurred: ${e.toString()}',
+      );
+    }
+  }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../../../../shared/services/v2/repositories/interfaces/i_notification_repo.dart';
@@ -18,6 +20,19 @@ class NotificationsProvider extends ChangeNotifier {
   String? _error;
   DateTime? _lastFetchTime;
   String? _lastUserId;
+
+  /// Ids already known for [_lastUserId]; null until the first successful
+  /// fetch, so notifications that existed before the app opened are never
+  /// announced as "new".
+  Set<String>? _seenIds;
+
+  final StreamController<List<NotificationDTO>> _newNotificationsController =
+      StreamController<List<NotificationDTO>>.broadcast();
+
+  /// Emits unread notifications that arrived since the previous fetch
+  /// (drives the in-app notification banner).
+  Stream<List<NotificationDTO>> get newNotifications =>
+      _newNotificationsController.stream;
 
   /// All notifications, newest first
   List<NotificationDTO> get notifications => _notifications;
@@ -62,8 +77,9 @@ class NotificationsProvider extends ChangeNotifier {
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
         _unreadCount = response.data!.unreadCount;
         _lastFetchTime = DateTime.now();
-        _lastUserId = userId;
         _error = null;
+        _announceNewNotifications(userId);
+        _lastUserId = userId;
       } else {
         _error = response.message;
       }
@@ -79,16 +95,95 @@ class NotificationsProvider extends ChangeNotifier {
     }
   }
 
+  void _announceNewNotifications(String userId) {
+    if (_lastUserId != userId) _seenIds = null;
+
+    final seen = _seenIds;
+    final fresh = seen == null
+        ? const <NotificationDTO>[]
+        : _notifications
+            .where((n) => !n.isRead && !seen.contains(n.id))
+            .toList();
+
+    _seenIds = {...?seen, ..._notifications.map((n) => n.id)};
+
+    if (fresh.isNotEmpty && !_newNotificationsController.isClosed) {
+      _newNotificationsController.add(fresh);
+    }
+  }
+
   /// Refresh notifications (force fetch)
   Future<void> refresh(String userId) async {
     await fetchNotifications(userId, forceRefresh: true);
   }
 
-  /// Mark a notification as read (not wired to the API yet)
-  Future<void> markAsRead(String notificationId) async {}
+  /// Mark a single notification as read (PUT /api/notifications/{id}/read).
+  ///
+  /// Updates the item and unread count immediately and restores them if the
+  /// request fails. Returns whether it succeeded (true if already read).
+  Future<bool> markAsRead(String notificationId) async {
+    final index = _notifications.indexWhere((n) => n.id == notificationId);
+    if (index != -1 && _notifications[index].isRead) return true;
 
-  /// Mark all notifications as read (not wired to the API yet)
-  Future<void> markAllAsRead() async {}
+    final previousNotifications = _notifications;
+    final previousUnreadCount = _unreadCount;
+
+    if (index != -1) {
+      _notifications = List.of(_notifications)
+        ..[index] = _notifications[index]
+            .copyWith(isRead: true, readAt: DateTime.now());
+      if (_unreadCount > 0) _unreadCount--;
+      notifyListeners();
+    }
+
+    final response = await _notificationRepo.markAsRead(notificationId);
+    if (!response.success) {
+      _notifications = previousNotifications;
+      _unreadCount = previousUnreadCount;
+      debugPrint('NotificationsProvider: read failed - ${response.message}');
+      notifyListeners();
+    }
+    return response.success;
+  }
+
+  bool _isMarkingAllRead = false;
+
+  /// True while the read-all request is in flight
+  bool get isMarkingAllRead => _isMarkingAllRead;
+
+  /// Mark all notifications of the user as read
+  /// (PUT /api/notifications/user/{userId}/read-all).
+  ///
+  /// Updates the list and unread count immediately and restores them if the
+  /// request fails. Returns whether the API call succeeded.
+  Future<bool> markAllAsRead(String userId) async {
+    if (_isMarkingAllRead || !hasUnread) return true;
+
+    final previousNotifications = _notifications;
+    final previousUnreadCount = _unreadCount;
+
+    _isMarkingAllRead = true;
+    final now = DateTime.now();
+    _notifications = _notifications
+        .map((n) => n.isRead ? n : n.copyWith(isRead: true, readAt: now))
+        .toList();
+    _unreadCount = 0;
+    notifyListeners();
+
+    try {
+      final response = await _notificationRepo.markAllAsReadForUser(userId);
+      if (!response.success) {
+        _notifications = previousNotifications;
+        _unreadCount = previousUnreadCount;
+        _error = response.message;
+        debugPrint('NotificationsProvider: read-all failed - ${response.message}');
+      }
+      return response.success;
+    } finally {
+      _isMarkingAllRead = false;
+      notifyListeners();
+    }
+  }
 
   /// Remove a notification from the list
   void removeNotification(String notificationId) {
@@ -105,6 +200,7 @@ class NotificationsProvider extends ChangeNotifier {
     _unreadCount = 0;
     _lastFetchTime = null;
     _lastUserId = null;
+    _seenIds = null;
     notifyListeners();
   }
 
@@ -112,5 +208,11 @@ class NotificationsProvider extends ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _newNotificationsController.close();
+    super.dispose();
   }
 }

@@ -75,6 +75,86 @@ class _HomeTabScreenState extends State<HomeTabScreen>
     await homeProvider.refreshHome();
   }
 
+  /// ===== UNREAD NOTIFICATIONS INDICATOR =====
+  /// Shown under the header only while there are unread notifications.
+  Widget _buildUnreadNotificationsStrip() {
+    return Consumer<NotificationsProvider>(
+      builder: (context, notificationsProvider, _) {
+        final unreadCount = notificationsProvider.unreadCount;
+        if (unreadCount <= 0) return const SizedBox.shrink();
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => context.go(RouteNames.notifications),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Row(
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(
+                          Icons.notifications_active_outlined,
+                          color: AppColors.primaryBlue,
+                        ),
+                        Positioned(
+                          right: -1,
+                          top: -1,
+                          child: Container(
+                            width: 9,
+                            height: 9,
+                            decoration: BoxDecoration(
+                              color: AppColors.error,
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: Colors.white, width: 1.5),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        unreadCount == 1
+                            ? 'You have 1 unread notification'
+                            : 'You have $unreadCount unread notifications',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'View',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   /// ===== PROFILE IMAGE BUILDER =====
   ImageProvider? _buildHomeProfileImage(UserProvider userProvider) {
     final photoId = userProvider.profileImageUrl;
@@ -256,6 +336,9 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                         ),
 
                         const SizedBox(height: 20),
+
+                        // Unread notifications indicator
+                        _buildUnreadNotificationsStrip(),
 
                         // Promotional Banner
                         Padding(

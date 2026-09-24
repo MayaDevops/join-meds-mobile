@@ -6,6 +6,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'shared/providers/locale_provider.dart';
+import 'shared/widgets/notifications/in_app_notification_host.dart';
 
 class JoinMedsApp extends StatelessWidget {
   const JoinMedsApp({super.key});
@@ -42,7 +43,10 @@ class JoinMedsApp extends StatelessWidget {
                   MediaQuery.of(context).textScaler.scale(1.0).clamp(0.8, 1.2),
                 ),
               ),
-              child: child ?? const SizedBox.shrink(),
+              // In-app notification banners (polls while the app is open)
+              child: InAppNotificationHost(
+                child: child ?? const SizedBox.shrink(),
+              ),
             );
           },
         );
