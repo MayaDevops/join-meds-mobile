@@ -51,6 +51,11 @@ class V2ApiConstants {
   // Home Screen endpoints
   static const String fetchActiveBanner = '/home/banner/active';
 
+  // Notification endpoints
+  // userId is a UUID string (swagger: format uuid).
+  static String fetchUserNotifications(String userId) =>
+      '/notifications/user/$userId';
+
   // File Management endpoints
   // NOTE: userId is a UUID string in the API contract (swagger: format uuid),
   // never an int. See POST /api/resume/upload/{userId}.

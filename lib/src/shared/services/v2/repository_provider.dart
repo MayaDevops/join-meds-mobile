@@ -5,12 +5,14 @@ import 'repositories/interfaces/i_user_repo.dart';
 import 'repositories/interfaces/i_organization_repo.dart';
 import 'repositories/interfaces/i_job_repo.dart';
 import 'repositories/interfaces/i_file_repo.dart';
+import 'repositories/interfaces/i_notification_repo.dart';
 import 'repositories/implementations/auth_repo.dart';
 import 'repositories/implementations/otp_repo.dart';
 import 'repositories/implementations/user_repo.dart';
 import 'repositories/implementations/organization_repo.dart';
 import 'repositories/implementations/job_repo.dart';
 import 'repositories/implementations/file_repo.dart';
+import 'repositories/implementations/notification_repo.dart';
 
 /// Provides singleton instances of all V2 repositories
 ///
@@ -34,6 +36,7 @@ class RepositoryProvider {
   late final IOrganizationRepo _organizationRepo;
   late final IJobRepo _jobRepo;
   late final IFileRepo _fileRepo;
+  late final INotificationRepo _notificationRepo;
 
   /// Private constructor for singleton pattern
   RepositoryProvider._() {
@@ -45,6 +48,7 @@ class RepositoryProvider {
     _organizationRepo = OrganizationRepo(apiClient);
     _jobRepo = JobRepo(apiClient);
     _fileRepo = FileRepo(apiClient);
+    _notificationRepo = NotificationRepo(apiClient);
   }
 
   /// Constructor with custom ApiClient (for testing)
@@ -55,6 +59,7 @@ class RepositoryProvider {
     _organizationRepo = OrganizationRepo(apiClient);
     _jobRepo = JobRepo(apiClient);
     _fileRepo = FileRepo(apiClient);
+    _notificationRepo = NotificationRepo(apiClient);
   }
 
   // Repository getters
@@ -76,6 +81,9 @@ class RepositoryProvider {
 
   /// File repository
   IFileRepo get fileRepo => _fileRepo;
+
+  /// Notification repository
+  INotificationRepo get notificationRepo => _notificationRepo;
 
   // Testing utilities
 

@@ -1,129 +1,116 @@
 import 'package:flutter/foundation.dart';
+import 'package:dio/dio.dart';
+import '../../../../shared/services/v2/repositories/interfaces/i_notification_repo.dart';
+import '../../../../shared/models/v2/notification/notification_dto.dart';
 
-/// Provider for managing notifications state
-/// NOTE: Notifications API has been disabled - always returns empty state
+export '../../../../shared/models/v2/notification/notification_dto.dart';
+
+/// Provider for managing the user's notifications
+/// (GET /api/notifications/user/{userId})
 class NotificationsProvider extends ChangeNotifier {
-  NotificationsProvider();
+  final INotificationRepo _notificationRepo;
 
-  final List<NotificationDTO> _notifications = [];
+  NotificationsProvider(this._notificationRepo);
+
+  List<NotificationDTO> _notifications = [];
+  int _unreadCount = 0;
   bool _isLoading = false;
   String? _error;
+  DateTime? _lastFetchTime;
+  String? _lastUserId;
 
-  /// All notifications (always empty)
+  /// All notifications, newest first
   List<NotificationDTO> get notifications => _notifications;
 
-  /// Unread notifications count (always 0)
-  int get unreadCount => 0;
+  /// Unread notifications count (from the API's `unreadCount`)
+  int get unreadCount => _unreadCount;
 
-  /// Loading state (always false)
+  /// Loading state
   bool get isLoading => _isLoading;
 
-  /// Error message (always null)
+  /// Error message
   String? get error => _error;
 
-  /// Has unread notifications (always false)
-  bool get hasUnread => false;
+  /// Has unread notifications
+  bool get hasUnread => _unreadCount > 0;
 
-  /// Fetch notifications from API (no-op - notifications disabled)
-  Future<void> fetchNotifications({
+  /// Fetch all notifications of the user
+  Future<void> fetchNotifications(
+    String userId, {
     bool forceRefresh = false,
   }) async {
-    // Notifications API is disabled - no-op
-    debugPrint('NotificationsProvider: Notifications API is disabled');
+    if (_isLoading) return;
+
+    // Avoid fetching too frequently (cache for 1 minute per user)
+    if (!forceRefresh &&
+        _lastUserId == userId &&
+        _lastFetchTime != null &&
+        DateTime.now().difference(_lastFetchTime!).inMinutes < 1) {
+      debugPrint('NotificationsProvider: Using cached notifications');
+      return;
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await _notificationRepo.fetchUserNotifications(userId);
+
+      if (response.success && response.data != null) {
+        _notifications = List.of(response.data!.notifications)
+          ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        _unreadCount = response.data!.unreadCount;
+        _lastFetchTime = DateTime.now();
+        _lastUserId = userId;
+        _error = null;
+      } else {
+        _error = response.message;
+      }
+    } on DioException catch (e) {
+      _error = e.message ?? 'Network error occurred';
+      debugPrint('NotificationsProvider: Error fetching notifications - $e');
+    } catch (e) {
+      _error = 'An unexpected error occurred';
+      debugPrint('NotificationsProvider: Unexpected error - $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  /// Mark a notification as read (no-op - notifications disabled)
-  Future<void> markAsRead(String notificationId) async {
-    // Notifications API is disabled - no-op
+  /// Refresh notifications (force fetch)
+  Future<void> refresh(String userId) async {
+    await fetchNotifications(userId, forceRefresh: true);
   }
 
-  /// Mark all notifications as read (no-op - notifications disabled)
-  Future<void> markAllAsRead() async {
-    // Notifications API is disabled - no-op
-  }
+  /// Mark a notification as read (not wired to the API yet)
+  Future<void> markAsRead(String notificationId) async {}
 
-  /// Remove a notification from the list (no-op - notifications disabled)
+  /// Mark all notifications as read (not wired to the API yet)
+  Future<void> markAllAsRead() async {}
+
+  /// Remove a notification from the list
   void removeNotification(String notificationId) {
-    // Notifications API is disabled - no-op
+    final removed = _notifications.where((n) => n.id == notificationId);
+    if (removed.isEmpty) return;
+    if (!removed.first.isRead && _unreadCount > 0) _unreadCount--;
+    _notifications = _notifications.where((n) => n.id != notificationId).toList();
+    notifyListeners();
   }
 
-  /// Clear all notifications (no-op - notifications disabled)
+  /// Clear all notifications (e.g. on logout)
   void clearNotifications() {
-    // Notifications API is disabled - no-op
+    _notifications = [];
+    _unreadCount = 0;
+    _lastFetchTime = null;
+    _lastUserId = null;
+    notifyListeners();
   }
 
   /// Clear error message
   void clearError() {
     _error = null;
     notifyListeners();
-  }
-
-  /// Refresh notifications (no-op - notifications disabled)
-  Future<void> refresh() async {
-    // Notifications API is disabled - no-op
-  }
-
-  @override
-  void dispose() {
-    _notifications.clear();
-    super.dispose();
-  }
-}
-
-/// Placeholder DTO class (kept for compatibility)
-class NotificationDTO {
-  final String id;
-  final String title;
-  final String body;
-  final String type;
-  final bool isRead;
-  final DateTime createdAt;
-  final DateTime? readAt;
-  final String? actionUrl;
-
-  NotificationDTO({
-    required this.id,
-    required this.title,
-    required this.body,
-    required this.type,
-    required this.isRead,
-    required this.createdAt,
-    this.readAt,
-    this.actionUrl,
-  });
-
-  String get timeAgo {
-    final difference = DateTime.now().difference(createdAt);
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
-    } else {
-      return 'Just now';
-    }
-  }
-
-  NotificationDTO copyWith({
-    String? id,
-    String? title,
-    String? body,
-    String? type,
-    bool? isRead,
-    DateTime? createdAt,
-    DateTime? readAt,
-    String? actionUrl,
-  }) {
-    return NotificationDTO(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      body: body ?? this.body,
-      type: type ?? this.type,
-      isRead: isRead ?? this.isRead,
-      createdAt: createdAt ?? this.createdAt,
-      readAt: readAt ?? this.readAt,
-      actionUrl: actionUrl ?? this.actionUrl,
-    );
   }
 }

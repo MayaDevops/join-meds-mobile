@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/home_provider.dart';
+import '../providers/notifications_provider.dart';
 import '../widgets/promotional_banner_widget.dart';
 import '../widgets/search_bar_with_filter.dart';
 import '../widgets/job_card_widget.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/router/route_names.dart';
 import '../../../../shared/providers/user_provider.dart';
+import '../../../../shared/services/storage/local_storage_service.dart';
+import '../../../../core/constants/storage_keys.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -41,9 +45,23 @@ class _HomeTabScreenState extends State<HomeTabScreen>
       // 🔑 ENSURE USER DATA IS READY FOR HOME HEADER
       await context.read<UserProvider>().ensureUserLoadedForHome();
 
+      // Load notifications so the unread badge is populated
+      if (!mounted) return;
+      _loadNotifications();
+
       // Existing home logic (UNCHANGED)
       await _loadHomeData();
     });
+  }
+
+  void _loadNotifications({bool forceRefresh = false}) {
+    // UserProvider loads asynchronously, so fall back to the id stored at login
+    final userId = context.read<UserProvider>().userId ??
+        context.read<LocalStorageService>().getString(StorageKeys.userId);
+    if (userId == null || userId.isEmpty) return;
+    context
+        .read<NotificationsProvider>()
+        .fetchNotifications(userId, forceRefresh: forceRefresh);
   }
 
   Future<void> _loadHomeData() async {
@@ -53,6 +71,7 @@ class _HomeTabScreenState extends State<HomeTabScreen>
 
   Future<void> _refreshData() async {
     final homeProvider = context.read<HomeProvider>();
+    _loadNotifications(forceRefresh: true);
     await homeProvider.refreshHome();
   }
 
@@ -169,20 +188,68 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                                 ),
                               ),
 
-                              // Notification Bell
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: Colors.black12),
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.notifications_outlined,
-                                    color: Colors.black87,
-                                  ),
-                                  onPressed: () {},
-                                ),
+                              // Notification Bell (opens Notifications tab,
+                              // shows the unread count from the API)
+                              Consumer<NotificationsProvider>(
+                                builder: (context, notificationsProvider, _) {
+                                  final unreadCount =
+                                      notificationsProvider.unreadCount;
+                                  return Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: Colors.black12),
+                                        ),
+                                        child: IconButton(
+                                          icon: const Icon(
+                                            Icons.notifications_outlined,
+                                            color: Colors.black87,
+                                          ),
+                                          tooltip: 'Notifications',
+                                          onPressed: () => context
+                                              .go(RouteNames.notifications),
+                                        ),
+                                      ),
+                                      if (unreadCount > 0)
+                                        Positioned(
+                                          right: -2,
+                                          top: -2,
+                                          child: IgnorePointer(
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(4),
+                                              constraints:
+                                                  const BoxConstraints(
+                                                minWidth: 20,
+                                                minHeight: 20,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.error,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                    color: Colors.white,
+                                                    width: 1.5),
+                                              ),
+                                              child: Text(
+                                                unreadCount > 99
+                                                    ? '99+'
+                                                    : '$unreadCount',
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),

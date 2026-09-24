@@ -1,4 +1,8 @@
 /// Notification DTO model
+///
+/// Maps `NotificationResponse` from GET /api/notifications/user/{userId}:
+/// `{ id, orgId, userId, jobId, candidateName, message, type, read, createdAt }`.
+/// The API has no title, so [title] falls back to a readable form of [type].
 class NotificationDTO {
   final String id;
   final String title;
@@ -9,6 +13,10 @@ class NotificationDTO {
   final DateTime createdAt;
   final DateTime? readAt;
   final String? actionUrl; // URL to navigate when tapped
+  final String? orgId;
+  final String? userId;
+  final String? jobId;
+  final String? candidateName;
 
   const NotificationDTO({
     required this.id,
@@ -20,29 +28,46 @@ class NotificationDTO {
     required this.createdAt,
     this.readAt,
     this.actionUrl,
+    this.orgId,
+    this.userId,
+    this.jobId,
+    this.candidateName,
   });
 
   /// Create from JSON
   factory NotificationDTO.fromJson(Map<String, dynamic> json) {
+    final type = json['type']?.toString();
     return NotificationDTO(
       id: json['id']?.toString() ?? '',
-      title: json['title']?.toString() ?? '',
+      title: json['title']?.toString() ?? _titleFromType(type),
       body: json['body']?.toString() ?? json['message']?.toString() ?? '',
-      type: json['type']?.toString(),
+      type: type,
       data: json['data'] as Map<String, dynamic>?,
-      isRead: json['isRead'] ?? json['is_read'] ?? false,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'].toString())
-          : json['created_at'] != null
-              ? DateTime.parse(json['created_at'].toString())
-              : DateTime.now(),
-      readAt: json['readAt'] != null
-          ? DateTime.parse(json['readAt'].toString())
-          : json['read_at'] != null
-              ? DateTime.parse(json['read_at'].toString())
-              : null,
+      isRead: (json['read'] ?? json['isRead'] ?? json['is_read']) == true,
+      createdAt: _parseDate(json['createdAt'] ?? json['created_at']) ??
+          DateTime.now(),
+      readAt: _parseDate(json['readAt'] ?? json['read_at']),
       actionUrl: json['actionUrl']?.toString() ?? json['action_url']?.toString(),
+      orgId: json['orgId']?.toString(),
+      userId: json['userId']?.toString(),
+      jobId: json['jobId']?.toString(),
+      candidateName: json['candidateName']?.toString(),
     );
+  }
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    return DateTime.tryParse(value.toString())?.toLocal();
+  }
+
+  /// "APPLICATION_STATUS" / "job_match" -> "Application Status" / "Job Match"
+  static String _titleFromType(String? type) {
+    if (type == null || type.trim().isEmpty) return 'Notification';
+    return type
+        .split(RegExp(r'[_\-\s]+'))
+        .where((w) => w.isNotEmpty)
+        .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase())
+        .join(' ');
   }
 
   /// Convert to JSON
@@ -57,6 +82,10 @@ class NotificationDTO {
       'createdAt': createdAt.toIso8601String(),
       'readAt': readAt?.toIso8601String(),
       'actionUrl': actionUrl,
+      'orgId': orgId,
+      'userId': userId,
+      'jobId': jobId,
+      'candidateName': candidateName,
     };
   }
 
@@ -71,6 +100,10 @@ class NotificationDTO {
     DateTime? createdAt,
     DateTime? readAt,
     String? actionUrl,
+    String? orgId,
+    String? userId,
+    String? jobId,
+    String? candidateName,
   }) {
     return NotificationDTO(
       id: id ?? this.id,
@@ -82,6 +115,10 @@ class NotificationDTO {
       createdAt: createdAt ?? this.createdAt,
       readAt: readAt ?? this.readAt,
       actionUrl: actionUrl ?? this.actionUrl,
+      orgId: orgId ?? this.orgId,
+      userId: userId ?? this.userId,
+      jobId: jobId ?? this.jobId,
+      candidateName: candidateName ?? this.candidateName,
     );
   }
 
@@ -120,4 +157,30 @@ class NotificationDTO {
 
   @override
   int get hashCode => id.hashCode;
+}
+
+/// Response of GET /api/notifications/user/{userId}:
+/// `{ unreadCount, notifications: [NotificationResponse] }`
+class NotificationListDTO {
+  final int unreadCount;
+  final List<NotificationDTO> notifications;
+
+  const NotificationListDTO({
+    required this.unreadCount,
+    required this.notifications,
+  });
+
+  factory NotificationListDTO.fromJson(Map<String, dynamic> json) {
+    final notifications = (json['notifications'] as List<dynamic>? ?? [])
+        .whereType<Map<String, dynamic>>()
+        .map(NotificationDTO.fromJson)
+        .toList();
+    final unread = json['unreadCount'];
+    return NotificationListDTO(
+      unreadCount: unread is num
+          ? unread.toInt()
+          : notifications.where((n) => !n.isRead).length,
+      notifications: notifications,
+    );
+  }
 }

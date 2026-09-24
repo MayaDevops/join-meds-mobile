@@ -236,6 +236,9 @@ class AppRouter {
                 GoRoute(
                   path: 'search',
                   name: 'job_search',
+                  // Push above the shell so the page gets a proper back
+                  // button and system back pops it reliably.
+                  parentNavigatorKey: _rootNavigatorKey,
                   pageBuilder: (context, state) =>
                       RouteTransitions.slideFromRight(
                     state: state,

@@ -26,6 +26,8 @@ import '../../features/home/presentation/providers/jobs_tab_provider.dart';
 import '../../features/home/presentation/providers/notifications_provider.dart';
 import '../services/v2/repositories/interfaces/i_job_repo.dart';
 import '../services/v2/repositories/implementations/job_repo.dart';
+import '../services/v2/repositories/interfaces/i_notification_repo.dart';
+import '../services/v2/repositories/implementations/notification_repo.dart';
 
 class AppProvider {
   static late LocalStorageService _storageService;
@@ -35,6 +37,7 @@ class AppProvider {
   static late V2FormRepository _v2FormRepository;
   static late IHomeRepository _homeRepository;
   static late IJobRepo _jobRepo;
+  static late INotificationRepo _notificationRepo;
   static late SharedPreferences _prefs;
   static late IJobDetailsRepository _jobDetailsRepository;
 
@@ -46,6 +49,7 @@ class AppProvider {
   static V2FormRepository get v2FormRepository => _v2FormRepository;
   static IHomeRepository get homeRepository => _homeRepository;
   static IJobRepo get jobRepo => _jobRepo;
+  static INotificationRepo get notificationRepo => _notificationRepo;
   static SharedPreferences get prefs => _prefs;
   static IJobDetailsRepository get jobDetailsRepository =>
       _jobDetailsRepository;
@@ -82,6 +86,9 @@ class AppProvider {
 
     // Initialize Job Repository
     _jobRepo = JobRepo(_apiClient);
+
+    // Initialize Notification Repository
+    _notificationRepo = NotificationRepo(_apiClient);
     _jobDetailsRepository = JobDetailsRepositoryImpl(_apiClient);
   }
 
@@ -96,6 +103,7 @@ class AppProvider {
         Provider<V2FormRepository>.value(value: _v2FormRepository),
         Provider<IHomeRepository>.value(value: _homeRepository),
         Provider<IJobRepo>.value(value: _jobRepo),
+        Provider<INotificationRepo>.value(value: _notificationRepo),
         Provider<IJobDetailsRepository>.value(
           value: _jobDetailsRepository,
         ),
@@ -159,7 +167,7 @@ class AppProvider {
 
         // Notifications Provider
         ChangeNotifierProvider<NotificationsProvider>(
-          create: (_) => NotificationsProvider(),
+          create: (_) => NotificationsProvider(_notificationRepo),
         ),
         ChangeNotifierProvider<JobDetailsProvider>(
           create: (context) => JobDetailsProvider(
