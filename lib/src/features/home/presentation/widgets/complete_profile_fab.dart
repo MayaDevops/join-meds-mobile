@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/providers/user_provider.dart';
-import '../../../../core/router/route_names.dart';
 
 /// Floating action button for completing user profile
 class CompleteProfileFAB extends StatelessWidget {
@@ -19,7 +18,7 @@ class CompleteProfileFAB extends StatelessWidget {
       builder: (context, userProvider, child) {
         // TODO: Add profileCompletion percentage to UserProvider
         // For now, show if profile is incomplete (no name or no resume)
-        final shouldShow = !userProvider.hasProfile || !userProvider.hasResume;
+        final shouldShow = !userProvider.isProfileComplete;
 
         if (!shouldShow) {
           return const SizedBox.shrink();
@@ -69,7 +68,7 @@ class CompleteProfileFABCompact extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(
       builder: (context, userProvider, child) {
-        final shouldShow = !userProvider.hasProfile || !userProvider.hasResume;
+        final shouldShow = !userProvider.isProfileComplete;
 
         if (!shouldShow) {
           return const SizedBox.shrink();

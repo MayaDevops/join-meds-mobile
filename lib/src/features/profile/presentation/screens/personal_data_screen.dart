@@ -1,15 +1,15 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'package:untitled/src/shared/widgets/buttons/back_button_widget.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/inputs/custom_date_picker_field.dart';
 import '../../../../shared/widgets/inputs/custom_text_field.dart';
 import '../../../../shared/providers/user_provider.dart';
@@ -17,7 +17,9 @@ import '../../../../../api/personal_data_service.dart';
 import '../../../../../models/personal_data_model.dart';
 
 class PersonalDataScreen extends StatefulWidget {
-  const PersonalDataScreen({super.key});
+  final bool isSignupFlow;
+
+  const PersonalDataScreen({super.key, this.isSignupFlow = false});
 
   @override
   State<PersonalDataScreen> createState() => _PersonalDataScreenState();
@@ -105,6 +107,20 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
       final response = await request.send();
       final responseBody = await response.stream.bytesToString();
 
+      if (response.statusCode == 413) {
+        if (mounted) {
+          setState(() => _isUploadingImage = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Image size is too large. Please choose a smaller image.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+        return;
+      }
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         // final jsonResponse = json.decode(responseBody);
 
@@ -134,7 +150,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
         throw Exception('Upload failed: ${response.statusCode} - $responseBody');
       }
     } catch (e) {
-      debugPrint('Error uploading image: $e');
+      debugPrint('Error uploading image: - $e');
       if (mounted) {
         setState(() => _isUploadingImage = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -269,8 +285,10 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                               // Back Button Row
                               Row(
                                 children: [
-                                  BackButtonWidget(),
-                                  SizedBox(width: 16,),
+                                  if (!widget.isSignupFlow) ...[
+                                    BackButtonWidget(),
+                                    const SizedBox(width: 16),
+                                  ],
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     mainAxisAlignment: MainAxisAlignment.center,
@@ -407,11 +425,22 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                       controller: _aadhaarNumController,
                       hintText: 'Aadhaar Number (Optional)',
                       keyboardType: TextInputType.number,
-                    ),const SizedBox(height: 16),
+                    ),
+                    const SizedBox(height: 16),
                     CustomTextField(
-                      controller: _aadhaarNumController,
+                      controller: _passportNumController,
                       hintText: 'Passport Number (Optional)',
-                      keyboardType: TextInputType.number,
+                      // Passport numbers mix letters and digits; the number
+                      // keypad made letters impossible to type.
+                      keyboardType: TextInputType.text,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'[a-zA-Z0-9]'),
+                        ),
+                        LengthLimitingTextInputFormatter(20),
+                      ],
+                      validator: Validators.passportNumber,
                     ),
 
                     const SizedBox(height: 40),

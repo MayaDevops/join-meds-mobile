@@ -76,7 +76,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         // API call failed or user not found
         // Navigate to personal data to set up profile
         debugPrint('⚠️ User details not found. Redirecting to profile setup.');
-        context.go('/personal_data');
+        context.go('/personal_data?flow=signup');
         return;
       }
 
@@ -88,13 +88,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         context.go(RouteNames.home);
       } else {
         debugPrint('⚠️ Profile incomplete. Redirecting to profile setup.');
-        context.go('/personal_data');
+        context.go('/personal_data?flow=signup');
       }
     } catch (e) {
       debugPrint('❌ Error checking profile: $e');
       // On error, redirect to personal_data for safety
       if (!mounted) return;
-      context.go('/personal_data');
+      context.go('/personal_data?flow=signup');
     }
   }
 

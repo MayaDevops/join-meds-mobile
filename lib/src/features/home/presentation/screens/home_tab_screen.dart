@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/home_provider.dart';
+import '../providers/notifications_provider.dart';
 import '../widgets/promotional_banner_widget.dart';
 import '../widgets/search_bar_with_filter.dart';
 import '../widgets/job_card_widget.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/router/route_names.dart';
 import '../../../../shared/providers/user_provider.dart';
+import '../../../../shared/services/storage/local_storage_service.dart';
+import '../../../../core/constants/storage_keys.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -20,16 +24,44 @@ class _HomeTabScreenState extends State<HomeTabScreen>
   @override
   bool get wantKeepAlive => true;
 
+  /// Distance from the bottom (in logical pixels) at which the next page is
+  /// requested, so it is ready before the user actually hits the end.
+  static const double _loadMoreThreshold = 400;
+
+  final ScrollController _scrollController = ScrollController();
+
+  /// Prevents several scroll events in the same frame from each queueing a
+  /// page; the post-frame re-check decides whether another page is needed.
+  bool _loadMoreQueued = false;
+
+  /// Job count at the last build, used to re-check after each new page lands.
+  int _lastRenderedJobCount = -1;
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_maybeLoadMore);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // 🔑 ENSURE USER DATA IS READY FOR HOME HEADER
       await context.read<UserProvider>().ensureUserLoadedForHome();
 
+      // Load notifications so the unread badge is populated
+      if (!mounted) return;
+      _loadNotifications();
+
       // Existing home logic (UNCHANGED)
       await _loadHomeData();
     });
+  }
+
+  void _loadNotifications({bool forceRefresh = false}) {
+    // UserProvider loads asynchronously, so fall back to the id stored at login
+    final userId = context.read<UserProvider>().userId ??
+        context.read<LocalStorageService>().getString(StorageKeys.userId);
+    if (userId == null || userId.isEmpty) return;
+    context
+        .read<NotificationsProvider>()
+        .fetchNotifications(userId, forceRefresh: forceRefresh);
   }
 
   Future<void> _loadHomeData() async {
@@ -39,7 +71,88 @@ class _HomeTabScreenState extends State<HomeTabScreen>
 
   Future<void> _refreshData() async {
     final homeProvider = context.read<HomeProvider>();
+    _loadNotifications(forceRefresh: true);
     await homeProvider.refreshHome();
+  }
+
+  /// ===== UNREAD NOTIFICATIONS INDICATOR =====
+  /// Shown under the header only while there are unread notifications.
+  Widget _buildUnreadNotificationsStrip() {
+    return Consumer<NotificationsProvider>(
+      builder: (context, notificationsProvider, _) {
+        final unreadCount = notificationsProvider.unreadCount;
+        if (unreadCount <= 0) return const SizedBox.shrink();
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => context.go(RouteNames.notifications),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Row(
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(
+                          Icons.notifications_active_outlined,
+                          color: AppColors.primaryBlue,
+                        ),
+                        Positioned(
+                          right: -1,
+                          top: -1,
+                          child: Container(
+                            width: 9,
+                            height: 9,
+                            decoration: BoxDecoration(
+                              color: AppColors.error,
+                              shape: BoxShape.circle,
+                              border:
+                                  Border.all(color: Colors.white, width: 1.5),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        unreadCount == 1
+                            ? 'You have 1 unread notification'
+                            : 'You have $unreadCount unread notifications',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'View',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primaryBlue,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: AppColors.primaryBlue,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   /// ===== PROFILE IMAGE BUILDER =====
@@ -72,7 +185,10 @@ class _HomeTabScreenState extends State<HomeTabScreen>
             final imageProvider =
             _buildHomeProfileImage(userProvider);
 
+            _scheduleFillCheck(homeProvider);
+
             return CustomScrollView(
+              controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 // ================= USER INFO HEADER =================
@@ -152,26 +268,77 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                                 ),
                               ),
 
-                              // Notification Bell
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      color: Colors.black12),
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.notifications_outlined,
-                                    color: Colors.black87,
-                                  ),
-                                  onPressed: () {},
-                                ),
+                              // Notification Bell (opens Notifications tab,
+                              // shows the unread count from the API)
+                              Consumer<NotificationsProvider>(
+                                builder: (context, notificationsProvider, _) {
+                                  final unreadCount =
+                                      notificationsProvider.unreadCount;
+                                  return Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: Colors.black12),
+                                        ),
+                                        child: IconButton(
+                                          icon: const Icon(
+                                            Icons.notifications_outlined,
+                                            color: Colors.black87,
+                                          ),
+                                          tooltip: 'Notifications',
+                                          onPressed: () => context
+                                              .go(RouteNames.notifications),
+                                        ),
+                                      ),
+                                      if (unreadCount > 0)
+                                        Positioned(
+                                          right: -2,
+                                          top: -2,
+                                          child: IgnorePointer(
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.all(4),
+                                              constraints:
+                                                  const BoxConstraints(
+                                                minWidth: 20,
+                                                minHeight: 20,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.error,
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                    color: Colors.white,
+                                                    width: 1.5),
+                                              ),
+                                              child: Text(
+                                                unreadCount > 99
+                                                    ? '99+'
+                                                    : '$unreadCount',
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),
                         ),
 
                         const SizedBox(height: 20),
+
+                        // Unread notifications indicator
+                        _buildUnreadNotificationsStrip(),
 
                         // Promotional Banner
                         Padding(
@@ -238,6 +405,8 @@ class _HomeTabScreenState extends State<HomeTabScreen>
 
                 _buildJobList(homeProvider),
 
+                _buildLoadMoreFooter(homeProvider),
+
                 const SliverToBoxAdapter(
                     child: SizedBox(height: 80)),
               ],
@@ -289,6 +458,91 @@ class _HomeTabScreenState extends State<HomeTabScreen>
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_maybeLoadMore)
+      ..dispose();
+    super.dispose();
+  }
+
+  /// Loads the next page when the user is near the bottom of the list.
+  ///
+  /// Runs on every scroll *and* after every new page renders (see
+  /// [_scheduleFillCheck]), so loading keeps going on its own when the jobs
+  /// don't yet fill the screen or a fling lands past the end -- a scroll-only
+  /// trigger would stall in both cases.
+  void _maybeLoadMore() {
+    if (!mounted || _loadMoreQueued || !_scrollController.hasClients) return;
+
+    final homeProvider = context.read<HomeProvider>();
+    if (!homeProvider.hasMoreJobs ||
+        homeProvider.isLoadingJobs ||
+        homeProvider.isLoadingMoreJobs) {
+      return;
+    }
+
+    if (_scrollController.position.extentAfter >= _loadMoreThreshold) return;
+
+    _loadMoreQueued = true;
+    // Deferred so the provider never notifies from inside a scroll/layout
+    // callback.
+    Future.microtask(() async {
+      try {
+        if (mounted) await homeProvider.loadMoreJobs();
+      } finally {
+        _loadMoreQueued = false;
+      }
+    });
+  }
+
+  /// After a page of jobs is laid out, check whether the list still ends
+  /// inside the viewport and, if so, load the next page without waiting for a
+  /// scroll gesture.
+  void _scheduleFillCheck(HomeProvider homeProvider) {
+    final count = homeProvider.recommendedJobs.length;
+    if (count == _lastRenderedJobCount) return;
+    _lastRenderedJobCount = count;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeLoadMore());
+  }
+
+  Widget _buildLoadMoreFooter(HomeProvider homeProvider) {
+    if (homeProvider.recommendedJobs.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
+
+    if (homeProvider.hasMoreJobs) {
+      return const SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: AppColors.primaryBlue,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Center(
+          child: Text(
+            "You've seen all ${homeProvider.totalJobCount} jobs",
+            style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
           ),
         ),
       ),

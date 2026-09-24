@@ -4,8 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:untitled/src/features/job_details/presentation/widgets/icon_card.dart';
 
 import '../../../../shared/models/v2/job/job_details_dto.dart';
+import '../../../../shared/providers/user_provider.dart';
+import '../../../../core/router/route_names.dart';
 import '../providers/job_details_providers.dart';
 import '../widgets/expandable_tile.dart';
+import '../widgets/expandable_text.dart';
 
 class JobDetailsScreen extends StatefulWidget {
   const JobDetailsScreen({super.key, required this.jobId});
@@ -24,6 +27,57 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<JobDetailsProvider>().fetchJobDetails(widget.jobId);
     });
+  }
+
+  /// Formats a posted date as e.g. "18 Jul 2026".
+  String _formatDate(DateTime date) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return "${date.day} ${months[date.month - 1]} ${date.year}";
+  }
+
+  void _showIncompleteProfileDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 24),
+            SizedBox(width: 8),
+            Text('Profile Incomplete'),
+          ],
+        ),
+        content: const Text(
+          'To apply for jobs, please complete your basic profile details '
+          '(full name, date of birth, email, phone number) and upload your resume.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Later'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              context.go(RouteNames.profile);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xff00AEEF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Complete Profile',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -141,14 +195,37 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        "${job.jobDesc ?? ''} · ${job.createdAt ?? ''}",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 13,
+                      if (job.createdAt != null)
+                        Text(
+                          "Posted on ${_formatDate(job.createdAt!)}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
+
+                      /// JOB DESCRIPTION
+                      if ((job.jobDesc ?? '').trim().isNotEmpty) ...[
+                        const SizedBox(height: 20),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Job Description",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              ExpandableText(text: job.jobDesc!),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: 20),
 
@@ -221,9 +298,17 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
               onPressed: provider.isApplying
                   ? null
                   : () async {
+                      final userProvider = context.read<UserProvider>();
+                      if (!userProvider.canApplyForJob) {
+                        _showIncompleteProfileDialog();
+                        return;
+                      }
+
+                      final messenger = ScaffoldMessenger.of(context);
                       final success = await provider.applyForJob();
 
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      if (!mounted) return;
+                      messenger.showSnackBar(
                         SnackBar(
                           content: Text(
                             success

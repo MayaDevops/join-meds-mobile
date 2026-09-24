@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/notifications_provider.dart';
+import '../../../../shared/providers/user_provider.dart';
+import '../../../../shared/services/storage/local_storage_service.dart';
+import '../../../../core/constants/storage_keys.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/router/route_names.dart';
 
@@ -210,7 +213,13 @@ class HomeShellScreen extends StatelessWidget {
         // Optional: Fetch on tap
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (context.mounted) {
-            context.read<NotificationsProvider>().fetchNotifications();
+            final userId = context.read<UserProvider>().userId ??
+                context
+                    .read<LocalStorageService>()
+                    .getString(StorageKeys.userId);
+            if (userId != null && userId.isNotEmpty) {
+              context.read<NotificationsProvider>().fetchNotifications(userId);
+            }
           }
         });
         break;

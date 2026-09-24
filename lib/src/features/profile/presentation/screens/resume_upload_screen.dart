@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -5,7 +6,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/constants/api_constants.dart';
+import '../../../../core/constants/v2_api_constants.dart';
+import '../../../../shared/providers/user_provider.dart';
+import '../../../../../api/personal_data_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../shared/widgets/headers/headers.dart';
@@ -32,21 +39,99 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
   int? _totalBytes;
   bool _uploadCompleted = false;
 
+  /// Resume id already stored against this user (UserDetailsDTO.resumeId).
+  /// Non-null means a resume can be viewed via GET /api/resume/{resumeId}.
+  String? _existingResumeId;
+  bool _isLoadingExisting = true;
+
   @override
   void initState() {
     super.initState();
     _loadUserIdAndCheckResume();
   }
 
+  /// Debug logger for the resume upload flow.
+  /// Search the console for `ResumeUpload:` to follow the whole request.
+  void _log(String message) {
+    debugPrint('ResumeUpload: $message');
+  }
+
   Future<void> _loadUserIdAndCheckResume() async {
     final prefs = await SharedPreferences.getInstance();
     final id = prefs.getString('userId');
+
+    _log('--- screen opened (flowContext=${widget.flowContext ?? "signup"}) ---');
+    _log('SharedPreferences["userId"] = $id (type=${id.runtimeType})');
+    if (id == null || id.isEmpty) {
+      _log(
+        'WARNING: userId is null/empty -> _uploadResume() will return early '
+        'and NO network call will be made.',
+      );
+      _log('All SharedPreferences keys: ${prefs.getKeys().toList()}');
+    }
 
     if (id != null && mounted) {
       setState(() {
         _userId = id;
       });
     }
+
+    await _loadExistingResume(prefs, id);
+  }
+
+  /// Resolves the resume already on file so it can be viewed, not just replaced.
+  /// Uses the cached id first for an instant render, then confirms against
+  /// GET /api/user-details/{userId}, which is the source of truth.
+  Future<void> _loadExistingResume(SharedPreferences prefs, String? id) async {
+    final cached = prefs.getString('resumeId') ?? prefs.getString('resume_id');
+    if (_isUsableResumeId(cached) && mounted) {
+      _log('cached resumeId = $cached');
+      setState(() => _existingResumeId = cached);
+    }
+
+    if (id == null || id.isEmpty) {
+      if (mounted) setState(() => _isLoadingExisting = false);
+      return;
+    }
+
+    try {
+      final data = await PersonalDataService.getPersonalData(id);
+      final serverResumeId = data?.resumeId;
+      _log('server resumeId (from /user-details/$id) = $serverResumeId');
+
+      if (!mounted) return;
+      setState(() {
+        _existingResumeId =
+            _isUsableResumeId(serverResumeId) ? serverResumeId : null;
+        _isLoadingExisting = false;
+      });
+    } catch (e) {
+      _log('could not confirm existing resume: $e');
+      if (mounted) setState(() => _isLoadingExisting = false);
+    }
+  }
+
+  /// Rejects empty values and the literal string "null", which older builds
+  /// wrote into SharedPreferences via `resumeId.toString()`.
+  bool _isUsableResumeId(String? value) =>
+      value != null && value.isNotEmpty && value != 'null';
+
+  /// Absolute URL for GET /api/resume/{filename}.
+  String _resumeUrlFor(String resumeId) =>
+      '${ApiConstants.baseUrl}${V2ApiConstants.downloadResume(resumeId)}';
+
+  Future<void> _viewResume() async {
+    final resumeId = _existingResumeId;
+    if (!_isUsableResumeId(resumeId)) return;
+
+    final url = _resumeUrlFor(resumeId!);
+    _log('opening resume: $url');
+
+    final launched = await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!launched) _showError('Could not open the resume.');
   }
 
   Future<void> _pickFile() async {
@@ -56,8 +141,18 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
         allowedExtensions: ['pdf'],
       );
 
+      if (result == null) {
+        _log('file picker cancelled by user');
+      } else if (result.files.single.path == null) {
+        _log('ERROR: picker returned a file with a null path: '
+            '${result.files.single.name}');
+      }
+
       if (result != null && result.files.single.path != null) {
         final file = result.files.single;
+        _log('picked file -> name=${file.name} path=${file.path} '
+            'size=${File(file.path!).lengthSync()} bytes '
+            'extension=${file.extension}');
         setState(() {
           _pickedFile = File(file.path!);
           _fileName = file.name;
@@ -66,7 +161,9 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
           _uploadCompleted = false;
         });
       }
-    } catch (e) {
+    } catch (e, st) {
+      _log('EXCEPTION while picking file: $e');
+      _log('stack: $st');
       _showError('Error picking file: $e');
     }
   }
@@ -80,22 +177,39 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
   }
 
   Future<void> _uploadResume() async {
-    if (_pickedFile == null || _userId == null) return;
+    if (_pickedFile == null || _userId == null) {
+      _log(
+        'ABORTED before request: pickedFile=${_pickedFile?.path} userId=$_userId '
+        '-> nothing was sent to the server.',
+      );
+      return;
+    }
 
     setState(() {
       _isUploading = true;
       _uploadedBytes = 0;
     });
 
+    final stopwatch = Stopwatch()..start();
+    final uri = Uri.parse('https://api.joinmeds.in/api/resume/upload/$_userId');
+
     try {
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('https://api.joinmeds.in/api/resume/upload/$_userId'),
-      );
+      final request = http.MultipartRequest('POST', uri);
 
       // Create a stream with progress tracking
       final fileBytes = await _pickedFile!.readAsBytes();
       final totalBytes = fileBytes.length;
+
+      _log('=== REQUEST ===');
+      _log('method   : POST');
+      _log('url      : $uri');
+      _log('userId   : $_userId');
+      _log('file     : $_fileName (${_pickedFile!.path})');
+      _log('exists   : ${_pickedFile!.existsSync()}');
+      _log('bytes    : $totalBytes');
+      _log('field    : "file"  contentType: application/pdf');
+      _log('headers  : ${request.headers}  (note: no Authorization header is '
+          'attached on this screen)');
 
       // Simulate progress updates
       setState(() {
@@ -115,32 +229,60 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
       _simulateProgress();
 
       final response = await request.send();
-      /// ------------------- response verifying
-      await response.stream.bytesToString();
-      print("========= Data response $response");
+      final responseBody = await response.stream.bytesToString();
+      stopwatch.stop();
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (!mounted) return;
+      _log('=== RESPONSE ===');
+      _log('status        : ${response.statusCode} ${response.reasonPhrase}');
+      _log('elapsed       : ${stopwatch.elapsedMilliseconds} ms');
+      _log('contentLength : ${response.contentLength}');
+      _log('headers       : ${response.headers}');
+      _log('body          : ${responseBody.isEmpty ? "<empty>" : responseBody}');
 
-        setState(() {
-          _uploadCompleted = true;
-          _uploadedBytes = _totalBytes;
-          _isUploading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('CV uploaded successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      } else {
-        _showError('Upload failed. Please try again.');
-        setState(() {
-          _isUploading = false;
-        });
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        _log('NON-2xx status -> upload rejected by the server.');
+        _showError('Upload failed (${response.statusCode}). Please try again.');
+        if (mounted) setState(() => _isUploading = false);
+        return;
       }
-    } catch (e) {
+
+      // The endpoint answers 200 with the new resume id as a bare string.
+      // A 200 alone is not proof of success: an empty or error body means
+      // nothing was stored, and reporting success there is what made failed
+      // uploads look like they had worked.
+      final returnedResumeId = _extractResumeId(responseBody);
+
+      if (!_isUsableResumeId(returnedResumeId)) {
+        _log('2xx but no usable resume id in the body -> treating as FAILURE.');
+        _showError('Upload failed: the server did not store the file.');
+        if (mounted) setState(() => _isUploading = false);
+        return;
+      }
+
+      _log('stored resumeId = $returnedResumeId');
+      await _persistResumeId(returnedResumeId!);
+
+      if (!mounted) return;
+
+      setState(() {
+        _existingResumeId = returnedResumeId;
+        _uploadCompleted = true;
+        _uploadedBytes = _totalBytes;
+        _isUploading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('CV uploaded successfully!'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } catch (e, st) {
+      stopwatch.stop();
+      _log('=== EXCEPTION after ${stopwatch.elapsedMilliseconds} ms ===');
+      _log('url  : $uri');
+      _log('error: $e');
+      _log('stack: $st');
       _showError('Upload failed: $e');
       if (mounted) {
         setState(() {
@@ -148,6 +290,49 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
         });
       }
     }
+  }
+
+  /// Pulls the resume id out of the upload response. The endpoint returns a
+  /// bare string, but a JSON object is handled too in case that changes.
+  String? _extractResumeId(String body) {
+    final trimmed = body.trim();
+    if (trimmed.isEmpty) return null;
+
+    if (trimmed.startsWith('{')) {
+      try {
+        final decoded = jsonDecode(trimmed);
+        if (decoded is Map<String, dynamic>) {
+          final id = decoded['resumeId'] ??
+              decoded['fileName'] ??
+              decoded['fileId'] ??
+              decoded['data'];
+          return id?.toString();
+        }
+      } catch (e) {
+        _log('response body looked like JSON but did not parse: $e');
+      }
+      return null;
+    }
+
+    // Strip quotes from a JSON-encoded bare string ("abc.pdf").
+    return trimmed.replaceAll('"', '');
+  }
+
+  /// Writes the new resume id everywhere the app reads it from, then forces a
+  /// profile re-fetch. Without this the upload succeeds server-side but every
+  /// screen keeps rendering the stale "no resume" state.
+  Future<void> _persistResumeId(String resumeId) async {
+    final prefs = await SharedPreferences.getInstance();
+    // Both spellings are in use across the app (job application flow reads
+    // 'resume_id', the profile screens read 'resumeId').
+    await prefs.setString('resumeId', resumeId);
+    await prefs.setString('resume_id', resumeId);
+
+    if (!mounted) return;
+    final userProvider = context.read<UserProvider>();
+    await userProvider.updateResume(resumeId);
+    await userProvider.refreshUserData(forceRefetch: true);
+    _log('local state refreshed -> hasResume=${userProvider.hasResume}');
   }
 
   void _simulateProgress() {
@@ -182,8 +367,12 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
       // Signup flow: go to completion screen
       context.push(RouteNames.signupCompletion);
     } else {
-      // Profile flow: should not reach here, but navigate back safely
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      // Profile/settings flow: return to the screen that opened this one.
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go(RouteNames.home);
+      }
     }
   }
 
@@ -218,6 +407,51 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(0)} KB';
     return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+  }
+
+  Widget _buildExistingResumeCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle, color: AppColors.success, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'CV on file',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _existingResumeId!,
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          TextButton.icon(
+            onPressed: _viewResume,
+            icon: const Icon(Icons.visibility_outlined, size: 18),
+            label: const Text('View'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildUploadProgressCard() {
@@ -369,6 +603,15 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
           if (_fileName != null) ...[
             const SizedBox(height: 24),
             _buildUploadProgressCard(),
+          ]
+          // Otherwise surface the resume already on file, so it can be viewed
+          // rather than only replaced.
+          else if (_isLoadingExisting) ...[
+            const SizedBox(height: 24),
+            const CircularProgressIndicator(),
+          ] else if (_isUsableResumeId(_existingResumeId)) ...[
+            const SizedBox(height: 24),
+            _buildExistingResumeCard(),
           ],
 
           // Spacer to push buttons to bottom
@@ -398,7 +641,11 @@ class _ResumeUploadScreenState extends State<ResumeUploadScreen> {
                       elevation: 0,
                     ),
                     child: Text(
-                      _uploadCompleted ? 'Submit' : 'Upload',
+                      _uploadCompleted
+                          ? 'Submit'
+                          : (_isUsableResumeId(_existingResumeId)
+                              ? 'Replace CV'
+                              : 'Upload'),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,

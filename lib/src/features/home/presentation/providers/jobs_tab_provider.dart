@@ -11,14 +11,12 @@ class JobsTabProvider extends ChangeNotifier {
   JobsTabProvider(this._jobRepo);
 
   List<JobAppliedDTO> _appliedJobs = [];
-  List<JobAppliedDTO> _filteredJobs = [];
   bool _isLoading = false;
   String? _error;
-  String? _filterStatus; // 'all', 'pending', 'reviewed', 'accepted', 'rejected'
   DateTime? _lastFetchTime;
 
   /// All applied jobs
-  List<JobAppliedDTO> get appliedJobs => _filteredJobs;
+  List<JobAppliedDTO> get appliedJobs => _appliedJobs;
 
   /// Loading state
   bool get isLoading => _isLoading;
@@ -26,23 +24,8 @@ class JobsTabProvider extends ChangeNotifier {
   /// Error message
   String? get error => _error;
 
-  /// Current filter status
-  String? get filterStatus => _filterStatus ?? 'all';
-
   /// Total applications count
   int get totalCount => _appliedJobs.length;
-
-  /// Pending applications count
-  int get pendingCount =>
-      _appliedJobs.where((j) => j.status == 'pending').length;
-
-  /// Accepted applications count
-  int get acceptedCount =>
-      _appliedJobs.where((j) => j.status == 'accepted').length;
-
-  /// Rejected applications count
-  int get rejectedCount =>
-      _appliedJobs.where((j) => j.status == 'rejected').length;
 
   /// Fetch applied jobs for the user
   Future<void> fetchAppliedJobs(
@@ -67,13 +50,11 @@ class JobsTabProvider extends ChangeNotifier {
 
       if (response.success && response.data != null) {
         _appliedJobs = response.data!;
-        _applyFilter(); // Apply current filter
         _lastFetchTime = DateTime.now();
         _error = null;
       } else {
         _error = response.message;
         _appliedJobs = [];
-        _filteredJobs = [];
       }
     } on DioException catch (e) {
       _error = e.message ?? 'Network error occurred';
@@ -87,24 +68,6 @@ class JobsTabProvider extends ChangeNotifier {
     }
   }
 
-  /// Filter jobs by status
-  void filterByStatus(String? status) {
-    _filterStatus = status;
-    _applyFilter();
-  }
-
-  /// Apply the current filter
-  void _applyFilter() {
-    if (_filterStatus == null || _filterStatus == 'all') {
-      _filteredJobs = List.from(_appliedJobs);
-    } else {
-      _filteredJobs = _appliedJobs
-          .where((job) => job.status?.toLowerCase() == _filterStatus?.toLowerCase())
-          .toList();
-    }
-    notifyListeners();
-  }
-
   /// Search applications with custom params
   Future<void> searchApplications(JobSearchParams params) async {
     _isLoading = true;
@@ -116,12 +79,10 @@ class JobsTabProvider extends ChangeNotifier {
 
       if (response.success && response.data != null) {
         _appliedJobs = response.data!;
-        _applyFilter(); // Apply current filter
         _error = null;
       } else {
         _error = response.message;
         _appliedJobs = [];
-        _filteredJobs = [];
       }
     } on DioException catch (e) {
       _error = e.message ?? 'Network error occurred';
@@ -143,7 +104,7 @@ class JobsTabProvider extends ChangeNotifier {
   /// Add a newly applied job to the local list
   void addAppliedJob(JobAppliedDTO application) {
     _appliedJobs.insert(0, application); // Add at beginning
-    _applyFilter();
+    notifyListeners();
   }
 
   /// Clear error message
@@ -155,8 +116,6 @@ class JobsTabProvider extends ChangeNotifier {
   /// Clear all data
   void clear() {
     _appliedJobs = [];
-    _filteredJobs = [];
-    _filterStatus = null;
     _lastFetchTime = null;
     _error = null;
     notifyListeners();
@@ -165,7 +124,6 @@ class JobsTabProvider extends ChangeNotifier {
   @override
   void dispose() {
     _appliedJobs.clear();
-    _filteredJobs.clear();
     super.dispose();
   }
 }

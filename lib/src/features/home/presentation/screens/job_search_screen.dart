@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/router/route_names.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/v2/job/job_details_dto.dart';
 import '../providers/home_provider.dart';
@@ -26,61 +27,85 @@ class _JobSearchScreenState extends State<JobSearchScreen> {
     context.read<HomeProvider>().searchJobs(searchKey: value);
   }
 
+  /// Leaves the search page, falling back to Home when there is nothing
+  /// to pop (e.g. the page was opened via `go` or a deep link).
+  void _goBack(BuildContext context) {
+    FocusScope.of(context).unfocus();
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(RouteNames.home);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final homeProvider = context.watch<HomeProvider>();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Search Jobs'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          /// Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: 'Search for jobs, companies...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    context.read<HomeProvider>().searchJobs(searchKey: '');
-                    setState(() {});
-                  },
-                )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: AppColors.primaryBlue,
-                    width: 2,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _goBack(context);
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Search Jobs'),
+          backgroundColor: AppColors.primaryBlue,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            tooltip: 'Back',
+            onPressed: () => _goBack(context),
+          ),
+        ),
+        body: Column(
+          children: [
+            /// Search Bar
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Search for jobs, companies...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            context
+                                .read<HomeProvider>()
+                                .searchJobs(searchKey: '');
+                            setState(() {});
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: AppColors.primaryBlue,
+                      width: 2,
+                    ),
                   ),
                 ),
+                onChanged: (value) {
+                  setState(() {});
+                  _onSearchChanged(context, value);
+                },
               ),
-              onChanged: (value) {
-                setState(() {});
-                _onSearchChanged(context, value);
-              },
             ),
-          ),
 
-          /// Results
-          Expanded(
-            child: _buildSearchResults(homeProvider),
-          ),
-        ],
+            /// Results
+            Expanded(
+              child: _buildSearchResults(homeProvider),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -192,7 +217,7 @@ class _JobTile extends StatelessWidget {
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () {
           /// Navigate to job details if needed
-           context.push('/job-details/${job.id}');
+          context.push('/job-details/${job.id}');
         },
       ),
     );

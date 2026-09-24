@@ -373,7 +373,7 @@ class _ProfileDetailsTabScreenState extends State<ProfileDetailsTabScreen>
           text: hasResume ? 'View/Change Resume' : 'Upload Resume',
           icon: hasResume ? Icons.visibility_outlined : Icons.upload_file,
           onPressed: () {
-            context.push(RouteNames.profileResume);
+            context.push('${RouteNames.profileResume}?flow=profile');
           },
         ),
       ],
@@ -655,27 +655,7 @@ class _ProfileDetailsTabScreenState extends State<ProfileDetailsTabScreen>
   }
 
   /// Menu item widget for settings section
-  Widget _buildMenuItem({
-    required IconData icon,
-    required String title,
-    Color? textColor,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: textColor ?? Colors.black87),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 16,
-          color: textColor ?? Colors.black87,
-        ),
-      ),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-      onTap: onTap,
-    );
-  }
-
+ 
   // ========== HELPER METHODS ==========
 
   String _getInitials(String name) {

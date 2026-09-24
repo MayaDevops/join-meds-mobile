@@ -117,9 +117,9 @@ class _LoginPageState extends State<LoginPage> {
                       children: [
                         const SizedBox(height: 30),
                         _buildTextField(
-                          label: 'Email / Phone Number',
+                          label: 'Phone Number',
                           controller: _emailPhoneController,
-                          hintText: 'Enter Email/Phone Number',
+                          hintText: 'Phone Number',
                           keyboardType: TextInputType.emailAddress,
                           validator: _validateEmailOrPhone,
                         ),

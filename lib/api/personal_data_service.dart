@@ -38,11 +38,26 @@ class PersonalDataService {
           'profession': result.profession,
           'profileImageUrl': result.photoId,
           'resumeUrl': result.resumeId,
+          'dob': result.dob,
+          'address': result.address,
+          'aadhaarNo': result.aadhaarNo,
+          'academicStatus': result.academicStatus,
+          'workExperience': result.workExperience,
         };
         await prefs.setString('user_profile', jsonEncode(userProfile));
         await prefs.setString('user_name', result.fullname.toString());
         await prefs.setString('user_id', result.userId.toString());
-        await prefs.setString('resume_id', result.resumeId.toString());
+
+        // Guard against writing the literal string "null": callers check these
+        // keys with `== null` / isNotEmpty, and "null" passes both.
+        final resumeId = result.resumeId;
+        if (resumeId != null && resumeId.isNotEmpty) {
+          await prefs.setString('resume_id', resumeId);
+          await prefs.setString('resumeId', resumeId);
+        } else {
+          await prefs.remove('resume_id');
+          await prefs.remove('resumeId');
+        }
         debugPrint('PersonalDataService: Saved user profile from getPersonalData: $userProfile');
 
         return result;
@@ -85,6 +100,7 @@ class PersonalDataService {
       }
       if (json['resumeId'] != null) {
         prefs.setString('resumeId', json['resumeId']);
+        prefs.setString('resume_id', json['resumeId']);
         debugPrint("Saved resumeId: ${json['resumeId']}");
       }
 
@@ -96,6 +112,11 @@ class PersonalDataService {
         'profession': data.profession,
         'profileImageUrl': json['photoId'],
         'resumeUrl': json['resumeId'],
+        'dob': data.dob,
+        'address': data.address,
+        'aadhaarNo': data.aadhaarNo,
+        'academicStatus': data.academicStatus,
+        'workExperience': data.workExperience,
       };
 
       await prefs.setString('user_profile', jsonEncode(userProfile));
